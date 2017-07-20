@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Termination</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Termination">
+    <meta name="keywords" content="Prolog,Termination,Declarative">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Termination</h1></center>
+    <br><br>
+
+    In Prolog, there are <i>two kinds</i> of <b>termination</b>:
+
+    <ul>
+      <li><b>existential</b> termination</li>
+      
+      <li><b>universal</b> termination.</li>
+    </ul>
+
+    Although both properties
+    are <a href="https://en.wikipedia.org/wiki/Undecidable_problem"><i>undecidable</i></a>
+    in general, we can often derive interesting insights already by
+    observation alone.
+
+    <br><br>
+
+    In the following, we assume that <i>no exceptions</i> arise during
+    the computation.
+        
+    <center><h2>Existential termination</h2></center>
+
+    A Prolog query <tt>Q</tt> <b>terminates existentially</b>
+    <i>iff</i> we receive an <i>answer</i> when
+    posting&nbsp;<tt>Q</tt>.
+
+    <br><br>
+
+    For example, the following query <i>terminates existentially</i>,
+    because an answer is reported:
+
+    <pre>
+?- length(Ls, L).
+<b>Ls = [],
+L = 0 .</b>
+    </pre>
+
+    If Prolog were a functional programming language, this would be
+    the end of the story, because a (partial) function returns at
+    most <i>one</i>&nbsp;result.
+
+    <br><br>
+
+    However, Prolog is a <i>relational</i> programming language, and
+    relations can hold between <i>multiple</i> entities that are
+    reported on backtracking. Therefore,
+    <i>existential</i> termination does not fully characterize the
+    procedural behaviour of a Prolog query.
+
+    <center><h2>Universal termination</h2></center>
+
+    A Prolog query <tt>Q</tt> <b>terminates universally</b> <i>iff</i>
+    the query
+
+    <pre>
+?- Q, <b>false</b>.
+    </pre>
+
+    terminates <i>existentially</i>.
+
+    <br><br>
+
+    Declaratively, the query <tt>?-&nbsp;Q, false.</tt> is
+    always <i>false</i>. For this reason, <i>if</i> an answer is
+    eventually reported, then the answer is
+    necessarily&nbsp;<tt>false</tt>.
+
+    <center><h2>More about termination</h2></center>
+
+    Consider again the definition
+    of <a href="reading#list_list_together3"><tt>list_list_together/3</tt></a>,
+    which is true if the third argument is the <i>concatenation</i> of the
+    lists in the first and second argument:
+
+    <pre>
+list_list_together([], Bs, Bs).
+list_list_together([A|As], Bs, [A|Cs]) :-
+        list_list_together(As, Bs, Cs).
+    </pre>
+
+    Notice that the simpler of the two cases, i.e., the <i>fact</i>
+    that occurs in this definition, has <i>no&nbsp;influence</i> on
+    the universal termination properties of this predicate. It is
+    therefore <b>wrong</b> to call this fact a "termination
+    condition", "stopping criterion" or anything related.
+
+    <br><br>
+
+    The following fragment alone already makes the most general
+    query <i>nonterminating</i> in this case:
+
+    <pre>
+<s>list_list_together([], Bs, Bs) :- <b>false.</b></s>
+list_list_together([A|As], Bs, [A|Cs]) :-
+        list_list_together(As, Bs, Cs).
+    </pre>
+
+    Adding further <a href="purity"><b>pure</b></a> clauses can
+    never prevent nontermination.
+
+    <br><br>
+
+    See <a href="reading"><b>Reading Prolog Programs</b></a> and
+    <a href="nontermination"><b>Nontermination</b></a> for more
+    information about this technique, which is called
+    <i>program&nbsp;slicing</i>.
+
+    <br><br>
+
+    Importantly, program slices can be
+    generated <i>automatically</i> to help you find the reason for
+    nontermination. See&nbsp;<a href="http://www.cs.unipr.it/cTI/">cTI</a>
+    and
+    especially&nbsp;<a href="http://www.complang.tuwien.ac.at/ulrich/gupu/"><b>GUPU</b></a>.
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

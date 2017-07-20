@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Writing Prolog Programs</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Writing Prolog Programs">
+    <meta name="keywords" content="Prolog,Writing,Semantics,Naming Convention">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Writing Prolog Programs</h1></center>
+    <br><br>
+
+    The best general advice on <i>writing</i> Prolog code was given by
+    Richard O'Keefe in his book <i>The Craft of&nbsp;Prolog</i>:
+
+    <div>
+      <blockquote class="box">
+        <b>Elegance is not optional.</b>
+      </blockquote>
+    </div>
+
+    Take this advice to heart! If your Prolog code seems somewhat
+    inelegant, <i>pause</i> and think about how it can be made
+    more&nbsp;elegant.
+
+    <br><br>
+
+    This page explains a few additional guidelines for writing
+    Prolog&nbsp;code.
+
+    <br><br>
+    <center><h2>How to begin</h2></center>
+
+    
+    Consider a relation like <tt>list_list_together/3</tt> that is
+    mentioned in <a href="reading">Reading Prolog&nbsp;Programs</a>.
+    How do we come up with such a definition in the first place?
+    <br><br>
+
+    When <i>writing</i> a Prolog predicate, think about
+    <i>the conditions that ought to make it&nbsp;true</i>. For
+    example, in the case of <tt>list_list_together/3</tt>, we can
+    proceed as follows: First, we want to describe a relation that
+    holds for&nbsp;<a href="data#list"><i>lists</i></a>. We know from
+    their inductive definition that we need to consider at least two
+    possible cases:
+    <ol>
+      <li>the <i>atom</i>&nbsp;<tt>[]</tt></li>
+      <li>compound terms of the form <tt>[L|Ls]</tt></li>
+    </ol>
+
+    These two cases form the skeleton of our prospective definition:
+
+    <pre>
+list_list_together([], Bs, Cs) :-
+        ...
+list_list_together([L|Ls], Bs, Cs) :-
+        ...
+    </pre>
+
+    These two clauses form logical <i>alternatives</i> that describe
+    the different <i>cases</i> that can arise. Then, we
+    ask: <i>When</i>, i.e., under what <i>conditions</i> do these
+    cases <i>hold</i>? If you think about it, you will come to the
+    conclusion that the first clause
+    holds <i>if</i> <tt>Bs&nbsp;=&nbsp;Cs</tt>, so we can write it as:
+
+    <pre>
+list_list_together([], Bs, Cs) :-
+        Bs = Cs.
+    </pre>
+
+    Such unifications can always be pulled into the clause head, so
+    we can write it as:
+
+    <pre>
+list_list_together([], Bs, Bs).
+    </pre>
+
+    We apply the same reasoning to the second clause: <i>When</i> does
+    it hold that <tt>Cs</tt> is the concatenation of <tt>[L|Ls]</tt>
+    and&nbsp;<tt>Bs</tt>? A bit of reflection tells us: This
+    holds <i>if</i> <tt>Cs</tt> is of the
+    form&nbsp;<tt>[L|Rest]</tt> <i>and</i> <tt>Rest</tt> is the
+    concatenation of&nbsp;<tt>Ls</tt> and&nbsp;<tt>Bs</tt>. We use
+    the <a href="concepts#builtin">built-in</a>
+    predicate&nbsp;<tt>(',')/2</tt> to express this <i>conjunction</i>
+    of conditions. To describe that <tt>Rest</tt> is the concatenation
+    of <tt>Ls</tt> and <tt>Bs</tt>, we use <tt>list_list_together(Ls,
+    Bs, Rest)</tt>, since this is precisely the relation that ought
+    to <i>hold</i> in this&nbsp;case.
+
+    <br><br>
+
+    The whole clause therefore becomes:
+
+    <pre>
+list_list_together([L|Ls], Bs, Cs) :-
+        Cs = [L|Rest],
+        list_list_together(Ls, Bs, Rest).
+    </pre>
+
+    This is an example of a predicate whose definition refers to
+    itself. Such predicates are called <i>recursive</i>. Note how
+    recursive definitions naturally arise from considering the
+    conditions that make such predicates&nbsp;true.
+
+    <br><br>
+
+    Again, we can simply pull the unification into the clause head:
+
+    <pre>
+list_list_together([L|Ls], Bs, [L|Rest]) :-
+        list_list_together(Ls, Bs, Rest).
+    </pre>
+
+    Finding better variable names is left as an exercise.
+
+    <br><br>
+
+    When beginners write their first Prolog&nbsp;programs, a common
+    mistake is to ask the <i>wrong</i> question: "What should
+    Prolog <i>do</i> in this case?". This question is misguided:
+    Especially as a beginner, you will not be able to grasp the actual
+    control flow for the different modes of invocation. In addition,
+    this question typically limits you to only one possible usage mode
+    of your predicate. Therefore, do not fall into this&nbsp;trap!
+    Instead, think about the conditions that <i>make the
+    relation&nbsp;hold</i>, and provide a clear declarative
+    description of these conditions. If you manage to state these
+    conditions correctly, you often naturally obtain very general
+    predicates that can be used in several directions. Thus, when
+    writing Prolog&nbsp;code, better ask: <i>What are the cases and
+      conditions that make this predicate&nbsp;true</i>?
+
+    <br><br>
+
+    You may now think: That's all OK, and may work for such simple
+    relations. But what if I want to actually "do" something, such as
+    incrementing a&nbsp;counter, removing an element etc.? The answer
+    is still the same: Think in terms of <i>relations</i> between the
+    entities you are describing. To express a <i>modification</i> of
+    something, you should define a relation between
+    different <i>states</i> of something, and state the conditions
+    that make this relation&nbsp;<i>hold</i>.
+    See <a href="/tist/"><i>Thinking in&nbsp;States</i></a> for more
+    information.
+
+    <center><h2>Naming predicates</h2></center>
+
+    A good <i>predicate&nbsp;name</i> makes clear what the predicate
+    arguments <i>mean</i>.
+
+    <br><br>
+
+    Ideally, a predicate can be used in <i>all</i> directions. This
+    means that <i>any</i> argument may be a variable, partially
+    instantiated, or fully instantiated. This generality should
+    be <i>expressed</i> in the predicate name, typically by
+    choosing <i>nouns</i> to describe the arguments.
+
+    <br><br>
+
+    Examples of <b>good</b> predicate names are:
+
+    <ul>
+      <li><tt>list_length/2</tt>, relating a list to its length</li>
+      <li><tt>integer_successor/2</tt>, relating an integer to its
+        successor</li>
+      <li><tt>student_course_grade/3</tt>, relating students to
+        courses and grades.</li>
+    </ul>
+
+    In these cases, the predicate names are so clear that the
+    descriptions seem almost superfluous. Note also
+    that <tt>using_underscores_makes_also_longer_names_easy_to_read</tt>,
+    whereas for
+    example <tt>mixingTheCasesAsInJavaMakesThatALotHarderInGeneral</tt>.
+
+    <br><br>
+
+    For these reasons, examples of <b>bad</b> names are:
+
+    <ul>
+      <li><tt>length/2</tt>: Which argument is the length, the first
+      or the second one?</li>
+      <li><tt>nextInteger/2</tt>: Not as readable as for
+        example <tt>next_integer/2</tt>, and not as meaningful
+        as <tt>integer_successor/2</tt>.</li>
+      <li><tt>fetch_grades/3</tt>: Does not make sense for example if
+        grades are already <i>instantiated</i>.</li>
+    </ul>
+
+
+    <center><h2>Naming variables</h2></center>
+
+    A Prolog <b>variable</b> starts with an uppercase letter <i>or</i>
+    with an underscore. The latter rule is useful to know if you are
+    teaching Prolog in Japan, for example.
+
+    <br><br>
+
+    In contrast to the convention for <i>predicate</i>
+    names, <tt>MixedCases</tt> are sometimes used when naming
+    Prolog <i>variables</i>. However, the mixing is in almost all
+    cases limited to at most <i>two</i> uppercase words that are
+    adjoined.
+
+    <br><br>
+
+    Some Prolog predicates describe a sequence
+    of <a href="/tist/"><i>state&nbsp;transitions</i></a> to express
+    state changes in a pure way. In such cases, the following
+    convention can be very useful: The initial state is denoted
+    as <tt>State0</tt>, the next state is <tt>State1</tt>, etc. This
+    enumeration continues until the final state, which we
+    call&nbsp;<tt>State</tt>. In total, the sequence is therefore:
+
+    <br><br>
+    <pre>
+State0 &rightarrow; State1 &rightarrow; State2 &rightarrow; ... &rightarrow; State
+    </pre>
+
+    Of course, the prefix <tt>State</tt> can denote any other entity
+    that is being described. For example, if multiple elements are
+    inserted into an association list, we may have the sequence:
+
+    <br><br>
+    <pre>
+Assoc0 &rightarrow; Assoc1 &rightarrow; Assoc2 &rightarrow; ... &rightarrow; Assoc
+    </pre>
+
+    When writing <a href="metapredicates">higher-order
+      predicates</a>, it is good practice to denote
+    with <tt>C_<i>N</i></tt> a closure&nbsp;<tt>C</tt> that is
+    called with <i>N</i> additional arguments. For example, the
+    first argument of <tt>maplist/2</tt> could be
+    called&nbsp;<tt>Pred_1</tt>, because it is invoked
+    with <i>one</i> additional argument.
+
+    <center><h2>Indenting Prolog code</h2></center>
+
+    Prolog is a very simple language: Only a few language constructs
+    exist, and several ways for indenting them are common.
+
+    <br><br>
+
+    However, no matter which convention you choose, one invariant that
+    should always be adhered to is to <i>never place <tt>(;)/2</tt> at
+    the end of a line</i>. This is because <tt>;</tt> looks very
+    similar to&nbsp;<tt>,</tt>&nbsp;(comma). Since <tt>(',')/2</tt>
+    almost always occurs at the end of a line, it is good practice to
+    place <tt>;</tt> either at the <i>beginning</i> of a line
+    or <i>between</i> the two goals of a disjunction to more clearly
+    distinguish it from a conjunction.
+
+    <center><h2>Further reading</h2></center>
+
+    Covington et
+    al., <a href="https://arxiv.org/pdf/0911.2899.pdf"><i>Coding
+    Guidelines for Prolog</i></a>, contains some interesting
+    observations for programming in Prolog.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

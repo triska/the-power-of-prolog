@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Nontermination</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Termination">
+    <meta name="keywords" content="Prolog,Nontermination,Declarative">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Nontermination</h1></center>
+
+    <center><h2>Introduction</h2></center>
+
+    There is a huge class of interesting programs, written in Prolog
+    and also in other languages, that <i>never&nbsp;terminate</i>.
+
+    <br><br>
+
+    For instance, such programs may <i>generate</i> as many objects as
+    possible from a set that is known to be <i>infinite</i>. A Prolog
+    program that generates the sequence of prime&nbsp;numbers is an
+    example for this type of&nbsp;programs.
+
+    <br><br>
+    
+    Another very important instance are programs that search for
+    objects whose very <i>existence</i> is not <i>a&nbsp;priori</i> known,
+    such as:
+
+    <ul>
+      <li><a href="clpfd"><i>integers</i></a> with specific properties</li>
+      <li><a href="optimization#graph"><i>graphs</i></a> and other combinatorial objects with a certain structure</li>
+      <li><a href="theoremproving"><i>proofs</i></a> of famous conjectures</li>
+      <li><i>counterexamples</i> to well-known hypotheses</li>
+      <li>etc.</li>
+    </ul>
+
+    In such cases, if the object does not exist, then the search for
+    it does&nbsp;not&mdash;and in
+    fact <i>must&nbsp;not</i>&mdash;terminate. In practice, such
+    programs are often the most&nbsp;interesting, because we do not
+    know whether there is a solution before it is actually&nbsp;found.
+    The more you work on tough scientific&nbsp;questions, the more
+    you will write and work with this type of&nbsp;programs.
+
+    <br><br>
+    <center><h2>Terminology</h2></center>
+
+    In Prolog, we distinguish between <i>two kinds</i>
+    of <a href="termination">termination</a>: existential and
+    universal. We say a Prolog query&nbsp;<tt>Q</tt>
+    <b>does&nbsp;not&nbsp;terminate</b> <i>iff</i> it
+    <i>does&nbsp;not&nbsp;terminate&nbsp;universally</i>, i.e., if the query:
+
+    <pre>
+?- Q, <b>false</b>.
+    </pre>
+
+    does <i>not&nbsp;terminate</i>. Note that if a query does not
+    terminate <i>existentially</i>, then it <i>also</i> does&nbsp;not
+    terminate&nbsp;universally, and thus, using our
+    terminology, <i>does&nbsp;not&nbsp;terminate</i>.
+
+    <br><br>
+    <center><h2>Inadvertent nontermination</h2></center>
+
+    As already mentioned, many Prolog programs <i>must&nbsp;not</i>
+    terminate. For example, the
+    query <tt>?-&nbsp;length(Ls,&nbsp;_)</tt> must <i>generate</i>
+    lists of arbitrarily long&nbsp;length, and therefore <i>cannot</i> terminate:
+
+    <pre>
+?- length(Ls, _).
+Ls = [] ;
+Ls = [_8662] ;
+Ls = [_8662, _8668] ;
+Ls = [_8662, _8668, _8674] ;
+etc.
+    </pre>
+
+    If this query did terminate, the relation would
+    be <i>incomplete</i> and thus <i>incorrect</i>.
+
+    <br><br>
+
+    However, in some cases, Prolog programmers write a program or
+    query that <i>inadvertently</i> does not terminate.
+
+    <br><br>
+
+    For example, consider the query:
+
+    <pre>
+?- length(_, Ls), Ls = [].
+<b>nontermination</b>
+    </pre>
+
+    This query does not terminate, and in fact does not even yield a
+    single solution.
+
+    <br><br>
+
+    As another case, consider the program:
+
+    <pre>
+adjacent(a, b).
+adjacent(e, f).
+adjacent(X, Y) :- adjacent(Y, X).
+    </pre>
+
+    Here, a programmer has entered two facts. The final <i>rule</i> is
+    meant to turn <tt>adjacent/2</tt> into a <i>symmetric</i> relation.
+
+    <br><br>
+
+    From a quick first glance, everything appears to work as intended:
+
+    <pre>
+?- adjacent(X, Y).
+X = a,
+Y = b ;
+X = e,
+Y = f ;
+X = b,
+Y = a .
+    </pre>
+
+    However, contrary to our expectation about such a finite relation,
+    the query <i>does not terminate</i>:
+
+    <pre>
+?- adjacent(X, Y), <b>false</b>.
+<b>nontermination</b>
+    </pre>
+
+    Such cases are common among beginners, and often lead them to
+    perceive Prolog as&nbsp;"slow", when in fact their program does not
+    terminate <i>at&nbsp;all</i>.
+
+    <br><br>
+    <center><h2>Failure slicing</h2></center>
+
+    To produce <b>explanations</b> for nontermination, we use a
+    powerful declarative debugging method
+    called <i>failure&nbsp;slicing</i>.
+
+    <br><br>
+
+    The main idea is to insert calls of <tt>false/0</tt> into your
+    program, in order to obtain smaller <i>program&nbsp;fragments</i>
+    that <i>still</i> exhibit nontermination.
+
+    <br><br>
+
+    For example, in the case of the query shown above, we can
+    insert <tt>false/0</tt> between the two goals:
+
+    <pre>
+?- length(_, Ls), <b>false</b>, Ls = [].
+<b>nontermination</b>
+    </pre>
+
+    Operationally, we can <i>ignore</i> everything <i>after</i> the
+    call of&nbsp;<tt>false/0</tt>, and we
+    use <s>strikeout</s>&nbsp;text to indicate parts of the program
+    or query that that we ignore when reasoning about nontermination:
+
+    <pre>
+?- length(_, Ls), <b>false</b>, <s>Ls = [].</s>
+<b>nontermination</b>
+    </pre>
+
+    This fragment <i>still</i> does not terminate. Therefore, you
+    either have to <i>change</i> the call of&nbsp;<tt>length/2</tt>
+    or <i>add</i> additional goals before it in order to make the
+    original query <i>terminate</i>. No <a href="purity">pure</a> goal
+    that appears <i>after</i> the current goal of <tt>length/2</tt>
+    can remove the nontermination!
+
+    <br><br>
+
+    Similarly, consider again the definition of <tt>adjacent/2</tt>,
+    where we again use calls of&nbsp;<tt>false/0</tt>
+    to <i>explain</i> the nontermination by showing only relevant
+    program fragments:
+
+    <pre>
+<s>adjacent(a, b) :- <b>false</b>.</s>
+<s>adjacent(e, f) :- <b>false</b></s>
+adjacent(X, Y) :- adjacent(Y, X).
+    </pre>
+
+    Even with only the single remaining clause, we observe nontermination:
+
+    <pre>
+?- adjacent(X, Y), <b>false</b>.
+<b>nontermination</b>
+    </pre>
+
+    Again, no pure clause you add or remove can make this
+    nontermination go away. To make the query terminate, you have
+    to <i>change</i> the single remaining clause!
+
+    <br><br>
+
+    For example, we could <i>separate</i> the facts from the main
+    predicate to make both predicates terminating:
+
+    <pre>
+adjacent_(a, b).
+adjacent_(e, f).
+
+adjacent(X, Y) :- adjacent_(X, Y).
+adjacent(X, Y) :- adjacent_(Y, X).
+    </pre>
+
+    Example query, showing that <tt>adjacent/2</tt> now <i>terminates</i>:
+
+    <pre>
+?- adjacent(X, Y), <b>false</b>.
+<b>false</b>.
+    </pre>
+
+    Failure slicing is a special case
+    of <a href="reading#slicing"><i>program&nbsp;slicing</i></a>.
+
+    <br><br>
+
+    <center><h2>Further reading</h2></center>
+
+
+    See <a href="reading"><b>Reading Prolog Programs</b></a> for
+    more information about <i>program&nbsp;slicing</i>.
+
+    <br><br>
+
+    To <i>automatically</i> generate explanations for nontermination,
+    see&nbsp;<a href="http://www.cs.unipr.it/cTI/">cTI</a> and
+    especially&nbsp;<a href="http://www.complang.tuwien.ac.at/ulrich/gupu/"><b>GUPU</b></a>.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

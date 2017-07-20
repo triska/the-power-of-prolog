@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Prolog DCG Primer</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Introduction to Prolog Definite Clause Grammars (DCGs)">
+    <meta name="keywords" content="Prolog,DCG,Definite Clause Grammar">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center><h1>Prolog DCG Primer</h1></center>
+    <br><br>
+
+    <center><h2>Introduction</h2></center>
+
+    A Prolog <b>definite clause grammar</b> (DCG) describes
+    a <a href="data#list">list</a>. Operationally, DCGs can be
+    used to <i>parse</i>, <i>generate</i> and <i>check</i> lists.
+
+    <br><br>
+    A DCG is defined by <i>rules</i>. A <b>DCG rule</b> has the form:
+
+    <pre>
+Head --&gt; Body.
+    </pre>
+
+    A rule's <i>body</i> consists of terminals and nonterminals.
+    A <b>terminal</b> is a list, which stands for the elements
+    it&nbsp;contains. A <b>nonterminal</b> refers to a DCG or other
+    grammar construct, which stand for the elements they themselves
+    describe.
+    
+    We use the <i>nonterminal indicator</i>&nbsp;<tt>f//N</tt> to
+    refer to the nonterminal&nbsp;<tt>f</tt> with
+    arity&nbsp;<tt>N</tt>. Note that&nbsp;<tt>//</tt> distinguishes it
+    from a
+    Prolog <a href="concepts#predicate"><i>predicate&nbsp;indicator</i></a>.
+
+    <br><br>
+
+    As an example of a DCG, let us describe lists whose every element
+    is the atom&nbsp;<tt>a</tt>. We shall use the
+    nonterminal&nbsp;<tt>as//0</tt> to refer to such lists:
+
+    <pre>
+as --&gt; [].
+as --&gt; [a], as.
+    </pre>
+
+    The first rule states: The empty list is such a list. In the
+    second rule, we read the comma as "<i>and then</i>". Therefore,
+    the second rule states: A list that contains as its first element
+    the atom&nbsp;<tt>a</tt> <i>and then</i> only
+    atoms&nbsp;<tt>a</tt> is also such a list.
+
+    <br><br>
+
+    To invoke a grammar rule, we use Prolog's
+    built-in <tt>phrase/2</tt> predicate. The first argument is,
+    syntactically, a DCG&nbsp;<i>body</i>. <tt>phrase(Body,
+    Ls)</tt> is true iff&nbsp;<tt>Body</tt> describes the
+    list&nbsp;<tt>Ls</tt>.
+
+    <br><br>
+
+    For example, let us use the single nonterminal&nbsp;<tt>as//0</tt>
+    to ask for all lists that it describes, by posting
+    the <a href="concepts#toplevel">most general query</a>:
+
+    <pre>
+?- phrase(as, Ls).
+<b>Ls = [] ;
+Ls = [a] ;
+Ls = [a, a] ;
+Ls = [a, a, a] ;
+Ls = [a, a, a, a] ;</b>
+etc.
+    </pre>
+
+   Examples of more specific queries and the system's answers:
+
+    <pre>
+?- phrase(as, [a,a,a]).
+<b>true.</b>
+
+?- phrase(as, [b,c,d]).
+<b>false.</b>
+
+?- phrase(as, [a,X,a]).
+<b>X = a.</b>
+    </pre>
+
+    <center><h2>Relating trees to lists</h2></center>
+
+    Let us now use a DCG to relate a binary tree to the in-order
+    sequence of its node names. Let us assume a binary tree consists
+    of leaves represented by the atom&nbsp;<tt>nil</tt> and inner
+    nodes of the form&nbsp;<tt>node(Name, Left, Right)</tt>,
+    where <tt>Left</tt> and&nbsp;<tt>Right</tt> are themselves binary
+    trees. To obtain the in-order sequence of node names, consider:
+
+    <pre>
+tree_nodes(nil) --&gt; [].
+tree_nodes(node(Name, Left, Right)) --&gt;
+        tree_nodes(Left),
+        [Name],
+        tree_nodes(Right).
+    </pre>
+
+    Example:
+
+    <pre>
+?- phrase(tree_nodes(node(a, node(b, nil,
+                                     node(c, nil, nil)),
+                             node(d, nil, nil))), Ns).
+<b>Ns = [b, c, a, d].</b>
+    </pre>
+
+    You can obtain other orders by moving the
+    terminal&nbsp;<tt>[Name]</tt> in the DCG body.
+
+    <br><br>
+    <center><h2>Left recursion</h2></center>
+
+    Conversely, given a sequence of node names, what are the trees
+    that yield this sequence:
+
+    <pre>
+?- phrase(tree_nodes(Tree), [a,b,c,d]).
+<b>Tree = node(a, nil, node(b, nil, node(c, nil, node(d, nil, nil)))) ;</b>
+(nontermination)
+    </pre>
+
+    The system yields one (correct) solution, then loops. This is
+    because the grammar is left-recursive: We recursively refer to a
+    nonterminal (<tt>tree_nodes//1</tt>) before anything else. To be
+    able to use this grammar for finding all matching trees, we need
+    to encode that for the second rule to apply, at least one list
+    element must be available since the rule contains exactly one
+    terminal, and we need to check this in advance to avoid unbounded
+    recursion. We can do this by introducing two additional arguments
+    that let us limit the number of rule applications to the given
+    list's length:
+
+    <pre>
+tree_nodes(nil, Ls, Ls) --&gt; [].
+tree_nodes(node(Name, Left, Right), [_|Ls0], Ls) --&gt;
+        tree_nodes(Left, Ls0, Ls1),
+        [Name],
+        tree_nodes(Right, Ls1, Ls).
+    </pre>
+
+    Example:
+
+    <pre>
+?- Ns = [a,b,c,d], phrase(tree_nodes(Tree, Ns, _), Ns).
+<b>Ns = [a, b, c, d],
+Tree = node(a, nil, node(b, nil, node(c, nil, node(d, nil, nil)))) ;
+Ns = [a, b, c, d],
+Tree = node(a, nil, node(b, nil, node(d, node(c, nil, nil), nil))) ;
+Ns = [a, b, c, d],
+Tree = node(a, nil, node(c, node(b, nil, nil), node(d, nil, nil))) ;</b>
+etc.
+    </pre>
+
+
+    <center><h2 id="semicontext">Semicontext notation</h2></center>
+
+    Using <b>semicontext notation</b>, in now outdated terminology
+    also called <i>pushback lists</i> or <i>right-hand context</i>,
+    you can insert list elements that were initially not in the list
+    that is being parsed. A DCG rule of the form:
+
+    <pre>
+Head, <b>[T<sub>1</sub>,...,T<sub>n</sub>]</b> --&gt; Body.
+    </pre>
+
+    can be read operationally as: parse the list
+    using&nbsp;<tt>Body</tt>, then prepend the
+    terms&nbsp;<tt>T<sub>1</sub>,&nbsp;...,&nbsp;T<sub>n</sub></tt> to the remaining list.
+    For example:
+
+    <pre>
+nt1, <b>[b]</b> --&gt; [a].
+nt2      --&gt; [b].
+    </pre>
+
+    The body of <tt>nt1//0</tt> describes a list whose single element
+    is the atom&nbsp;<tt>a</tt>. Operationally, after <tt>nt1//0</tt>
+    has consumed the atom&nbsp;<tt>a</tt> in a list that is being
+    parsed, it inserts the atom&nbsp;<tt>b</tt> in front of the
+    remaining list. <tt>nt2//0</tt> describes a list whose single
+    element is the atom&nbsp;<tt>b</tt>. The following query therefore
+    succeeds, since <tt>nt2//0</tt> consumes the atom&nbsp;<tt>b</tt>,
+    which is left in the list after <tt>nt1//0</tt> succeeds:
+
+    <pre>
+?- phrase((nt1,nt2), [a]).
+<b>true.</b>
+    </pre>
+
+    We can also use <tt>nt1//0</tt> in isolation. However, the following query
+    <i>fails</i> since <tt>phrase/2</tt> only succeeds if all list elements
+    are consumed by the given DCG body:
+
+    <pre>
+?- phrase(nt1, [a]).
+<b>false.</b>
+    </pre>
+
+    The difference list version <tt>phrase/3</tt> shows what remains
+    after <tt>nt1//0</tt> succeeds:
+
+    <pre>
+?- phrase(nt1, [a], Rest).
+<b>Rest = [b].</b>
+    </pre>
+
+    As expected, the atom&nbsp;<tt>b</tt> remains in the list.
+
+    <br><br>
+
+    Using semicontext notation, we can implement <i>look ahead</i>,
+    which lets us inspect the next element in the list without
+    removing it. Operationally, we first remove it and then push it
+    back:
+
+    <pre>
+look_ahead(T), [T] --&gt; [T].
+    </pre>
+
+    Example:
+
+    <pre>
+?- phrase(look_ahead(T), [a], Rest).
+<b>T = a,
+Rest = [a].</b>
+    </pre>
+
+    <center><h2>Implicitly passing states around</h2></center>
+
+    <a href="#semicontext">Semicontext notation</a> is also useful to
+    implicitly pass around a state representation that is only
+    accessed and changed by a subset of rules. For example, let us
+    count the leaves in a binary tree with the above
+    presentation. Without using DCGs, we can relate a tree to the
+    number of its leaves as follows:
+
+    <pre>
+num_leaves(Tree, N) :-
+        num_leaves_(Tree, 0, N).
+
+num_leaves_(nil, N0, N) :- N #= N0 + 1.
+num_leaves_(node(_,Left,Right), N0, N) :-
+        num_leaves_(Left, N0, N1),
+        num_leaves_(Right, N1, N).
+    </pre>
+
+    Notice that in the second clause of <tt>num_leaves_/3</tt>, the
+    accumulator is only passed through
+    as <tt>N0</tt>, <tt>N1</tt>, <tt>...</tt>, <tt>N</tt> and not
+    modified directly. When you encounter such a pattern, consider
+    using DCG notation to pass around the arguments <i>implicitly</i>.
+
+    In this concrete case, the <i>state</i> we shall pass around is a
+    single integer denoting the number of leaves encountered so far.
+    To increment the state, we use
+    Prolog's <a href="/prolog/clpfd"><b>declarative integer
+    arithmetic</b></a> like above. To invoke a Prolog predicate from
+    within a DCG body, we use the DCG language
+    construct&nbsp;<tt>{}//1</tt>. Operationally, when the
+    construct&nbsp;<tt>{Goal}</tt> is encountered in a DCG
+    body,&nbsp;<tt>Goal</tt> is called as a Prolog goal. Since
+    a&nbsp;DCG must always describe a list, we wrap the state into a
+    list and thus describe a list containing a single element. The
+    initial state is again sensibly specified as&nbsp;0, and the
+    number of leaves is given by the remaining list element
+    after <tt>num_leaves_//1</tt> succeeds:
+
+    <pre>
+num_leaves(Tree, N) :-
+        phrase(num_leaves_(Tree), [0], [N]).
+
+num_leaves_(nil), [N] --&gt; [N0], { N #= N0 + 1 }.
+num_leaves_(node(_,Left,Right)) --&gt;
+        num_leaves_(Left),
+        num_leaves_(Right).
+    </pre>
+
+    Notice that the second rule of <tt>num_leaves_//1</tt> makes no
+    reference at all to the state, since the number of leaves is not
+    modified when an inner node is processed.
+
+    <br><br>
+    Example query:
+
+    <pre>
+?- num_leaves(node(a,node(b,nil,nil),
+                     node(c,nil,
+                            node(d,nil,nil))), N).
+<b>N = 5.</b>
+    </pre>
+
+    The following nonterminals are useful for describing states with
+    DCGs:
+
+    <div id="state">
+      <pre class="box">
+state(S), [S] --&gt; [S].
+
+state(S0, S), [S] --&gt; [S0].</pre>
+    </div>
+
+    <b>Note</b>: Code in grey boxes may be useful for you to reuse in
+    your own projects.
+    <br><br>
+
+    The nonterminal <tt>state(S)</tt> can be read as: "The current
+    state is <tt>S</tt>". The nonterminal <tt>state(S0, S)</tt> can be
+    read as: "The current state is <tt>S0</tt>, and henceforth it
+    is <tt>S</tt>".
+
+    <br><br>
+
+    Using <tt>state//2</tt>, you can write <tt>num_leaves_//1</tt> as:
+
+    <pre>
+num_leaves_(nil) --&gt; state(N0, N), { N #= N0 + 1 }.
+num_leaves_(node(_,Left,Right)) --&gt;
+        num_leaves_(Left),
+        num_leaves_(Right).
+    </pre>
+
+    This approach is readily generalized to multiple states that are
+    threaded through: You can for example use a
+    term&nbsp;<tt>s(S1,S2,...,Sn)</tt> in such cases.
+
+    <br><br>
+
+    <center><h2>Describing lists with <tt>list//1</tt></h2></center>
+
+    We now consider an important nonterminal that is useful in many
+    cases. We shall call it <tt>list//1</tt> and use its single
+    argument to refer to the list that it describes:
+
+    <div>
+      <pre class="box">
+list([])     --&gt; [].
+list([L|Ls]) --&gt; [L], list(Ls).</pre>
+    </div>
+
+    We can use this nonterminal to <i>embed</i> a given list
+    as a subsequence of a longer list that is being described:
+
+    <pre>
+?- phrase((list([a,b]),list([c,d])), Ls).
+<b>Ls = [a, b, c, d].</b>
+    </pre>
+
+    Thus, <tt>list//1</tt> is useful to describe the concatenation of
+    lists. In this concrete case, <tt>list//1</tt> was actually not
+    needed, because we could have simply used:
+
+    <pre>
+?- phrase(([a,b],[c,d]), Ls).
+<b>Ls = [a, b, c, d].</b>
+    </pre>
+
+    However, using <tt>list//1</tt>, we can readily define a much more
+    general nonterminal that describes the concatenation of an
+    arbitrary number of lists:
+
+    <pre>
+concatenation([]) --&gt; [].
+concatenation([List|Lists]) --&gt;
+        list(List),
+        concatenation(Lists).
+    </pre>
+
+    Note the declarative name, which makes sense in all directions: It
+    is the <i>concatenation</i> of lists that is being described. An
+    imperative name like <tt>concat</tt> would heavily imply only a
+    single direction, and we avoid imperative names for this reason.
+    Sample use:
+
+    <pre>
+?- phrase(concatenation([[a,b],[c,d],[e,f]]), Ls).
+<b>Ls = [a, b, c, d, e, f].</b>
+    </pre>
+
+    Moreover, like all pure relations, <tt>list//1</tt> can be used in
+    other directions too. For example, we can use it to refer to
+    subsequences at specific positions:
+
+    <pre>
+?- phrase(([alpha],list(Mid),[omega]), [alpha,beta,gamma,omega]).
+<b>Mid = [beta, gamma] ;
+false.</b>
+    </pre>
+
+    Note that in cases where we use DCGs only to <i>generate</i>
+    lists, you might be tempted to define <tt>list//1</tt> as follows:
+
+    <pre>
+badlist(Ls) --&gt; Ls.
+    </pre>
+
+    This still works as expected in cases like:
+
+    <pre>
+?- phrase(badlist([a,b,c]), Ls).
+<b>Ls = [a, b, c].</b>
+    </pre>
+
+    However, it is still not a good idea for two reasons: First, it
+    cannot be used in the other direction and is thus not a pure
+    relation:
+
+    <pre>
+?- phrase(badlist(Ls), [a,b,c]).
+<b>ERROR: call_dcg/3: Arguments are not sufficiently instantiated</b>
+    </pre>
+
+    Second, such a simplistic definition can be tricked into invoking
+    arbitrary code by specifying <tt>{Goal}</tt> as the argument, as
+    in:
+
+    <pre>
+?- phrase(badlist({halt}), _).
+    </pre>
+
+    For these two reasons, you should use the definition
+    of <tt>list//1</tt> shown above to refer to arbitrary lists
+    with&nbsp;DCGs.
+
+    <br><br>
+
+    <center><h2>Reading from files</h2></center>
+
+    In SWI-Prolog, DCGs can be transparently applied to files
+    using Ulrich Neumerkel's <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/swi/pio.pl"><b>library(pio)</b></a>.
+    When you need to process input from files, first write a DCG that
+    describes the input. This lets you test the DCG in a pure way
+    using&nbsp;<tt>phrase/2</tt>, and then apply the DCG to files too
+    by simply using <tt>phrase_from_file/2</tt> instead
+    of <tt>phrase/2</tt>.
+
+    <br><br>
+
+    In the following examples, we assume that the Prolog
+    flag <tt>double_quotes</tt> is set to <tt>chars</tt> with the
+    following query:
+
+    <pre>
+?- set_prolog_flag(double_quotes, chars).
+<b>true.</b>
+    </pre>
+
+    or that you use the following directive in your initialisation
+    file or program:
+
+    <div>
+      <pre class="box">:- set_prolog_flag(double_quotes, chars).</pre>
+    </div>
+
+    We recommend using this directive for better readability of
+    answers in the following examples and also in other cases.
+
+    <br><br>
+
+    In our first example, we read a whole file to a <i>list of
+    characters</i>. This is very easy to do with <tt>list//1</tt> as
+    defined above. For example, to read the contents of the
+    file <tt>dcg.html</tt> to a list of characters, we use:
+
+    <pre>
+?- phrase_from_file(list(Chars), 'dcg.html').
+<b>Chars = [&lt;, h, t, m, l, &gt;, '\n', ' ', ' '|...] ;
+false.</b>
+    </pre>
+
+    As another example, consider the following DCG that
+    uses <tt>list//1</tt> to refer to a subsequence of characters:
+
+    <pre>
+like(What) --&gt; "I like ", list(What), ".", list(_).
+    </pre>
+
+    Like before, we can use this DCG to parse a given list of characters:
+
+    <pre>
+?- phrase(like(What), "I like it. Anything can follow!").
+<b>What = [i, t] ;
+false.</b>
+    </pre>
+
+    As expected, <tt>What</tt> is unified with the atoms&nbsp;<tt>i</tt>
+    and&nbsp;<tt>t</tt>.
+
+    <br><br>
+
+    Moreover, using <tt>library(pio)</tt> and
+    its <tt>phrase_from_file/2</tt>, we can transparently parse from a
+    file with the same DCG. Assume that the
+    file&nbsp;<tt>like.txt</tt> starts with the string "I like it."
+
+    <pre>
+?- phrase_from_file(like(What), 'like.txt').
+<b>What = [i, t] ;
+false.</b>
+    </pre>
+
+    Again, <tt>What</tt> is unified with the atoms&nbsp;<tt>i</tt>
+    and&nbsp;<tt>t</tt>.
+
+    <br><br>
+    <tt>library(pio)</tt> uses memory efficiently when parsing files:
+    Parts that are no longer relevant do not consume additional
+    memory. For this reason, <tt>library(pio)</tt> is well-suited
+    also for parsing large files.
+
+    <br><br>
+
+    <center><h2>Parsing tricks and techniques</h2></center>
+
+    When parsing, we often want to consume tokens <i>greedily</i>,
+    meaning that the <i>longest</i> match should be given priority. We
+    can do this by ordering the DCG&nbsp;rules accordingly. For
+    example, the following DCG describes a list of whitespace
+    characters in such a way that the longest such sequence is the
+    first solution:
+
+    <pre>
+ws --&gt; [W], { char_type(W, space) }, ws.
+ws --&gt; [].
+    </pre>
+
+    Identifiers that must start with a letter and may contain
+    either letters or digits can be parsed by applying this technique:
+
+    <pre>
+identifier([A|As]) --&gt; [A], { char_type(A, alpha) }, symbol_r(As).
+
+symbol_r([A|As]) --&gt; [A], { char_type(A, alnum) }, symbol_r(As).
+symbol_r([])     --&gt; [].
+    </pre>
+
+    It is sometimes useful to refer to "anything at all", and we can
+    do this with the nonterminal&nbsp;<tt>...//0</tt> which is
+    equivalent to <tt>list(_)</tt>:
+
+    <div>
+      <pre class="box">... --&gt; [] | [_], ... .</pre>
+    </div>
+
+    The grammar construct <tt>('|')//2</tt> and its
+    equivalent&nbsp;<tt>(;)//2</tt> correspond to the Prolog control
+    structure&nbsp;<tt>(;)/2</tt> and are read as "or". When parsing
+    with DCGs, using <tt>('|')/2</tt> is preferable over <tt>(;)//2</tt>
+    due to existing conventions for writing grammars.
+
+    <br><br>
+
+    Using this definition of <tt>...//0</tt>, we can write the earlier
+    example equivalently as:
+
+    <pre>
+?- phrase(("I like ",list(What),".",...), "I like it. Anything can follow!").
+<b>What = [i, t] ;
+false.</b>
+    </pre>
+
+    As another technique that is sometimes useful for parsing, here
+    are DCG rules that describe a list of <i>lines</i> that are
+    terminated by line feed or end of file:
+
+    <div>
+      <pre class="box">
+lines([])     --&gt; call(eos), !.
+lines([L|Ls]) --&gt; line(L), lines(Ls).
+
+line([])     --&gt; ( "\n" | call(eos) ), !.
+line([C|Cs]) --&gt; [C], line(Cs).
+
+eos([], []).</pre>
+    </div>
+
+    The nonterminal <tt>call//1</tt> is used to call a Prolog
+    predicate in such a way that the implicit DCG arguments are made
+    available as explicit arguments. We need this to describe the
+    condition "end of string". The grammar construct
+    <tt>!//0</tt> is used like the corresponding Prolog control
+    structure.
+
+    <br><br>
+
+    You can use these definitions to obtain the contents of a file as
+    a list of lines for further reasoning:
+
+    <pre>
+?- phrase_from_file(lines(Ls), 'like.txt').
+<b>Ls = [['I', ' ', l, i, k, e, ' ', i|...]].</b>
+    </pre>
+
+    <b>Note</b>: <tt>eos/2</tt> is comparatively rarely needed. In the
+    above case it is used because <i>anything else</i> is the
+    beginning of a new line. Typically, you can more directly express
+    what you want to describe, and <tt>phrase/2</tt>
+    and <tt>phrase_from_file/2</tt> only succeed if
+    the <i>complete</i> list or file matches the description.
+    Therefore, it is typically not necessary to explicitly refer to
+    "end of the string".
+
+    <br><br>
+    
+    <center><h2 id="output">Describing output</h2></center>
+
+    The following definitions are useful for describing more complex
+    output with DCGs. They define the
+    nonterminal&nbsp;<tt>format_//2</tt>, which you can use
+    in&nbsp;DCGs like the well-known predicate&nbsp;<tt>format/2</tt>.
+    However, instead of <i>writing</i> output to the terminal, the DCG
+    nonterminal&nbsp;<tt>format_//2</tt>
+    declaratively <i>describes</i> a list of characters:
+
+    <div>
+      <pre class="box">
+format_(Format, Args) --&gt; call(format_chars(Format,Args)).
+
+format_chars(Format, Args, Cs0, Cs) :-
+        format(chars(Cs0,Cs), Format, Args).</pre>
+    </div>
+
+    Using these definitions, we can for example describe a table with
+    a DCG:
+
+    <pre>
+table --&gt;
+    row([this,is,a]),
+    row([very,nice,table]).
+
+row(Ls) --&gt; format_("~t~w~7+~t~w~7+~t~w~7+~n", Ls).
+    </pre>
+
+    Sample query and its results:
+
+    <pre>
+?- phrase(table, Ts).
+<b>Ts = [' ', ' ', ' ', t, h, i, s, ' ', ' '|...].</b>
+    </pre>
+
+    An important advantage of this declarative way to describe output
+    is that you can write <i>test cases</i> and reason about it: It is
+    quite hard to reason about output that only appears on the system
+    terminal, with no other tangible manifestation. In contrast, it is
+    easy to state properties that must hold about a list of
+    characters.
+
+    <br><br>
+
+    When needed, we can show the table on the terminal with a single
+    call of&nbsp;<tt>format/2</tt>:
+
+    <pre>
+?- phrase(table, Ts), format("~s", [Ts]).
+<b>   this     is      a
+   very   nice  table</b>
+Ts = [' ', ' ', ' ', t, h, i, s, ' ', ' '|...].
+    </pre>
+
+    <center><h2 id="implementation">Implementation</h2></center>
+
+    To see how DCGs are internally implemented in SWI-Prolog, you can
+    use <tt>listing//1</tt>. For example, to see the actual source
+    code for <tt>num_leaves_//1</tt>:
+
+    <pre>
+?- listing(num_leaves_//1).
+<b>num_leaves_(nil, A, D) :-
+     state(C, B, A, E),
+     B#=C+1,
+     D=E.
+num_leaves_(node(_, A, C), B, E) :-
+     num_leaves_(A, B, D),
+     num_leaves_(C, D, E).</b>
+    </pre>
+
+    We see that internally, the two DCG rules
+    of <tt>num_leaves_//1</tt> were translated into Prolog rules with
+    two additional arguments, following mechanical rewriting steps.
+    The translation of DCGs to Prolog code is done
+    by <tt>term_expansion/2</tt>, a mechanism analogous
+    to <a href="macros"><b>macros</b></a> in other languages.
+
+    <br><br>
+
+    For portability, it is best not to rely on a particular expansion
+    method. Instead, use semicontext notation to refer to states and
+    always use the <tt>phrase/[2,3]</tt> interface to invoke a DCG.
+    This way, a Prolog system is free to apply a different expansion
+    method that may be more efficient. For example, the last two
+    arguments may as well be swapped and allow more efficient
+    predicate calls this way due to specifics of a particular virtual
+    machine.
+
+    <br><br>
+    <center><h2>Using DCGs</h2></center>
+
+    Consider using DCGs if you are:
+    <ul>
+      <li>describing a list</li>
+      <li>reading from a file</li>
+      <li>passing around a state representation that only a few
+        predicates actually use or modify.</li>
+    </ul>
+
+    In every serious Prolog program, you will find many opportunities to
+    use DCGs due to some subset of the above reasons.
+
+    <br><br>
+
+    Let us study one side-by-side comparison of a regular Prolog
+    predicate and an equivalent DCG nonterminal to recall several
+    important aspects of using DCGs and make some additional
+    observations. We take the well-known Prolog
+    predicate <tt>include/3</tt> as an example:
+
+    <center>
+      <table style="border: 1px dotted; margin-top: 1em; margin-bottom: 1em">
+        <tr><td style="padding-top: 1em; padding-bottom: 1em; padding-right: 1em"><center><b>regular Prolog</b></center></td>
+          <td><center><b>Prolog DCG</b></center></td></tr>
+        <tr>
+          <td style="padding-right: 1em">
+            <pre>
+include(Goal, List, Included) :-
+        include_(List, Goal, Included).
+
+include_([], _, []).
+include_([L|Ls], Goal, Included0) :-
+        (   call(Goal, L) -&gt;
+            Included0 = [L|Included]
+        ;   Included0 = Included
+        ),
+        include_(Ls, Goal, Included).
+            </pre>
+          </td>
+          <td style="padding-right: 1em">
+            <pre>
+include(Goal, List, Included) :-
+        <b>phrase</b>(include_(List, Goal), Included).
+
+include_([], _) --&gt; [].
+include_([L|Ls], Goal) --&gt;
+        (   { call(Goal, L) } -&gt;
+            [L]
+        ;   []
+        ),
+        include_(Ls, Goal).
+            </pre>
+          </td>
+        </tr>
+      </table>
+    </center>
+
+    Usage example for both versions:
+
+    <pre>
+?- include(integer, [a,b,c,1,2,e], Is).
+<b>Is = [1, 2]</b>.
+    </pre>
+
+    We recall and note in particular:
+
+    <ul>
+      <li><tt>phrase/2</tt> must of course be used to refer to a DCG
+        nonterminal within a regular Prolog predicate</li>
+      <li>conversely, <tt>{}//1</tt> is used to call a regular Prolog goal within a DCG</li>
+      <li>the DCG version needs fewer explicit arguments, making it slightly easier to read and understand</li>
+      <li>although it is strongly related to the previous point, it is
+        still worth mentioning explicitly that the DCG version also
+        refers to fewer <i>variables</i></li>
+      <li>using a DCG makes immediately clear that a <i>list</i> is
+      being described.
+    </ul>
+
+    Take you time and see for yourself which of the two versions you
+    find easier to read and understand.
+
+    <br><br>
+    
+    Some applications of DCGs that you can download from this site and study:
+
+    <ul>
+      <li><a href="/misc/markov.pl">markov.pl</a> uses DCGs to
+      describe output of a Markov chain</li>
+      <li><a href="/lisprolog/">Lisprolog</a> uses DCGs to parse Lisp expressions and to implicitly thread through the state of the environment</li>
+      <li><a href="/tist/">Tist</a> uses DCGs for all of the above
+        reasons throughout the document</li>
+      <li>The <a href="/prolog/faq/">comp.lang.prolog FAQ</a> are described with a DCG.</li>
+    </ul>
+
+    <center><h2>Current developments</h2></center>
+
+    DCGs are currently being considered for inclusion in the Prolog
+    ISO&nbsp;standard.
+
+    <br><br>
+
+    See
+    <a href="http://www.complang.tuwien.ac.at/ulrich/iso-prolog/"><b>ISO
+    Prolog works</b></a> by Ulrich Neumerkel for more information.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

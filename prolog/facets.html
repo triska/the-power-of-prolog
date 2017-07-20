@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Facets of Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Facets of Prolog">
+    <meta name="keywords" content="Prolog,Facets,Features">
+    <meta name="author" content="Markus Triska">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Facets of Prolog</h1></center>
+    <br><br>
+    
+
+    <h2>Prolog is ...</h2>
+
+    <ul>
+      <li>... a very <a href="#simple"><b>simple</b></a> language</li>
+      <li>... a <a href="#declarative"><b>declarative</b></a> language</li>
+      <li>... a <a href="#logic"><b>logic programming</b></a> language</li>
+      <li>... a <a href="#homoiconic"><b>homoiconic</b></a> language</li>
+      <li>... a very <a href="#dynamic"><b>dynamic</b></a> language</li>
+      <li>... a very <a href="#versatile"><b>versatile</b></a> language.</li>
+    </ul>
+    
+
+    <h2 id="simple"><center>Prolog is a very simple language</center></h2>
+
+    It is easy to describe Prolog <b>syntax</b> in sufficient detail
+    to start working with Prolog immediately.
+
+    <br><br>
+
+    All <a href="data">data</a> is represented by
+    Prolog&nbsp;<a href="data#term"><b>terms</b></a>.
+
+    <br><br>
+
+    There is a single language element, called
+    a <a href="concepts#clause"><i>clause</i></a>. A clause is of the
+    form:
+    <br><br>
+
+    <div style="padding-left: 3em">
+      <b><tt>Head :- Body.</tt></b>
+    </div>
+
+    <br>
+
+    This means that <b>if</b> <tt>Body</tt>
+    holds, <b>then</b> <tt>Head</tt> holds. The infix
+    operator <tt>(:-)/2</tt> represents an arrow from right to
+    left:&nbsp;&leftarrow;.
+
+    <br><br>
+
+    If <tt>Head</tt> <i>always</i>
+    holds, then <tt>:-&nbsp;Body</tt> can be&nbsp;<i>omitted</i>.
+
+    <br><br>
+
+    <i>The above is enough to write useful first Prolog programs.</i>
+
+    <br><br>
+
+    <b>You may not believe this</b>, so witness the evidence: All
+    programs presented in the following consist <i>only</i> of such
+    clauses.
+
+    <br><br>
+
+    In fact, <i>all known computations</i> can be described in terms
+    of such&nbsp;clauses, making Prolog
+    a <a href="https://en.wikipedia.org/wiki/Turing_completeness">Turing&nbsp;complete</a>
+    programming&nbsp;language. One way to implement a
+    Turing&nbsp;machine in Prolog is to describe the <i>relation</i>
+    between different&nbsp;states of the machine with clauses of the
+    form "<i>If</i> the current state is&nbsp;<tt>S0</tt> <i>and</i>
+    the symbol under the tape&nbsp;head is&nbsp;<tt>T</tt>, <i>and</i>
+    ... <i>then</i> the next state is&nbsp;<tt>S</tt>".
+    See <a href="showcases/turing.pl"><tt>turing.pl</tt></a> for one
+    implementation, and <a href="/tist/"><i>Thinking
+    in&nbsp;States</i></a> for more information.
+
+    <h2 id="declarative"><center>Prolog is a declarative language</center></h2>
+
+    Prolog is a <i>declarative language</i>. This means that we focus
+    on stating <i>what</i> we are interested in. We <a href="writing">express
+      what <i>holds</i></a> about solutions we want to find. We are less
+    concerned about <i>how</i> the Prolog implementation finds these
+    solutions.
+
+    <br><br>
+
+    This declarative nature often allows for very concise, clear and
+    general specifications. It is unlikely that shorter formalisms
+    that are equally clear and expressive exist.
+
+    <br><br>
+
+    For example, let us describe the <i>relation</i> between
+    a <a href="data#list">list</a> and its length,
+    using <a href="clpfd">integer&nbsp;arithmetic</a>:
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        N #= N0 + 1,
+        list_length(Ls, N0).
+    </pre>
+
+    We can <a href="reading#declarative"><b>read this declaratively</b></a> as follows:
+
+    <ol>
+      <li>The length of the <i>empty list</i>&nbsp;<tt>[]</tt> is &nbsp;0.</li>
+      <li><b>If</b> the length of the list&nbsp;<tt>Ls</tt>
+        is&nbsp;<tt>N0</tt> <b>and</b> <tt>N</tt>
+        is <tt>N0+1</tt>, <b>then</b> the length
+        of&nbsp;<tt>[_|Ls]</tt> is&nbsp;<tt>N</tt>. Further, this only
+        holds <b>if</b> <tt>N</tt> is <i>greater than</i>&nbsp;0.
+    </ol>
+
+    When programming in Prolog, think in terms of <i>relations</i>
+    between entities. Your programs will become very general with this
+    approach. In the above example, it is tempting to think and say
+    "We are computing the length of a list". And yes, it is true: We
+    can indeed use the above definition to compute the length of
+    a&nbsp;list:
+
+    <pre>
+?- list_length([a,b,c], L).
+L = 3.
+    </pre>
+
+    However, this <i>imperative</i> reading does not do justice to
+    what we have actually implemented, because the definition also
+    covers several additional usage&nbsp;patterns. For
+    example, <i>given</i> a specific length, we can ask <i>whether</i>
+    there are lists of that length:
+
+    <pre>
+?- list_length(Ls, 3).
+Ls = [_G1007, _G1087, _G1167] ;
+false.
+    </pre>
+
+    Using the <b>most general query</b>, we can even ask for all
+    answers that Prolog finds <i>in&nbsp;general</i>:
+
+    <pre>
+?- list_length(Ls, L).
+Ls = [], L = 0 ;
+Ls = [_2130], L = 1 ;
+Ls = [_2130, _2668], L = 2 ;
+etc.
+    </pre>
+
+    We say that the relation is usable in different <i>modes</i>.
+    Characteristically, Prolog reports all answers
+    via&nbsp;<i>backtracking</i>.
+
+    <br><br>
+
+    The predicate <tt>length/2</tt> is part of
+    the <a href="https://www.complang.tuwien.ac.at/ulrich/iso-prolog/prologue">Prologue
+    for Prolog</a> draft, and already available as
+    a <a href="concepts#builtin">built-in</a> predicate in almost all
+    Prolog implementations with the above semantics.
+
+    <h2 id="logic"><center>Prolog is a logic programming language</center></h2>
+
+    In the category of <i>declarative</i> languages, we
+    find <i>functional</i> programming languages and <i>logic</i>
+    programming languages. A function is a special case of a relation,
+    and functional programming can be regarded as a restricted form of
+    logic&nbsp;programming.
+
+    <br><br>
+
+    A <a href="purity">pure</a> Prolog program consists of a set
+    of <a href="https://en.wikipedia.org/wiki/Horn_clause">Horn&nbsp;clauses</a>.
+    Its execution can be regarded as a special case
+    of <i>resolution</i>, which is an algorithm that is rooted in
+    formal&nbsp;logic. Logically, when Prolog answers a query, it
+    tries to find a <i>resolution&nbsp;refutation</i> of the negated
+    query and the set of clauses that constitute the program. When a
+    refutation is found, it means that the query is a
+    logical <i>consequence</i> of the program.
+
+    <br><br>
+
+    This connection to formal logic allows us to apply powerful
+    <a href="debugging"><b>declarative&nbsp;debugging</b></a> techniques that
+    are based on logical properties of the program.  For example,
+    adding a <i>constraint</i> can at most <i>reduce</i> the set of
+    solutions, and adding a&nbsp;<i>clause</i> can at most extend
+    it. This property of pure Prolog programs is
+    called <a href="https://en.wikipedia.org/wiki/Monotonicity_of_entailment">monotonicity</a>.
+
+    <br><br>
+
+    <i>See
+      the <a href="https://www.complang.tuwien.ac.at/ulrich/gupu/"><b>GUPU
+      system</b></a> by Ulrich Neumerkel for an impressive application
+      of these&nbsp;ideas.</i>
+
+    <h2 id="homoiconic"><center>Prolog is a homoiconic language</center></h2>
+
+    <div style="padding: 10pt; margin-left: 70%; display: inline-block; background-color: #eeeeee; text-align: right">
+      <i>homoiconic</i>: from ὁμοιος = "similar" and εικών = "image"
+    </div>
+    <br><br>
+
+    Prolog <i>programs</i> are also valid Prolog <i>terms</i>! This
+    has many great advantages: It is easy to write Prolog programs
+    that analyze, transform and interpret <i>other</i> Prolog
+    programs. You can use the built-in predicate <tt>read/1</tt> to
+    read a Prolog&nbsp;term, and thus also a Prolog&nbsp;clause.
+
+    <br><br>
+
+    There is a powerful <a href="macros">mechanism</a> to rewrite
+    Prolog programs at compilation time, so that you can easily
+    implement domain-specific languages that help you solve your tasks
+    more naturally.
+
+    <br><br>
+    <b>You may not believe this</b>, because some goals&mdash;such
+    as <tt>list_length(Ls,&nbsp;N)</tt>&mdash;look like
+    Prolog&nbsp;terms as defined above, whereas other goals&mdash;such
+    as&nbsp;<tt>N&nbsp;#&gt;&nbsp;0</tt>&mdash;look quite different.
+    The reason for this is that Prolog provides prefix, infix and
+    postfix&nbsp;<i>operators</i> that let you write Prolog&nbsp;terms
+    in a more readable way. For example, the Prolog
+    term&nbsp;<tt>+(a,b)</tt> can also be written using infix notation
+    as&nbsp;<tt>a+b</tt>. The <i>abstract&nbsp;syntax</i> remains
+    completely uniform, and you can read and process all Prolog terms
+    independent of how they are written&nbsp;down.
+
+    <br><br>
+    <i>You can dynamically define custom operators for specific use cases.</i>
+
+    <h2 id="dynamic"><center>Prolog is a very dynamic language</center></h2>
+
+    Prolog programs can be easily created, called and modified <i>at
+    run time</i>. This further increases the expressiveness of Prolog
+    and lets you implement <a href="metapredicates">higher-order
+    predicates</a> which have other predicates as arguments. It also
+    allows the implementation of very dynamic techniques
+    like <i>adaptive&nbsp;parsing</i>.
+
+    <br><br>
+
+    The dynamic nature of Prolog also makes the language ideally
+    suited for writing programs that are <i>extensible</i> by
+    custom&nbsp;rules that other programmers and even regular users
+    provide. <a href="https://github.com/triska/proloxy"><b>Proloxy</b></a>
+    and <a href="https://www.gerritcodereview.com/">Gerrit
+    Code&nbsp;Review</a> are examples of this approach: You configure
+    these programs by
+    supplying Prolog&nbsp;<a href="concepts#rule">rules</a> that
+    express your requirements in a very readable and
+    flexible&nbsp;way.
+
+    <br><br>
+    See <a href="/acomip/"><b>A Couple of
+        Meta-interpreters in&nbsp;Prolog</b></a> for more information.
+
+    <br><br>
+
+    <i>You can define an interpreter for pure Prolog in two lines of
+      Prolog&nbsp;code.</i>
+
+    <h2 id="versatile"><center>Prolog is a very versatile language</center></h2>
+
+    Prolog is an extremely versatile language. Its relational nature
+    makes Prolog programs very flexible and general. This plays an
+    important role in language processing and knowledge representation
+    in&nbsp;<a href="business#database">databases</a>. Modern Prolog
+    systems provide everything that is needed for solving
+    simple <a href="puzzles">logic&nbsp;puzzles</a> to building huge
+    applications, ranging from
+    <a href="web">web&nbsp;hosting</a>
+    to <a href="theoremproving">verification</a>
+    and <a href="optimization">optimization</a> tasks.
+
+    <br><br>
+
+    <i>This page was sent to you by
+    a <a href="https://github.com/triska/letswicrypt">Prolog&nbsp;HTTPS server</a>.</i>
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

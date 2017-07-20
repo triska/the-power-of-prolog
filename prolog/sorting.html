@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sorting and Searching with Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Sorting and Searching with Prolog">
+    <meta name="keywords" content="Prolog,Sorting,Searching">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Sorting and Searching with Prolog</h1></center>
+    <br>
+
+    <div style="margin-left: 50%; display: inline-block">
+      <br>
+      Indeed, I believe that virtually <i>every</i> important aspect
+      of programming arises somewhere in the context of sorting or
+      searching! (<a href="http://www-cs-faculty.stanford.edu/~uno/">Donald&nbsp;Knuth</a>, <i>The Art of Computer
+        Programming</i>, Volume&nbsp;3, "Sorting and Searching")
+    </div>
+
+    <center><h2 id="order">Standard order of terms</h2></center>
+
+    The <b>standard order of terms</b> imposes the
+    following <i>order</i> on
+    Prolog&nbsp;<a href="data#term">terms</a>:
+
+    <br><br>
+    <div class="box">
+      variables &#x227A; numbers &#x227A; atoms &#x227A; compound terms
+    </div>
+    <br><br>
+
+    It is subject to the following additional rules:
+
+    <ol>
+      <li>Numbers are compared by value.</li>
+      <li>All floating point numbers precede all integers.</li>
+      <li>Atoms are compared alphabetically.</li>
+      <li>Compound terms are first sorted by their arity, then
+        alphabetically by their functor name, and finally recursively
+        by their arguments, leftmost argument first.</li>
+    </ol>
+
+    To compare arbitrary terms according to the standard&nbsp;order,
+    use the
+    predicates <tt>(@&lt;)/2</tt>, <tt>(@=&lt;)/2</tt>, <tt>compare/3</tt>
+    and others. A major drawback of these predicates is that they are
+    not true&nbsp;relations. For example:
+
+    <pre>
+?- a @&lt; b.
+<b>true.</b>
+    </pre>
+
+    Yet the <i>more&nbsp;general</i> query <i>fails</i>:
+
+    <pre>
+?- a @&lt; X.
+<b>false.</b>
+    </pre>
+
+    This violates properties we expect
+    from <a href="purity">pure</a>&nbsp;predicates and
+    prevents <a href="debugging">declarative&nbsp;debugging</a>.
+    Therefore, it is good practice to use dedicated comparison
+    predicates with more declarative properties for specific domains.
+    For example, in the case of <i>integers</i>, use the
+    CLP(FD)&nbsp;<a href="clpfd#constraint">constraints</a> <tt>(#&lt;)/2</tt>, <tt>(#=&lt;)/2</tt>
+    and <tt>zcompare/3</tt> instead, in addition to other relations
+    that are provided by your Prolog&nbsp;system.
+
+    <center><h2 id="sorting">Sorting Prolog terms</h2></center>
+
+    The ISO predicates <tt>sort/2</tt> and <tt>keysort/2</tt> are the
+    most important predicates for <i>sorting</i> arbitrary
+    Prolog&nbsp;terms. Both predicates refer to
+    the <a href="#order">standard&nbsp;order</a> of terms. In
+    particular:
+
+    <ul>
+      <li id="sort"><tt>sort(Ls0, Ls)</tt> is true iff the
+        <a href="data#list">list</a>&nbsp;<tt>Ls</tt> holds the elements
+        of the list&nbsp;<tt>Ls0</tt>, sorted according to the
+        standard&nbsp;order of&nbsp;terms. <tt>Ls</tt> contains
+        <i>no&nbsp;duplicates</i>.</li>
+      
+      <li id="keysort"><tt>keysort(Pairs0,
+          Pairs)</tt>: <tt>Pairs0</tt> and <tt>Pairs</tt> are lists
+          of <tt>Key-Value</tt> <a href="data#pair">pairs</a>. True
+          iff <tt>Pairs0</tt> sorted by <tt>Key</tt> according to the
+          standard&nbsp;order of&nbsp;terms is <tt>Pairs</tt>, where
+          duplicates are <i>retained</i>, and the order of multiple
+          elements with the same&nbsp;key is <i>also</i> retained. A
+          sorting algorithm where the relative positions of
+        equal&nbsp;elements are retained is called <i>stable</i>.</li>
+    </ul>
+
+
+    <tt>keysort/2</tt> in particular is much more useful than it may
+    look at&nbsp;first. For example, let us sort the following lists
+    by their&nbsp;<i>lengths</i>:
+
+    <pre>
+lists([[a,b,c,d],
+       [a,b,c],
+       [a,b,c,d,e],
+       [a],
+       [a,b]]).
+    </pre>
+
+    To solve this task, let us first define a relation between a
+    single list and a <a href="data#pair">pair</a> of the
+    form <tt>Length-List</tt>, which is simply infix notation for the
+    Prolog&nbsp;term <tt>-(Length, List)</tt>. We define this relation
+    by using the
+    predicate <a href="clpfd#list_length">list_length/2</a> that we
+    defined earlier:
+
+    <pre>
+list_pair(Ls, L-Ls) :-
+        list_length(Ls, L).      
+    </pre>
+
+    Using <a href="metapredicates#maplist"><tt>maplist/3</tt></a>, we
+    can <i>lift</i> this relation to <i>lists</i> of lists and pairs:
+
+    <pre>
+?- lists(Lists),
+   maplist(list_pair, Lists, Pairs0).
+Lists = [[a, b, c, d], [a, b, c], [a, b, c, d, e], [a], [a, b]],
+<b>Pairs0 = [4-[a, b, c, d], 3-[a, b, c], 5-[a, b, c, d, e], 1-[a], 2-[a, b]]</b>.
+    </pre>
+
+    This representation makes <tt>keysort/2</tt> applicable to sort
+    the lists according to their&nbsp;<i>lengths</i>:
+
+    <pre>
+?- lists(Lists),
+   maplist(list_pair, Lists, Pairs0),
+   keysort(Pairs0, Pairs).
+Lists = [[a, b, c, d], [a, b, c], [a, b, c, d, e], [a], [a, b]],
+Pairs0 = [4-[a, b, c, d], 3-[a, b, c], 5-[a, b, c, d, e], 1-[a], 2-[a, b]],
+<b>Pairs = [1-[a], 2-[a, b], 3-[a, b, c], 4-[a, b, c, d], 5-[a, b, c, d, e]]</b>.
+    </pre>
+
+    Thus, to obtain a list <tt>Ls</tt> with <i>minimum</i> length, we
+    can simply write <tt>Pairs = [_-Ls|_]</tt>. To obtain a list
+    with <i>maximum</i> length, we have the following options: Either
+    we define the relation between a list and its <i>last</i>
+    element, <i>or</i> we modify <tt>list_pair/2</tt> to use
+    the <i>negated</i>&nbsp;length as the <i>key</i> of
+    each&nbsp;pair, and again take the <i>first</i> element of the
+    keysorted&nbsp;list. Negating the length ensures that a list
+    with <i>maximum</i> length appears as part of the first&nbsp;pair.
+
+    <br><br>
+
+    In general, by constructing <i>pairs</i> with
+    suitable <i>keys</i>, you can delegate sorting
+    to <tt>keysort/2</tt> in a way that suits your application.
+
+    <center><h2 id="algorithms">Implementing sorting algorithms in Prolog</h2></center>
+
+    Sometimes, you want to implement your <i>own</i> version of a
+    <a href="https://en.wikipedia.org/wiki/Sorting_algorithm">sorting&nbsp;algorithm</a>
+    in Prolog.
+
+    <br><br>
+
+    Prolog implementations of the following sorting algorithms are
+    available
+    in <a href="/misc/sorting.pl"><b><tt>sorting.pl</tt></b></a>:
+
+    <ul>
+      <li>bubble sort</li>
+      <li>quicksort</li>
+      <li>merge sort.</li>
+    </ul>
+
+    A few benchmarks and comments are also included.
+
+    <br><br>
+
+    In particular, consider how naturally <i>quicksort</i> can be
+    described in&nbsp;Prolog with a&nbsp;<a href="dcg">DCG</a>:
+
+    <pre>
+quicksort([])	  --&gt; [].
+quicksort([L|Ls]) --&gt;
+        { partition(Ls, L, Smallers, Biggers) },
+        quicksort(Smallers),
+        [L],
+        quicksort(Biggers).
+    </pre>
+
+    This definition assumes the existence of <tt>partition/4</tt>,
+    relating a list&nbsp;<tt>Ls</tt> to its elements that are,
+    respectively, smaller and greater than
+    the <i>pivot&nbsp;element</i>&nbsp;<tt>L</tt>.
+
+    <br><br>
+
+    In general, it is often better to simply use the built-in
+    predicates <tt>sort/2</tt> and <tt>keysort/2</tt> for sorting.
+    
+    <center><h2 id="searching">Searching with Prolog</h2></center>
+
+    There is an intimate connection between Prolog
+    and <i>searching</i>. First, Prolog's execution strategy is
+    already a form of&nbsp;<i>search</i>. It is called <i>depth-first
+    search</i> with chronological backtracking and can be regarded as
+    a special case of <i>resolution</i>. Prolog is eminently
+    well-suited for solving search tasks already due to this efficient
+    built-in implementation of backtracking. Second, other search
+    strategies can be readily implemented <i>on&nbsp;top</i> of the
+    built-in strategy. For example, it is easy to
+    obtain <i>iterative&nbsp;deepening</i> by restricting some aspects
+    of the search.
+
+    <br><br>
+
+    Many Prolog programs <i>search</i> for something, such
+    as <a href="theoremproving">proofs</a> and counterexamples, or
+    solutions of <a href="optimization">optimization&nbsp;tasks</a>
+    or <a href="puzzles">logic&nbsp;puzzles</a>. Still, it is often
+    better to think about these programs as&mdash;first and
+    foremost&mdash;<i>describing</i> the desired properties of a
+    solution. This leads to a more declarative view that lets you use
+    these programs also in <i>other</i> directions.
+
+    <br><br>
+
+    For example, suppose we want to <i>find</i> the minimum of a list
+    of&nbsp;<a href="clpfd">integers</a>. This is an <i>imperative</i>
+    view that expresses only one aspect of the following
+    more&nbsp;general task: Let us <i>describe the&nbsp;relation</i>
+    between a list of integers and its minimum. In Prolog, we can
+    define this relation as:
+
+    <pre>
+list_minimum([L|Ls], Min) :- <a href="metapredicates#foldl">foldl</a>(minimum_, Ls, L, Min).
+
+minimum_(A, B, Min) :- Min #= min(A, B).
+    </pre>
+
+    This works in several directions:
+
+    <pre>
+?- list_minimum([3,1,2], M).
+<b>M = 1.</b>
+
+?- list_minimum([A,B], 0).
+<b>A in 0..sup,
+0#=min(B, A),
+B in 0..sup.</b>
+    </pre>
+
+    Thus, when working on search tasks, do not get carried away with
+    an imperative&nbsp;view. Instead, focus on a clear general
+    description of all relations you want to define.
+
+    <br><br>
+
+    In some cases, searching <i>naively</i> is not efficient enough.
+    Not in Prolog <i>and&nbsp;also</i> not in other languages. Here is
+    an example: Let us consider
+    the <i>complete&nbsp;<a href="optimization#graph">graph</a></i> of
+    order&nbsp;<i>n</i>, which is abbreviated
+    as&nbsp;K<sub><i>n</i></sub>. Its <i>adjacency&nbsp;list</i> can
+    be defined&nbsp;as:
+
+    <pre>
+k_n(N, Adjs) :-
+        <a href="clpfd#list_length">list_length</a>(Nodes, N),
+        Nodes ins 1..N,
+        all_distinct(Nodes),
+        once(label(Nodes)),
+        maplist(adjs(Nodes), Nodes, Adjs).
+
+adjs(Nodes, Node, Node-As) :-
+        <a href="metapredicates#if_3">tfilter</a>(dif(Node), Nodes, As).
+    </pre>
+
+    In particular, we obtain for K<sub>3</sub>:
+
+    <pre>
+?- k_n(3, Adjs).
+<b>Adjs = [1-[2, 3], 2-[1, 3], 3-[1, 2]] .</b>
+    </pre>
+
+    As another example, K<sub>6</sub> looks like this:
+
+    <center>
+      <object data="k_6.svg" type="image/svg+xml" style="padding:20pt; width: 300pt; height: 300pt">
+      </object>
+    </center>
+    
+
+    Let us now solve the following task: <i>Which nodes are reachable
+      from a particular node, in a reflexive and transitive way?</i>
+    Or slightly more generally, what is the <i>reflexive transitive
+      closure</i> of a set of nodes? In Prolog, we can write this as:
+
+    <pre>
+reachable(_, _, From, From).
+reachable(Adjs, Visited, From, To) :-
+        maplist(dif(Next), Visited),
+        member(From-As, Adjs),
+        member(Next, As),
+        reachable(Adjs, [From|Visited], Next, To).
+    </pre>
+
+    To compute the <i>set</i> of solutions, we can
+    use <a href="metapredicates#solutions"><tt>setof/3</tt></a>. For
+    example, all nodes that are reachable from node&nbsp;1:
+
+    <pre>
+?- k_n(3, Adjs),
+   setof(To, reachable(Adjs, [], 1, To), Tos).
+Adjs = [1-[2, 3], 2-[1, 3], 3-[1, 2]],
+<b>Tos = [1, 2, 3] .</b>
+    </pre>
+
+    The major drawback of this approach is that it <i>doesn't scale
+      well</i>. In particular, we have:
+
+    <pre>
+?- list_length(_, N), portray_clause(N),
+   k_n(N, Adjs),
+   time(setof(To, reachable(Adjs, [], 1, To), Tos)),
+   false.
+...
+6.
+% 110,079 inferences, 0.012 CPU in <b>0.012 seconds</b> (98% CPU, 9334266 Lips)
+7.
+% 914,953 inferences, 0.093 CPU in <b>0.098 seconds</b> (95% CPU, 9816460 Lips)
+8.
+% 8,446,107 inferences, 0.823 CPU in <b>0.837 seconds</b> (98% CPU, 10265329 Lips)
+9.
+% 85,982,043 inferences, 8.086 CPU in <b>8.135 seconds</b> (99% CPU, 10633230 Lips)
+    </pre>
+
+    This is because the number of <i>paths</i> in this graph
+    increases <i>super-exponentially</i> in the number
+    of <i>nodes</i>, and the naive solution
+    traverses <i>all&nbsp;paths</i>. This approach quickly becomes too
+    slow, no matter which language you&nbsp;use to implement&nbsp;it.
+
+    <br><br>
+
+    In this concrete case, we can solve the task in a much more
+    efficient way. For example, we can use Warshall's algorithm for
+    computing the transitive&nbsp;closure, with code similar to:
+
+    <pre>
+warshall(Adjs, Nodes0, Nodes) :-
+        phrase(reachables(Nodes0, Adjs), Nodes1, Nodes0),
+        sort(Nodes1, Nodes2),
+        <a href="metapredicates#if_3">if_</a>(Nodes2 = Nodes0,
+            Nodes = Nodes2,
+            warshall(Adjs, Nodes2, Nodes)).
+
+reachables([], _) --&gt; [].
+reachables([Node|Nodes], Adjs) --&gt;
+        { member(Node-Rs, Adjs) },
+        Rs,
+        reachables(Nodes, Adjs).
+    </pre>
+
+    Note how <a href="#sort"><tt>sort/2</tt></a> is used to <i>remove
+      duplicates</i> from a&nbsp;list, and to obtain a canonical
+    representation of the <i>set</i> of nodes that have already
+    been&nbsp;found.
+
+    Sample query:
+
+    <pre>
+?- k_n(9, Adjs),
+   time(warshall(Adjs, [1], Tos)).
+% 322 inferences, 0.000 CPU in <b>0.000 seconds</b> (93% CPU, 4735294 Lips)
+...
+Tos = [1, 2, 3, 4, 5, 6, 7, 8, 9] .
+    </pre>
+
+    This is clearly much more efficient. By implementing intelligent
+    strategies, you can obtain elegant and efficient
+    Prolog&nbsp;solutions for many search&nbsp;tasks.
+
+    <center><h2 id="pruning">Pruning the search</h2></center>
+
+    Let us consider the special case of sorting a list
+    of <i>integers</i> without duplicates. In Prolog, we can implement
+    this as a <i>relation</i> between two&nbsp;lists. Let us call the
+    relation <tt>integers_ascending/2</tt>, to make clear that it can
+    ideally not only be used to <i>sort</i>, but also to <i>check</i>
+    and <i>generate</i> solutions. Declaratively, the conditions that
+    must hold for <tt>integers_ascending(Is0, Is)</tt> are:
+    <ol>
+      <li><tt>Is0</tt> contains no duplicates</li>
+      <li><tt>Is</tt> is a <i>permutation</i> of <tt>Is0</tt></li>
+      <li>the elements of <tt>Is</tt> are in <i>ascending</i> order.</li>
+    </ol>
+
+    We start with part&nbsp;(3), by defining what we mean by a list
+    of <i>ascending</i> integers:
+
+    <pre>
+ascending([]).
+ascending([I|Is]) :-
+        <a href="metapredicates#foldl">foldl</a>(ascending_, Is, I, _).
+
+ascending_(I, Prev, I) :- Prev #&lt; I.
+    </pre>
+
+    For (2), we assume the availability of a
+    predicate <tt>permutation/2</tt>, relating a list to all its
+    permutations on backtracking. Implementing it is left as an
+    exercise.
+
+    <br><br>
+
+    Using these building blocks, we are ready to
+    define <tt>integers_ascending/2</tt>:
+
+    <pre>
+integers_ascending(Is0, Is) :-
+        all_distinct(Is0),
+        permutation(Is0, Is),
+        <b>ascending(Is)</b>.
+    </pre>
+
+    This predicate implements a very naive sorting method
+    called <i>permutation&nbsp;sort</i>: Operationally,
+    it <i>generates</i> a permutation, and succeeds <i>iff</i> the
+    elements of the permutation are in <i>ascending</i> order. This
+    approach is called <i>generate and&nbsp;test</i>. It works well
+    for small examples, such as:
+
+    <pre>
+?- integers_ascending([3,1,2], Is).
+<b>Is = [1, 2, 3] ;</b>
+false.
+    </pre>    
+
+    However, this method is <i>extremely</i> inefficient for longer
+    lists: A list of length&nbsp;N has N!&nbsp;permutations, and so
+    the worst-case running time increases <i>super-exponentially</i>
+    in the length of the&nbsp;list. For example:
+
+    <pre>
+?- time(integers_ascending([10,9,8,7,6,5,4,3,2,1], Ls)).
+% 64,398,640 inferences, 9.928 CPU in <b>9.994 seconds</b> (99% CPU, 6486524 Lips)
+Ls = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] .
+    </pre>
+
+    We can <i>massively</i> improve the running time by reordering the
+    goals:
+
+    <pre>
+integers_ascending(Is0, Is) :-
+        all_distinct(Is0),
+        <b>ascending(Is),</b>
+        permutation(Is0, Is).
+    </pre>
+
+    With this simple change, we obtain:
+
+    <pre>
+?- time(integers_ascending([10,9,8,7,6,5,4,3,2,1], Ls)).
+% 168,432 inferences, 0.025 CPU in <b>0.026 seconds</b> (98% CPU, 6699761 Lips)
+Ls = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] .
+    </pre>
+
+    By first stating the requirement that the list elements be
+    in <i>ascending</i> order, the subsequent search for permutations
+    is automatically
+    <i>pruned</i> as soon as the system can&nbsp;deduce that any
+    partially completed permutation can no longer lead to a
+    full&nbsp;solution because it violates the posted constraints.
+
+    <br><br>
+
+    Note that even though combining search with early pruning can lead
+    to tremendous performance improvements over generating all
+    possibilities, dedicated algorithms that are carefully tailored to
+    the task at&nbsp;hand are typically even more efficient. For
+    example, in the concrete case of sorting a list of integers, you
+    can simply use&nbsp;<a href="#sort"><tt>sort/2</tt></a> for a
+    solution with asymptotically optimal performance for a
+    comparison-based search. On the other hand, the <i>price</i> of
+    using a specialized algorithm is often <i>generality</i>. For
+    example, in the following case, <tt>sort/2</tt> omits one of the
+    two possible solutions:
+
+    <pre>
+?- sort([X,Y], [1,2]).
+X = 1,
+Y = 2.
+    </pre>
+
+    In contrast, <tt>integers_ascending/2</tt> yields <i>all</i> solutions:
+
+    <pre>
+?- integers_ascending([X,Y], [1,2]).
+X = 1,
+Y = 2 ;
+<b>X = 2,
+Y = 1 ;</b>
+false.
+    </pre>
+
+    <i>Ceteris paribus</i>, it is good practice to keep your
+    programs as general as you&nbsp;can.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

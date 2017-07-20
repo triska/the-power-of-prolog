@@ -1,0 +1,940 @@
+<html>
+  <head>
+    <title>A Couple of Meta-interpreters in Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Prolog,Meta-interpreter,Interpreter,MI">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+    <link rel="stylesheet" type="text/css" href="/prolog/toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center>
+      <h1>A Couple of Meta-interpreters in Prolog</h1>
+    </center>
+    <br><br>
+
+    <center>
+      <h2>Motivation</h2>
+    </center>
+
+    Informally, an interpreter is a program that evaluates programs.
+    Interpretation is pervasive in computer science both from a
+    theoretical and practical perspective, and many programs are
+    interpreters for domain-specific languages.  For example, a
+    program reading settings from a configuration file and adjusting
+    itself accordingly is interpreting this "configuration language".
+
+    <br><br>
+
+    An interpreter for a language similar or identical to its own
+    implementation language is
+    called <i>meta-interpreter</i>&nbsp;(MI). An interpreter that can
+    interpret itself is called <i>meta-circular</i>. Prolog is
+    exceptionally well-suited for writing&nbsp;MIs: First and most
+    importantly, Prolog programs can be naturally represented as
+    Prolog&nbsp;<a href="/prolog/data#term">terms</a>
+    and are easily inspected and manipulated
+    using <a href="/prolog/concepts#builtins">built-in</a>
+    mechanisms. Second, Prolog's implicit computation strategy and
+    all-solutions predicates can be used in interpreters, allowing for
+    concise specifications. Third, variables from the object-level
+    (the program to be interpreted) can be treated as variables on the
+    meta-level (the interpreter); therefore, an interpreter can
+    delegate handling of the interpreted program's binding environment
+    to the underlying Prolog engine.
+
+    <br><br>
+
+    The following simple Prolog program will serve as a running
+    example throughout this text. I state it here using default Prolog
+    syntax, and we will subsequently consider various different
+    representations for it:
+
+    <pre>
+natnum(0).
+natnum(s(X)) :-
+        natnum(X).
+    </pre>
+
+    Prolog can evaluate Prolog code dynamically:
+
+    <pre>
+?- Goal = natnum(X), Goal.
+Goal = natnum(0),
+X = 0 ;
+Goal = natnum(s(0)),
+X = s(0) .
+    </pre>
+
+    You can make the call explicit using the built-in <b><a href="/prolog/metapredicates#call">call/1</a></b>
+    predicate, yielding the equivalent query "?- Goal = natnum(X),
+    call(Goal).". The <b>call/n</b> (n&nbsp;&gt;&nbsp;1) family of
+    predicates lets you append additional arguments to <i>Goal</i>
+    before it is called.
+
+    <br><br>
+
+    This mechanism ("<i>meta-call</i>") is used in predicates
+    like <b><a href="/prolog/metapredicates#maplist">maplist/3</a></b>, <b>include/3</b>, <b>if/3</b> etc., and can
+    be seen as interpretation in its coarsest sense. Implicitly using
+    features of the underlying engine is called <i>absorption</i>.
+    Making features explicit is called <i>reification</i>. By
+    using&nbsp;<b>call/1</b>, we absorb backtracking, unification,
+    handling of conjunctions, the call stack etc. We can make all
+    these features explicit and subsequently adjust and extend them at
+    will.
+
+    <br><br><br>
+    <center><h2>Vanilla MIs</h2> </center>
+
+    <center><h3>Accessing Prolog code</h3></center>
+
+    The definition of <b>natnum/1</b> consists of two clauses, the
+    first of which degenerated into a <i>fact</i> that is implicitly
+    treated as if it were stated as
+
+    <pre>
+natnum(0) :- true.
+    </pre>
+
+    The Prolog built-in <b>clause/2</b> allows inspection of the
+    predicate's definition:
+
+    <pre>
+?- clause(natnum(Z), Body).
+Z = 0,
+Body = true ;
+Z = s(_G969),
+Body = natnum(_G969).
+    </pre>
+
+    The two solutions found on backtracking correspond to the two
+    clauses of the predicate's definition.
+
+    <br><br>
+
+    Another example:
+    <pre>
+complicated_clause(A) :-
+        goal1(A),
+        goal2(A),
+        goal3(A).
+
+?- clause(complicated_clause(Z), Body).
+Body = (goal1(Z), goal2(Z), goal3(Z)).
+    </pre>
+
+    The body of <b>complicated_clause/1</b> is represented by a
+    compound term with functor&nbsp;',' and arity&nbsp;2, whose
+    arguments are either goals or compound terms of the same
+    structure. Here is a Prolog "type" definition of a clause body in
+    the default representation:
+
+    <pre>
+body(true).
+body((A,B)) :-
+        body(A),
+        body(B).
+body(G) :-          % ambiguous, also matches "true" and "(_,_)"
+        goal(G).
+
+goal(_ = _).
+goal(call(_)).
+% ... etc.
+    </pre>
+    <br>
+
+    We can thus define an interpreter for pure Prolog programs:
+
+    <pre>
+mi1(true).
+mi1((A,B)) :-
+        mi1(A),
+        mi1(B).
+mi1(Goal) :-
+        Goal \= true,
+        Goal \= (_,_),
+        clause(Goal, Body),
+        mi1(Body).
+    </pre>
+
+    This is often called <i>vanilla MI</i> because there's nothing
+    special to it. All MIs that add no ability to pure Prolog are
+    sometimes called vanilla MIs. They serve as skeletons for
+    extensions.
+
+    <br><br>
+
+    We can use this MI to run our example program:
+
+
+    <pre>
+?- mi1(natnum(X)).
+X = 0 ;
+X = s(0) ;
+X = s(s(0)) .
+    </pre>
+
+    <center><h3>Using a clean representation</h3></center>
+
+    In the preceding MI, we had to guard the third clause from matching
+    <b>true/0</b> or conjunctions to prevent run-time errors resulting
+    from calling <b>clause/2</b> with these arguments. This is ugly,
+    and we can make it uglier still by using cuts&nbsp;(<b>!/0</b>) in
+    the first two clauses. That would at least remove unnecessary
+    choice-points, though typically not prevent their creation.
+    Instead of recognising goals by indication of what they are, we
+    had to introduce a "default" case and specify what they aren't.
+    Such representations are
+    called <i>"<a href="/prolog/data#clean">defaulty</a>"</i>. To
+    fix this, we equip goals with the (arbitrary)
+    functor&nbsp;<i>g</i>:
+
+    <br><br>
+
+
+    <pre>
+body(true).
+body((A,B)) :-
+        body(A),
+        body(B).
+body(g(G)) :-
+        goal(G).
+    </pre>
+
+    Such a representation is called <i>clean</i>.
+
+    <br><br>
+
+    We rewrite our example according to this specification:
+
+    <pre>
+natnum_clean(0).
+natnum_clean(s(X)) :-
+        g(natnum_clean(X)).
+    </pre>
+
+    While a query like "<tt>?- natnum_clean(X).</tt>" would yield a runtime
+    error (there is no predicate <b>g/1</b>), we can use an&nbsp;MI to
+    interpret the program:
+
+    <pre>
+mi2(true).
+mi2((A,B)) :-
+        mi2(A),
+        mi2(B).
+mi2(g(G)) :-
+        clause(G, Body),
+        mi2(Body).
+    </pre>
+
+    In addition to being shorter and <i>cleaner</i>, this version is
+    typically more efficient (no choice-points due to first-argument
+    indexing, and less inferences due to less tests):
+
+    <pre>
+?- integer_natnum(10^5, T), time(mi1(natnum(T))).
+% 400,005 inferences, 0.80 CPU in 0.83 seconds (96% CPU, 500006 Lips)
+
+
+?- integer_natnum(10^5, T), time(mi2(g(natnum_clean(T)))).
+% 200,003 inferences, 0.71 CPU in 0.79 seconds (90% CPU, 281694 Lips)
+    </pre>
+    <br><br>
+
+    In the following, <b>mi_clause/2</b> denotes a predicate that is
+    similar to <b>clause/2</b>, except that it supplies us with an
+    "appropriate" (MI-dependent) representation of clause bodies.  For
+    the MI at hand:
+
+    <pre>
+mi_clause(G, Body) :-
+        clause(G, B),
+        defaulty_better(B, Body).
+
+defaulty_better(true, true).
+defaulty_better((A,B), (BA,BB)) :-
+        defaulty_better(A, BA),
+        defaulty_better(B, BB).
+defaulty_better(G, g(G)) :-
+        G \= true,
+        G \= (_,_).
+    </pre>
+
+    This predicate lets us interpret a subset of normal Prolog code
+    with the second&nbsp;MI, and it can also be used for static
+    conversion. Alternatively, <b>mi_clause/2</b> can be defined by
+    facts. For this&nbsp;MI:
+
+    <pre>
+mi_clause(natnum(0), true).
+mi_clause(natnum(s(X)), g(natnum(X)).
+    </pre>
+
+    <center><h3>Variants and modifications</h3></center>
+
+    The 2 MIs presented so far <i>reify</i>
+    conjunction. Through <b>clause/2</b>, they <i>absorb</i>
+    unification and backtracking.  Having made handling of
+    conjunctions explicit, we can reverse the default execution order
+    of goals:
+
+    <pre>
+mi3(true).
+mi3((A,B)) :-
+        mi3(B),        % first B, than A
+        mi3(A).
+mi3(g(G)) :-
+        mi_clause(G, Body),
+        mi3(Body).
+    </pre>
+
+    From a logical point of view, this changes nothing (conjunction is
+    commutative). Procedurally, there's a difference: With minor
+    adjustments to <b>mi_clause/2</b> (adding the fact
+    "defaulty_better(false, false)." and guarding <i>G</i> against the
+    atom <b>false/0</b>), and after adding the additional clause
+
+    <pre>
+mi3(false) :- false.
+    </pre>
+
+    this MI can be used to prove that the query
+    "?-&nbsp;declarative_false."  cannot succeed given the predicate's
+    definition:
+
+    <pre>
+declarative_false :-
+        declarative_false,
+        false.
+    </pre>
+
+    This can't be derived with the standard execution order.
+
+    <br><br>
+
+    We can ask the user before we execute goals (<i>tracing</i>),
+    print out the execution history or restrict access to safe goals
+    by adjusting the third clause:
+
+    <pre>
+mi2_safe(g(G)) :-
+        (   safe_goal(G) ->
+            mi_clause(G, Body),
+            mi2_safe(Body)
+        ;   throw(cannot_execute(G))
+        ).
+    </pre>
+
+    <br><br>
+
+    We can obtain a simpler MI by using lists of goals to represent
+    conjunctions. In this representation, <b>true/0</b> becomes the
+    empty list:
+
+    <pre>
+natnum_list(0, []).
+natnum_list(s(X), [natnum_list(X)]).
+    </pre>
+
+    Again, the conversion between runnable Prolog code and this
+    representation can be performed automatically:
+
+    <pre>
+mi_clause(G, Ls) :-
+        clause(G, Body),
+        phrase(body_list(Body), Ls).
+
+
+body_list(true)  --> [].
+body_list((A,B)) -->
+        body_list(A),
+        body_list(B).
+body_list(G) -->
+        { G \= true },
+        { G \= (_,_) },
+        [G].
+    </pre>
+
+    An obvious MI for this representation consists of only 2 clauses:
+
+    <pre>
+mi_list1([]).
+mi_list1([G|Gs]) :-
+        mi_clause(G, Body),
+        mi_list1(Body),
+        mi_list1(Gs).
+    </pre>
+
+    We can make it tail-recursive:
+
+    <pre>
+mi_list2([]).
+mi_list2([G0|Gs0]) :-
+        mi_clause(G0, Body),
+        append(Body, Gs0, Gs),
+        mi_list2(Gs).
+    </pre>
+
+    The difference:
+
+    <pre>
+always_infinite :-
+        always_infinite.
+
+?- mi_list1([always_infinite]).
+<b>ERROR: Out of local stack</b>
+
+?- mi_list2([always_infinite]).  % loops, constant stack space
+    </pre>
+
+    Using list differences in our clause representation, appending the
+    yet-to-be-proved goals can be fused with expanding a goal:
+
+    <pre>
+mi_ldclause(natnum(0), Rest, Rest).
+mi_ldclause(natnum(s(X)), [natnum(X)|Rest], Rest).
+
+<div id="mi_list3">
+mi_list3([]).
+mi_list3([G0|Gs0]) :-
+        mi_ldclause(G0, Remaining, Gs0),
+        mi_list3(Remaining).
+</div>
+    </pre>
+
+    Example query:
+
+    <pre>
+?- mi_list3([natnum(X)]).
+X = 0 ;
+X = s(0) ;
+X = s(s(0)) .
+    </pre>
+
+    <center><h3>A meta-circular MI</h3></center>
+
+    Here is an MI that can handle the built-in
+    predicates <b>clause/2</b> and <b>(\=)/2</b>:
+
+    <pre>
+mi_circ(true).
+mi_circ((A,B)) :-
+        mi_circ(A),
+        mi_circ(B).
+mi_circ(clause(A,B)) :-
+        clause(A,B).
+mi_circ(A \= B) :-
+        A \= B.
+mi_circ(G) :-
+        G \= true,
+        G \= (_,_),
+        G \= (_\=_),
+        G \= clause(_,_),
+        clause(G, Body),
+        mi_circ(Body).
+    </pre>
+
+    It can interpret its own source code and is thus
+    a <i>meta-circular</i> interpreter:
+
+    <pre>
+?- mi_circ(mi_circ(natnum(X))).
+X = 0 ;
+X = s(0) ;
+X = s(s(0)) .
+    </pre>
+
+    <center><h3 id="reasoning">Reasoning about programs</h3></center>
+
+    Let us define a predicate <tt>provable/2</tt> as
+    follows: <b>provable(Goal, Defs)</b> is true if <i>Goal</i> is
+    <i>provable</i> with respect to the definitions <i>Defs</i>, which
+    is a list of clauses represented as terms of the
+    form&nbsp;<i>Head-Body</i>. In comparison to the other MIs shown
+    so far, the main difference is thus that the clauses are made
+    available <i>explicitly</i> as an&nbsp;argument of the&nbsp;predicate.
+
+    <br><br>
+
+    In addition, we generalize the handling of built-in predicates by
+    using <b>predicate_property/2</b> to identify them as such for
+    calling them directly:
+
+    <pre>
+provable(true, _) :- !.
+provable((G1,G2), Defs) :- !,
+        provable(G1, Defs),
+        provable(G2, Defs).
+provable(BI, _) :-
+        predicate_property(BI, built_in),
+        !,
+        call(BI).
+provable(Goal, Defs) :-
+        member(Def, Defs),
+        copy_term(Def, Goal-Body),
+        provable(Body, Defs).
+    </pre>
+
+    Note that we need to use <tt>copy_term/2</tt> to replace variables
+    by fresh&nbsp;copies. Also, how the built-in
+    predicate&nbsp;<b>!/0</b> is interpreted by this MI does not match
+    its intended meaning, and building an MI that handles cuts
+    correctly requires more work.
+
+    <br><br>
+
+    With the following additional definitions, we can use this MI to
+    identify <i>redundant&nbsp;facts</i> in some predicate
+    definitions:
+
+    <pre>
+redundant(Functor/Arity, Reds) :-
+        functor(Term, Functor, Arity),
+        findall(Term-Body, clause(Term, Body), Defs),
+        setof(Red, Defs^redundant_(Defs, Red), Reds).
+
+redundant_(Defs, Fact) :-
+        select(Fact-true, Defs, Rest),
+        once(provable(Fact, Rest)).
+    </pre>
+
+    Given the definitions
+
+    <pre>
+as([]).
+as([a]).   % redundant
+as([a,a]). % redundant
+as([A|As]) :-
+        A = a,           % test built-in (=)/2
+        true,            % test built-in true/0
+        as(As).
+    </pre>
+
+    we can ask for facts which are deducible from all (respective)
+    remaining clauses and hence redundant:
+
+    <pre>
+?- redundant(as/1, Rs).
+Rs = [as([a]), as([a, a])].
+    </pre>
+
+    Thus, MIs allow us to determine non-trivial properties of programs
+    in some cases.
+
+    <br><br>
+
+    Importantly, MIs give us the freedom to interpret each language
+    construct <i>differently</i> than regular Prolog would do&nbsp;it.
+    For example, using <i>abstract interpretation</i>, we can derive type
+    and mode information of predicates.
+
+    <br><br>
+
+    An example taken from Codish and
+    S&oslash;ndergaard&nbsp;2002, <i>Meta-Circular Abstract
+    Interpretation in Prolog</i> is in the <a href="acomip.pl">source
+    file</a>. By fixpoint computation, we derive non-trivial facts
+    about the Ackermann function over an abstract parity domain:
+
+    <pre>
+?- ack_fixpoint(As).
+
+As = [ack(odd, odd, odd), ack(odd, even, odd), ack(odd, one, odd), ack(even, odd, odd),
+      ack(odd, zero, odd), ack(even, even, odd), ack(even, one, odd), ack(one, odd, odd),
+      ack(even, zero, odd), ack(one, even, even), ack(one, one, odd), ack(one, zero, even),
+      ack(zero, even, odd), ack(zero, odd, even), ack(zero, zero, one), ack(zero, one, even)].
+    </pre>
+
+    Now consider the following query:
+
+    <pre>
+?- dif(X, one), dif(X, zero), dif(Z, odd), ack_fixpoint(As), member(ack(X,Y,Z), As).
+<b>false</b>.
+    </pre>
+
+    This shows that <tt>Ackermann(i, j)</tt> is <i>odd and greater
+    than&nbsp;1</i> for all i&nbsp;&gt;&nbsp;1.
+
+    <br><br>
+    <center><h3>Reifying backtracking</h3></center>
+
+    Let us reify <i>backtracking</i> now. We need to make explicit all
+    alternative clause bodies that are normally found on backtracking,
+    collecting them deterministically using <b>findall/3</b>. A single
+    alternative is represented as a list of goals, and the branches of
+    computation that have yet to be explored as a list of
+    alternatives. The interface predicate, <b>mi_backtrack/1</b>,
+    takes a goal as its argument and creates the representation of the
+    initial state of computation: A list, consisting of a single
+    alternative, <tt>[G0]</tt>. Actually, the representation is
+    <tt>[G0]-G0</tt>, and <tt>G0</tt> is also passed as the second
+    argument to the worker predicate for reasons that will become
+    clear shortly.
+
+
+    <pre>
+mi_backtrack(G0) :- mi_backtrack_([[G0]-G0], G0).
+    </pre>
+
+    To perform a single step of the computation, we first collect all
+    clause bodies whose heads unify with the first goal of the first
+    alternative. To all found clause bodies, the remaining goals of
+    that first alternative are appended, thus obtaining new
+    alternatives that we prepend to the other alternatives to give the
+    new state of computation. Using the clause representation that
+    makes use of list differences, and <b>findall/4</b> to append
+    existing alternatives, this becomes:
+
+    <pre>
+resstep_([A|As0], As) :-
+        findall(Gs-G, (A = [G0|Rest]-G,mi_ldclause(G0,Gs,Rest)), As, As0).
+    </pre>
+
+    <br>
+
+    <br><br>
+
+    Leaves of the computation, i.e., alternatives that we are done
+    with, automatically vanish from the list of alternatives as there
+    is no goal to be proved for them any more. The unification <tt>A =
+    [G0|Rest]-G</tt> thus fails and only the other alternatives
+    remain.
+
+    <br><br>
+
+    The worker predicate:
+
+    <pre>
+mi_backtrack_([[]-G|_], G).
+mi_backtrack_(Alts0, G) :-
+        resstep_(Alts0, Alts1),
+        mi_backtrack_(Alts1, G).
+    </pre>
+
+    If no goals remain to be proved for an alternative, a solution for
+    the initial query is found and we report the bindings to the user.
+    This is why we needed to pass around the user's query. The second
+    clause describes how the computation is carried on: The list of
+    alternatives is transformed as described above, and the process
+    continues.
+
+    <br><br>
+
+    Representing all alternatives explicitly allows us to guide the
+    inference process by reordering alternatives, implement fair
+    execution strategies (by <i>appending</i> new alternatives) and so
+    on. Also, the MI shows what is needed to implement Prolog
+    in languages that lack built-in backtracking.
+
+
+    <br><br>
+    <center>
+      <h2>Extending Prolog</h2>
+    </center>
+
+    <center><h3>Showing proofs</h3></center>
+
+    If you want a feature that plain Prolog does not provide, you can
+    add it to a vanilla MI. Here is an MI that behaves like standard
+    pure Prolog and builds a <i>proof-tree</i> in parallel that makes
+    explicit the inferences that lead to the proof:
+
+    <pre>
+:- op(750, xfy, =>).
+
+mi_tree(true, true).
+mi_tree((A,B), (TA,TB)) :-
+        mi_tree(A, TA),
+        mi_tree(B, TB).
+mi_tree(g(G), TBody => G) :-
+        mi_clause(G, Body),
+        mi_tree(Body, TBody).
+    </pre>
+
+    Example query:<br>
+
+    <pre>
+?- mi_tree(g(natnum(X)), T).
+X = 0,
+T = (true=>natnum(0)) ;
+X = s(0),
+T = ((true=>natnum(0))=>natnum(s(0))) ;
+X = s(s(0)),
+T = (((true=>natnum(0))=>natnum(s(0)))=>natnum(s(s(0)))) .
+    </pre>
+    <br>
+
+    <center><h3>Changing the search strategy</h3></center>
+
+    Another group of extensions aims to improve the incomplete default
+    computation strategy. We start with an MI that limits the depth of
+    the search&nbsp;tree,
+    using <a href="/prolog/clpfd">integer&nbsp;arithmetic</a>:
+
+    <pre>
+mi_limit(Goal, Max) :-
+        mi_limit(Goal, Max, _).
+
+mi_limit(true, N, N).
+mi_limit((A,B), N0, N) :-
+        mi_limit(A, N0, N1),
+        mi_limit(B, N1, N).
+mi_limit(g(G), N0, N) :-
+        N0 #> 0,
+        N1 #= N0 - 1,
+        mi_clause(G, Body),
+        mi_limit(Body, N1, N).
+    </pre>
+
+    Example query:
+
+    <pre>
+?- mi_limit(g(natnum(X)), 3).
+X = 0 ;
+X = s(0) ;
+X = s(s(0)) ;
+false.
+    </pre>
+
+    As expected, the number of solutions coincides with the maximal
+    depth of the search tree in the case of <b>natnum/1</b>.  Based
+    on this MI, we can implement a <i>complete</i> search
+    strategy, <i>iterative deepening</i>:
+
+    <pre>
+mi_id(Goal) :-
+        length(_, N),
+        mi_limit(Goal, N).
+    </pre>
+
+    Consider the program:
+
+    <pre>
+edge(a, b).
+edge(b, a).
+edge(b, c).
+
+path(A, A, []).
+path(A, C, [e(A,B)|Es]) :-
+        edge(A, B),
+        path(B, C, Es).
+    </pre>
+
+    And the queries:
+
+    <pre>
+?- path(a, c, Es).
+<b>ERROR: Out of local stack</b>
+
+
+?- mi_id(g(path(a, c, Es))).
+<b>Es = [e(a, b), e(b, c)] .</b>
+    </pre>
+
+    In contrast to depth-first search, iterative deepening finds a
+    solution. At first glance, iterative deepening may seem a wasteful
+    search technique because many nodes of the search tree are
+    explored repeatedly. However, one can show that iterative
+    deepening is in fact an <i>optimal</i> search strategy under very
+    general assumptions. In a general search tree, the number of nodes
+    at each level grows exponentially with the depth of the tree, and
+    the time it takes to explore all nodes at the final depth is
+    enough to cover the previously expended effort with
+    a <i>constant</i> factor.
+
+    <br><br>
+    <center><h3>Sound unification</h3></center>
+
+    Omission of the <i>occurs check</i> in the default unification
+    algorithms of common Prolog implementations can lead to unsound
+    inference:
+
+    <pre>
+occ(X, f(X)).
+    </pre>
+
+    Without occurs check, the query
+
+    <pre>
+?- occ(A, A).
+    </pre>
+
+    succeeds. We can use occurs check for unification of clause heads
+    in an MI:
+
+    <pre>
+mi_occ(true).
+mi_occ((A,B)) :-
+        mi_occ(A),
+        mi_occ(B).
+mi_occ(g(G)) :-
+        functor(G, F, Arity),
+        functor(H, F, Arity),
+        mi_clause(H, Body),
+        unify_with_occurs_check(G, H),
+        mi_occ(Body).
+    </pre>
+
+    We get:
+
+    <pre>
+?- mi_occ(g(occ(A,A))).
+false.
+    </pre>
+
+    You can use an MI similar to this one to reify the <i>binding
+    environment</i> of variables: Thread the bindings through and add
+    a term of the form <tt>unify(G,H)</tt> to the set of bindings in the
+    third clause. Use <b>numbervars/3</b> to get rid of variables if
+    you want to reify unification.
+
+    <br><br>
+    <center><h3>Parsing with left-recursive grammars</h3></center>
+
+    As a consequence of Prolog's computation strategy, parsing with
+    left-recursive grammars is problematic. Let us now define an MI
+    that interprets <a href="/prolog/dcg"><b>Definite&nbsp;Clause
+    Grammars</b></a> in such a way that they can handle
+    left-recursion. Consider a simple grammar:
+
+    <pre>
+dcgnumber(0).
+dcgnumber(1).
+
+expr(N)   --> [N], { dcgnumber(N) }.
+expr(A+B) --> expr(A), [(+)], expr(B).
+    </pre>
+
+    This grammar can be used to (unfairly) enumerate an arbitrary
+    number of strings it describes:
+
+    <pre>
+?- phrase(expr(E), Ss).
+E = 0,
+Ss = [0] ;
+E = 1,
+Ss = [1] ;
+E = 0+0,
+Ss = [0, +, 0] .
+    </pre>
+
+    However, parsing ground strings leads to problems:
+
+    <pre>
+?- phrase(expr(E), [1,+,1]).
+
+E = 1+1 ;
+<b>ERROR: Out of local stack</b>
+    </pre>
+
+    We first convert the grammar into a more suitable representation:
+
+    <pre>
+dcg_clause(expr(N),   [t(N),{dcgnumber(N)}]).
+dcg_clause(expr(A+B), [l,nt(expr(A)),t(+),nt(expr(B))]).
+    </pre>
+
+    The atom <tt>l</tt> in the body of the second clause is used to
+    capture that for this clause to apply, there must be at least one
+    (therefore, <i>one</i>&nbsp;<tt>l</tt>) token left in the string
+    to be parsed. This is used in the MI to prune the search tree if
+    we run out of tokens. The other terms are: <tt>t/1</tt> for
+    terminals, <tt>nt/1</tt> for non-terminals and <tt>{}/1</tt> for
+    goals.
+
+    <br><br>
+
+    The interface to the MI:
+
+    <pre>
+mi_dcg(NT, String) :-
+        length(String, L),
+        length(Rest0, L),
+        mi_dcg_([nt(NT)], Rest0, _, String, []).
+    </pre>
+
+    The worker predicates:
+
+    <pre>
+mi_dcg(t(T), Rest, Rest, [T|Ts], Ts).
+mi_dcg({Goal}, Rest, Rest, Ts, Ts) :-
+        call(Goal).
+mi_dcg(nt(NT), Rest0, Rest, Ts0, Ts) :-
+        dcg_clause(NT, Body),
+        mi_dcg_(Body, Rest0, Rest, Ts0, Ts).
+mi_dcg(l, [_|Rest], Rest, Ts, Ts).
+
+mi_dcg_([], Rest, Rest, Ts, Ts).
+mi_dcg_([G|Gs], Rest0, Rest, Ts0, Ts) :-
+        mi_dcg(G, Rest0, Rest1, Ts0, Ts1),
+        mi_dcg_(Gs, Rest1, Rest, Ts1, Ts).
+    </pre>
+
+    We can now use the left-recursive grammar also for parsing:
+
+    <pre>
+?- mi_dcg(expr(E), [1,+,1,+,1]).
+E = 1+ (1+1) ;
+E = 1+1+1 ;
+false.
+    </pre>
+
+    <br><br>
+    <center><h3>Further extensions</h3></center>
+
+
+    Other possible extensions are module systems, delayed goals,
+    checking for various kinds of infinite loops, profiling,
+    debugging, type systems, constraint solving etc. The overhead
+    incurred by implementing these things using MIs can be compiled
+    away using partial evaluation techniques. For instance, we can
+    (mechanically) derive the following partially evaluated version of
+    the DCG example:
+
+
+    <pre id="pe">
+pe_expr(Expr, String) :-
+        length(String, L),
+        length(Rest0, L),
+        pe_expr(Expr, Rest0, _, String, []).
+
+pe_expr(N, Rest, Rest, Ts0, Ts) :-
+        Ts0 = [N|Ts],
+        dcgnumber(N).
+pe_expr(A+B, [_|Rest0], Rest, Ts0, Ts) :-
+        pe_expr(A, Rest0, Rest1, Ts0, Ts1),
+        Ts1 = [+|Ts2],
+        pe_expr(B, Rest1, Rest, Ts2, Ts).
+    </pre>
+    Comparison:
+    <pre>
+?- sum_of_ones(10^3, Ss), time(mi_dcg(expr(Sum), Ss)).
+% 525,516 inferences, 0.68 CPU in 0.68 seconds (100% CPU, 772818 Lips)
+
+?- sum_of_ones(10^3, Ss), time(pe_expr(Sum, Ss)).
+% 6,008 inferences, 0.01 CPU in 0.01 seconds (186% CPU, 600800 Lips)
+    </pre>
+
+
+    <br><br><br>
+
+    Source file containing all examples: <a href="acomip.pl"><b>acomip.pl</b></a>
+
+    <br><br><br>
+
+    Written Sept. 14th 2005<br>
+
+    <br><br><br>
+
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+
+  </body>
+  <script src="/prolog/jquery.js"></script>
+  <script src="/prolog/toc.js"></script>
+</html>

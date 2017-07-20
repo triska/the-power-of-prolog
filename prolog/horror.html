@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Prolog Coding Horror</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prolog Coding Horror">
+    <meta name="keywords" content="Prolog,Horror,Imperative">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Prolog Coding Horror</h1></center>
+    <br>
+    <div style="margin-left: 50%; display: inline-block">
+      I seemed to hear the whispered cry, "The horror! The horror!"
+      <br>
+(Joseph Conrad, <i>Heart of Darkness</i>)
+      <br>
+    </div>
+    <br><br>
+
+    <center><h2>Why are you here?</h2></center>
+
+    As a Prolog programmer, you likely have a rebellious streak
+    in&nbsp;you. In many cases, this is what it takes to guide you
+    away from how an entire industry currently tries to solve
+    problems. To focus on what lies&nbsp;<i>beyond</i>.
+
+    <br><br>
+
+    The point of this page is to show you where following this streak
+    is likely <i>not</i> a good&nbsp;idea because the cost
+    is&nbsp;high, and there is no benefit to&nbsp;it.
+
+    <br><br>
+
+    A small number of rules suffices to write great
+    Prolog&nbsp;code. Breaking them will result in programs that are
+    defective in one or more&nbsp;ways.
+    
+
+    <center><h2>The horror: Losing solutions</h2></center>
+
+    A Prolog program that <i>terminates</i> and is acceptably
+    efficient can be <i>defective</i> in two major ways:
+
+    <ol>
+      <li>It reports <i>wrong</i> answers.</li>
+      <li>It <i>fails to report</i> intended solutions.</li>
+    </ol>
+
+    Which of these cases is worse? Think about this!
+
+    <br><br>
+
+    Suppose a program is defective <i>only</i> in the first way. Is
+    there anything you can do to still obtain only correct results?
+    Then, suppose a program is defective <i>only</i> in the second
+    way. What are your options to somehow still obtain all solutions
+    that were intended?
+
+    <br><br>
+
+    The primary means to make your programs defective in
+    the <i>second</i> way is to use <i>impure</i>
+    and <i>non-monotonic</i> language constructs. Examples of this
+    are <tt>!/0</tt>, if-then-else and&nbsp;<tt>var/1</tt>. A
+    declarative way out is to use <a href="data#clean">clean</a>
+    data&nbsp;tructures, <i>constraints</i>
+    like <a href="concepts#builtins"><tt>dif/2</tt></a>, and
+    meta-predicates
+    like&nbsp;<a href="metapredicates#if_3"><b><tt>if_/3</tt></b></a>.
+
+    <center><h2>The horror: Global state</h2></center>
+
+    As a beginner, you will be tempted to modify
+    the <a href="global">global&nbsp;database</a> in Prolog. This
+    introduces <i>implicit&nbsp;dependencies</i> within your programs.
+    By "implicit", I mean that there is nothing in your program
+    that <i>enforces</i> these dependencies. For example, if you use
+    such predicates in a different order than intended, they may
+    unexpectedly fail or yield strange results.
+
+    <br><br>
+
+    The primary means to make your programs defective in this way is
+    to use predicates like <tt>assertz/1</tt>
+    and&nbsp;<tt>retract/1</tt>. A declarative way out is to use
+    predicate <i>arguments</i>
+    or <a href="dcg#semicontext">semicontext&nbsp;notation</a> to
+    thread the state&nbsp;through.
+
+    <center><h2>The horror: Impure output</h2></center>
+
+    As a beginner, you will sometimes be tempted to <i>print</i>
+    answers on the system terminal instead of letting the toplevel
+    report&nbsp;them. The major drawback of this approach is
+    that <i>you cannot easily reason about such output</i>. Therefore,
+    you will not write test cases for such output, increasing the
+    likelihood of introducing changes that break such predicates.
+
+    <br><br>
+
+    The primary means to make your programs defective in this way is
+    to use impure I/O like&nbsp;<tt>format/2</tt>. A declarative way
+    out is to describe the output in a pure way, using for example the
+    nonterminal&nbsp;<a href="dcg#output"><tt><b>format_//2</b></tt></a>.
+
+    <center><h2>The horror: Low-level language constructs</h2></center>
+
+    Some Prolog programmers may see little reason to use more recent
+    language constructs. For example, CLP(FD) constraints have only
+    been widely available for about 20&nbsp;years, which is
+    a <i>comparatively</i> recent development for&nbsp;Prolog. If you
+    think that low-level constructs have served you well, why bother
+    learning newer material? The fact that millions of students
+    were <i>not</i> well served by lower-level constructs need not
+    concern&nbsp;you.
+
+    <br><br>
+
+    Unfortunately, sticking to low-level constructs comes at a high
+    price: It makes the language harder to teach, harder to learn and
+    harder to understand than necessary. It requires students to learn
+    declarative and operational semantics essentially <i>at the same
+      time</i>, which is too&nbsp;much at once in almost all&nbsp;cases.
+
+    <br><br>
+
+    The primary means to make Prolog harder to teach than necessary is
+    to introduce beginners to low-level predicates for arithmetic
+    like <tt>(is)/2</tt>, <tt>(=:=)/2</tt> and <tt>(&gt;)/2</tt>. A
+    declarative way out is to <i>teach constraints
+    instead</i>. See <a href="clpfd"><b>declarative integer
+        arithmetic</b></a>.
+
+    <center><h2>Horror factorial</h2></center>
+
+    To see some of these defects exemplified, behold the <i><b>horror
+    factorial</b></i>:
+
+    <pre>
+horror_factorial(0, 1) :- !.
+horror_factorial(N, F) :-
+        N &gt; 0,
+        N1 is N - 1,
+        horror_factorial(N1, F1),
+        F is N*F1.
+    </pre>
+
+    Observe the horror of <i>losing solutions</i> when posting
+    the <a href="concepts#toplevel">most general query</a>:
+
+    <pre>
+?- horror_factorial(N, F).
+<b>N = 0,
+F = 1</b>.
+    </pre>
+
+    The version without <tt>!/0</tt> is almost as horrendous:
+
+    <pre>
+horror_factorial(0, 1).
+horror_factorial(N, F) :-
+        N &gt; 0,
+        N1 is N - 1,
+        horror_factorial(N1, F1),
+        F is N*F1.
+    </pre>
+
+    The horror of low-level language constructs prevails:
+
+    <pre>
+?- horror_factorial(N, F).
+N = 0,
+F = 1 ;
+<b>ERROR: >/2: Arguments are not sufficiently instantiated</b>
+    </pre>
+
+    If you accept this, you are
+
+    <ul>
+      <li>limited by using outdated language constructs.</li>
+      <li>mistaking relations for functions.</li>
+      <li>not caring about the most general query.</li>
+      <li>preventing <a href="debugging">declarative debugging</a> by using impure constructs.</li>
+    </ul>
+
+    <center><h2>A way out: Purity</h2></center>
+
+    To stop the horror, stay in the <a href="purity">pure</a>
+    monotonic subset of Prolog.
+
+    <br><br>
+
+    Start small. For example, instead of low-level integer arithmetic,
+    use a more declarative alternative:
+
+    <pre>
+horror_factorial(0, 1) :- !.
+horror_factorial(N, F) :-
+        N #&gt; 0,
+        N1 #= N - 1,
+        horror_factorial(N1, F1),
+        F #= N*F1.
+    </pre>
+
+    Still better than nothing. Then, remove the <tt>!/0</tt>:
+
+    <pre>
+n_factorial(0, 1).
+n_factorial(N, F) :-
+        N #&gt; 0,
+        N1 #= N - 1,
+        n_factorial(N1, F1),
+        F #= N*F1.
+    </pre>
+
+    This version also works for the <i>most general</i> query:
+
+    <pre>
+?- n_factorial(N, F).
+<b>N = 0,
+F = 1 ;
+N = F, F = 1 ;
+N = F, F = 2 ;
+N = 3,
+F = 6</b> .
+    </pre>
+
+    That's quite good: A few simple changes have led to a quite
+    general logic program.
+
+    <center><h2>Conclusion</h2></center>
+    
+    In summary, I recommend you <i>rebel where it makes sense</i>,
+    and <i>only</i> there.
+
+    <br><br>
+
+    It is ill-directed rebellion to cling to outdated features, for
+    life is not lived backwards nor tarries in yesterday.
+
+    <br><br>
+
+    Use declarative constructs in your Prolog programs to make them
+    more general while retaining acceptable performance.
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

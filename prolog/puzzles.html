@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Logic Puzzles with Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Solving Logic Puzzles with Prolog">
+    <meta name="keywords" content="Prolog,Puzzles,Logic">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Logic Puzzles with Prolog</h1></center>
+    <br><br>
+
+    Which language could be <i>more</i> suitable than&nbsp;Prolog for
+    solving <b>logic&nbsp;puzzles</b>? (Answer: <tt>false</tt>.)
+
+    <br><br>
+
+    A vast array of interesting and commonly known logic puzzles can
+    be elegantly and efficiently solved with Prolog and constraints.
+    Some puzzles can be very directly modeled and solved
+    as <a href="optimization">combinatorial&nbsp;tasks</a>, others
+    need more effort to find a suitable formulation as
+    such&nbsp;tasks, and yet other puzzles require a search over
+    different&nbsp;<a href="/tist/">states</a>. In the following, we
+    consider a few example&nbsp;puzzles.
+
+    <br><br>
+    <center><h2>Knights and Knaves</h2></center>
+
+    For example, consider a few puzzles that appear in
+    Raymond&nbsp;Smullyan's <i>What Is the Name of this&nbsp;Book</i>
+    and Maurice&nbsp;Kraitchik's <i>Mathematical&nbsp;Recreations</i>.
+
+    <br><br>
+
+    <div class="example">
+      <b>Premise</b>: You are on an island where every inhabitant is
+      either a <i>knight</i> or a&nbsp;<i>knave</i>. Knights always
+      tell the truth, and knaves always lie.
+    </div>
+    <br><br>
+
+
+    Using Prolog and
+    its <a href="https://github.com/triska/clpb"><b>CLP(B)&nbsp;constraints</b></a>,
+    we can model this situation as follows:
+
+    <ul>
+      <li> use <b>0</b> (<b>false</b>) to denote a&nbsp;<i>knave</i></li>
+      <li> use <b>1</b> (<b>true</b>) to denote a&nbsp;<i>knight</i></li>
+      <li> use one Boolean <i>variable</i> for each inhabitant, its
+      truth&nbsp;value representing whether the person is a knave or
+      a&nbsp;knight.</li>
+    </ul>
+
+    <div class="example">
+      <b>Example 1</b>: You meet 2&nbsp;inhabitants, A and&nbsp;B. A
+      says: "Either I am a knave or B is a knight."
+    </div>
+    <br>
+
+    A <i>single&nbsp;query</i> over Boolean variables suffices to
+    determine the kind of each inhabitant, by expressing the relation
+    between A and the truth&nbsp;value of the statement:
+
+
+    <pre>
+?- sat(A=:=(~A + B)).
+<b>A = B, B = 1.</b>
+    </pre>
+
+    This shows that <i>both</i> A and&nbsp;B are knights.
+
+    <br>
+    <div class="example">
+      <b>Example 2</b>: A says: "I am a knave, but B isn't."
+    </div>
+    <br>
+
+    Translated to Boolean constraints, this corresponds to:
+
+    <pre>
+?- sat(A=:=(~A * B)).
+<b>A = B, B = 0.</b>
+    </pre>
+
+    Thus, in this example, both A and&nbsp;B are <i>knaves</i>.
+    <br>
+
+    <div class="example">
+    <b>Example 3</b>: A says: "At least one of us is a knave."
+    </div>
+    <br>
+
+    Using CLP(B) constraints, we can use the Boolean
+    expression <tt>card(Ls,Exprs)</tt> to express
+    a <i>cardinality&nbsp;constraint</i>: This expression is
+    true <i>iff</i> the number of expressions in <tt>Exprs</tt> that
+    evaluate to&nbsp;<b>true</b> is a <i>member</i> of the
+    list&nbsp;<tt>Ls</tt> of integers. Thus, for this example, we can
+    use:
+
+    <pre>
+?- sat(A=:=card([1,2],[~A,~B])).
+<b>A = 1,
+B = 0.</b>
+    </pre>
+
+    <div class="example">
+      <b>Example 4</b>: You meet 3 inhabitants. A says: "All of us are knaves."
+      B says: "Exactly one of us is a knight."
+    </div>
+    <br>
+
+    We can translate these two statements to a <i>conjunction</i> of
+    constraints:
+
+    <pre>
+?- sat(A=:=(~A * ~B * ~C)), sat(B=:=card([1],[A,B,C])).
+<b>A = C, C = 0,
+B = 1.</b>
+    </pre>
+
+    <div class="example">
+      <b>Example 5</b>: A says: "B is a knave." B says: "A and C are of
+      the same kind." <i>What is C</i>?
+    </div>
+    <br>
+
+    We can translate this to Prolog as&nbsp;follows:
+
+    <pre>
+?- sat(A=:= ~B), sat(B=:=(A=:=C)).
+<b>C = 0,
+sat(A=\=B).</b>
+    </pre>
+
+    This shows that C is definitely a <i>knave</i>. A and&nbsp;B can
+    both be either knights or knaves, <i>and</i> they are of
+    different&nbsp;kinds, which is indicated by the residual&nbsp;goal.
+
+    <center><h2>Which answer is correct?</h2></center>
+
+    Many other kinds of puzzles can be modeled by applying exactly the
+    same method, i.e., reasoning over <i>Boolean</i> variables.
+
+    Consider for example:
+
+    <br><br>
+    <div class="example">
+      <b>Which answer is correct?</b>
+
+      <ol>
+        <li>All of the below.</li>
+        <li>None of the below.</li>
+        <li>All of the above.</li>
+        <li>At least one of the above.</li>
+        <li>None of the above.</li>
+        <li>None of the above.</li>
+      </ol>
+    </div>
+    <br><br>
+
+    Again, we can trivially translate this puzzle to statements
+    over <b>propositional&nbsp;logic</b>. For example, let us use the
+    Boolean&nbsp;variables A<sub>1</sub>, A<sub>2</sub>, ...,
+    A<sub>6</sub> to denote whether or not the corresponding answer
+    is&nbsp;selected. Then the different statements can be translated
+    to relations over Boolean formulas as&nbsp;follows:
+
+    <pre>
+solution([A1,A2,A3,A4,A5,A6]) :-
+        sat(A1 =:= A2*A3*A4*A5*A6),
+        sat(A2 =:= ~(A2+A3+A4+A5+A6)),
+        sat(A3 =:= A1*A2),
+        sat(A4 =:= card([1,2,3],[A1,A2,A3])),
+        sat(A5 =:= ~(A1+A2+A3+A4)),
+        sat(A6 =:= ~(A1+A2+A3+A4+A5)).
+    </pre>
+
+    In this formulation, we are again assuming that your
+    Prolog&nbsp;system ships with a dedicated constraint solver over
+    Boolean&nbsp;domains that implements <tt>sat/1</tt> as it is used
+    above. For example, in SICStus Prolog, such a solver is available
+    as&nbsp;<a href="https://sicstus.sics.se/sicstus/docs/latest4/html/sicstus.html/lib_002dclpb.html#lib_002dclpb"><tt>library(clpb)</tt></a>.
+
+    <br><br>
+
+    The following interaction shows that only a single answer
+    (option&nbsp;<b>5</b>) can be selected in such a way that all
+    statements are&nbsp;<i>consistent</i>.
+
+    <pre>
+?- solution(Vs).
+<b>Vs = [0, 0, 0, 0, 1, 0].</b>
+    </pre>
+
+    The Prolog system has <i>automatically</i> deduced the single
+    admissible answer via constraint&nbsp;<b>propagation</b>.
+
+    <center><h2>Lewis Carroll</h2></center>
+
+    Lewis Carroll was a logic teacher who also published many
+    entertaining puzzles.
+
+    <br><br>
+
+    In many of these puzzles, your job is to string together all given
+    statements so that they form a chain of implications, arriving at
+    an often surprising or amusing result. For example:
+
+    <br>
+
+    <div class="example">
+      <ol>
+        <li>None of the unnoticed things, met with at sea, are mermaids.</li>
+        <li>Things entered in the log, as met with at sea, are sure
+          to be worth remembering.</li>
+        <li>I have never met with anything worth remembering, when on
+          a voyage.</li>
+        <li>Things met with at sea, that are noticed, are sure to be
+          recorded in the log.</li>
+      </ol>
+    </div>
+    <br>
+
+    Once more, we can translate each of these statements to a formula
+    of <b>propositional&nbsp;logic</b>, but this time it is not so
+    straight-forward because the language is intentionally a bit
+    obfuscated. We make the simplifying assumption that all entities
+    mentioned are <i>met with at&nbsp;sea</i>, since this
+    qualification occurs, albeit cryptically, in each of the
+    statements. Let us use the following abbreviations:
+
+    <br>
+    <div style="padding-top: 10pt">
+    <table style="border: 1pt solid">
+      <tr>
+        <td><b>N</b></td><td>it is noticed</td>
+      </tr>
+      <tr>
+        <td><b>M</b></td><td>it is a mermaid</td>
+      </tr>
+      <tr>
+        <td><b>L</b></td><td>it is entered in the log</td>
+      </tr>
+      <tr>
+        <td><b>R</b></td><td>it is worth remembering</td>
+      </tr>
+      <tr>
+        <td><b>I</b></td><td>I have seen it</td>
+      </tr>
+    </table>
+    </div>
+    <br>
+
+    Using these abbreviations, we can model the puzzle as follows:
+
+    <pre>
+sea([N,M,L,R,I]) :-
+        sat(M =&lt; N),   % statement 1
+        sat(L =&lt; R),   % statement 2
+        sat(I =&lt; ~R),  % statement 3
+        sat(N =&lt; L).   % statement 4
+    </pre>
+
+    It only remains to find a chain of implications that links all
+    statements or their negations:
+
+    <pre>
+implication_chain([], Prev) --&gt; [Prev].
+implication_chain(Vs0, Prev) --&gt; [Prev],
+        { select(V, Vs0, Vs) },
+        (   { taut(Prev =< V, 1) } -&gt; implication_chain(Vs, V)
+        ;   { taut(Prev =< ~V, 1) } -&gt; implication_chain(Vs, ~V)
+        ).
+    </pre>
+
+    Sample query:
+
+    <pre>
+?- sea(Vs),
+   Vs = [N,M,L,R,I],
+   select(Start, Vs, Rest),
+   phrase(implication_chain(Rest, Start), Cs).
+    </pre>
+
+    In this case, the two solutions for <tt>Cs</tt>
+    are: <tt>[M,N,L,R,~I]</tt> and <tt>[I,~R,~L,~N,~M]</tt>.
+    Informally, this translates to "If it is a mermaid, I have not
+    seen it", and "If I have seen it, it is not a mermaid",
+    respectively. The whole chain, in the first&nbsp;case, is: If it
+    is a mermaid, it is noticed, hence it is entered in the&nbsp;log,
+    hence it is worth remembering, hence I have not seen&nbsp;it.
+    Informally, the "solution" of this puzzle is: <i>I have never seen
+    a&nbsp;mermaid.</i>
+
+    <br><br>
+    
+    Such deductions also frequently arise or are needed when applying
+    Prolog for
+    <a href="theoremproving">theorem&nbsp;proving</a>.
+
+    <center><h2 id="cryptoarithmetic">Cryptoarithmetic puzzles</h2></center>
+
+    <i>Cryptoarithmetic puzzles</i> require us to find <i>digits</i>
+    corresponding to <i>letters</i> or symbols, such that the
+    represented <i>numbers</i> satisfy certain constraints.
+
+    <br><br>
+
+    An example of a cryptoarithmetic puzzle is:
+
+    <pre>
+      CP
++     IS      
++    FUN
+--------
+=   TRUE      
+    </pre>
+
+    Different letters correspond to different digits.
+
+    <br><br>
+
+    <a href="clpfd">Integer constraints</a> are a great&nbsp;fit for such
+    puzzles. Let us first define the <i>relation</i> between a list of
+    digits and the represented number:
+
+    <pre>
+digits_number(Ds, N) :-
+        length(Ds, _),
+        Ds ins 0..9,
+        reverse(Ds, RDs),
+        <a href="metapredicates#foldl">foldl</a>(pow, RDs, 0-0, N-_).
+
+pow(D, N0-I0, N-I) :-
+        N #= N0 + D*10^I0,
+        I #= I0 + 1.
+    </pre>
+
+    Using <tt>digits_number/2</tt> as a building block, we can ask
+    for <i>solutions</i> with:
+
+    <pre>
+?- digits_number([C,P], CP),
+   digits_number([I,S], IS),
+   digits_number([F,U,N], FUN),
+   digits_number([T,R,U,E], TRUE),
+   CP + IS + FUN #= TRUE,
+   Vs = [C,P,I,S,F,U,N,T,R,E],
+   all_distinct(Vs),
+   label(Vs).
+    </pre>
+
+    The first solution is: 12+83+579=674. On backtracking, <i>all</i>
+    solutions are generated. We can easily express further
+    constraints. For example, we can generate solutions
+    where <tt>T</tt> is <i>not</i>&nbsp;0 by adding the
+    constraint&nbsp;<tt>T#\=0</tt>. This yields the solution
+    23+74+968=1065.
+
+    <center><h2>Zebra Puzzle</h2></center>
+
+    There is a well-known puzzle commonly known
+    as <a href="https://en.wikipedia.org/wiki/Zebra_Puzzle"><b>Zebra&nbsp;Puzzle</b></a>.
+
+    <br><br>
+
+    Let us consider the following variant of this famous group of puzzles:
+
+    <br>
+    <div class="example">
+      <b>Zebra Puzzle</b>: There are <i>five houses</i>, each painted in
+      a <i>unique&nbsp;color</i>. Their inhabitants are
+      from <i>different</i> nations, own different pets, drink
+      different beverages and smoke different brands of cigarettes.
+
+      <ol>
+        <li>The Englishman lives in the red house.</li>
+        <li>The Spaniard owns the dog.</li>
+        <li>Coffee is drunk in the green house.</li>
+        <li>The Ukrainian drinks tea.</li>
+        <li>From your perspective, the green house is immediately to
+        the <i>right</i> of the ivory house.</li>
+        <li>The Old Gold smoker owns snails.</li>
+        <li>Kools are smoked in the yellow house.</li>
+        <li>Milk is drunk in the middle house.</li>
+        <li>The Norwegian lives in the first house.</li>
+        <li>The man who smokes Chesterfields lives in the house next to the man with the fox.</li>
+        <li>Kools are smoked in the house next to the house where the horse is kept.</li>
+        <li>The Lucky Strike smoker drinks orange juice.</li>
+        <li>The Japanese smokes Parliaments.</li>
+        <li>The Norwegian lives next to the blue house.</li>
+      </ol>
+      
+      <i>Who drinks water? Who owns the zebra?</i>
+    </div>
+    <br><br>
+
+    Such puzzles can be very conveniently solved by first translating
+    the entities to <i>integers</i>, and then using your Prolog
+    system's <a href="clpfd">declarative integer arithmetic</a> to
+    state the given hints as <i>relations</i> between variables whose
+    domains are sets of&nbsp;integers. For example, if
+    the <i>position</i> of a house is represented as a
+    variable <tt>H</tt> with domain {1,2,3,4,5}, then the following
+    relation <i>holds</i> for any <i>neighbouring</i>
+    house&nbsp;<tt>N</tt>:
+
+    <pre>
+abs(H-N) #= 1
+    </pre>
+
+    This relation works correctly in <i>all</i> directions, no matter
+    which of the two variables, if any, is already instantiated. Thus,
+    translating such puzzles to <i>integers</i> often increases
+    convenience when expressing the desired relations, and often also
+    improves performance due to pruning techniques that are
+    automatically&nbsp;applied. In addition, keeping your
+    programs <a href="purity">pure</a> lets you benefit from powerful
+    additional techniques such as
+    <a href="debugging">declarative debugging</a>.
+
+    <br><br>
+
+    Thus, let us consider the following Prolog formulation of
+    the&nbsp;task:
+
+    <pre>
+solution(Pairs, Water, Zebra, Vs) :-
+        Table   = [Houses,Nations,Drinks,Smokes,Animals],
+        Houses  = [Red,Green,Yellow,Blue,Ivory],
+        Nations = [England,Spain,Ukraine,Norway,Japan],
+        Names   = [england,spain,ukraine,norway,japan],
+        Drinks  = [Coffee,Milk,OrangeJuice,Tea,Water],
+        Smokes  = [OldGold,Kools,Chesterfield,LuckyStrike,Parliaments],
+        Animals = [Dog,Snails,Horse,Fox,Zebra],
+        pairs_keys_values(Pairs, Nations, Names),
+        maplist(all_distinct, Table),
+        append(Table, Vs),
+        Vs ins 1..5,
+        England #= Red,               % hint 1
+        Spain #= Dog,                 % hint 2
+        Coffee #= Green,              % hint 3
+        Ukraine #= Tea,               % hint 4
+        Green #= Ivory + 1,           % hint 5
+        OldGold #= Snails,            % hint 6
+        Kools #= Yellow,              % hint 7
+        Milk #= 3,                    % hint 8
+        Norway #= 1,                  % hint 9
+        next_to(Chesterfield, Fox),   % hint 10
+        next_to(Kools, Horse),        % hint 11
+        LuckyStrike #= OrangeJuice,   % hint 12
+        Japan #= Parliaments,         % hint 13
+        next_to(Norway, Blue).        % hint 14
+
+next_to(H, N) :- abs(H-N) #= 1.
+    </pre>
+
+    Using <a href="clpfd#labeling">labeling</a>, we obtain the
+    puzzle's unique solution:
+
+    <pre>
+?- solution(Pairs, Water, Zebra, Vs), label(Vs).
+<b>Pairs = [3-england, 4-spain, 2-ukraine, 1-norway, 5-japan],
+Water = 1,
+Zebra = 5,</b>
+Vs = [3, 5, 1, 2, 4, 3, 4, 2, 1|...] ;
+false.
+    </pre>
+
+    Dozens of questions on Stackoverflow are about solving this famous
+    puzzle or closely related ones with&nbsp;Prolog. You can thus read
+    the <a href="http://stackoverflow.com/questions/tagged/prolog+zebra-puzzle">existing
+    questions and answers</a> for more information.
+
+
+    <center><h2>Wolf and Goat etc.</h2></center>
+
+    Another group of famous puzzles are known
+    as <b>river&nbsp;crossing</b> puzzles. Again, such puzzles can be
+    modeled in Prolog in a straight-forward way, by describing the
+    different <i>states</i> of all entities, and
+    formulating <i>relations</i> between these states. You can use
+    Prolog's built-in search strategy to search for a sequence of
+    admissible state&nbsp;transitions that let you reach the desired
+    target&nbsp;state. Use <i>iterative deepening</i> to find a
+    shortest solution. In Prolog, you can easily obtain iterative
+    deepening via&nbsp;<tt>length/2</tt>, which creates lists of
+    increasing&nbsp;length on backtracking.
+
+    <br><br> See <a href="/zurg/"><i>Escape from Zurg</i></a> for one
+    interesting&nbsp;example.
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Expert Systems in Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Expert Systems">
+    <meta name="keywords" content="Prolog,Expert Systems">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Expert Systems in Prolog</h1></center>
+
+    <center><h2>Introduction</h2></center>
+
+
+    An <b>expert system</b> emulates the decision-making ability of a
+    human&nbsp;<i>expert</i>.
+
+    <br><br>
+
+    Prolog is very well suited for <i>implementing</i> expert systems
+    due to several reasons:
+
+    <ul>
+      <li>Prolog itself can be regarded as a simple <i>inference
+        engine</i> or <a href="theoremproving">theorem&nbsp;prover</a>
+        that derives conclusions from known rules. Very simple expert
+        systems can be implemented by relying on Prolog's built-in
+        <a href="sorting#searching">search</a> and backtracking
+        mechanisms.</li>
+      <li>Prolog <a href="data">data&nbsp;structures</a> let us
+        flexibly and conveniently <i>represent</i> rule-based systems that
+        need additional functionality such as probabilistic reasoning.</li>
+      <li>We can easily
+        write <a href="/acomip/"><b>meta-interpreters</b></a> in Prolog
+        to implement custom evaluation strategies of&nbsp;rules.</li>
+    </ul>
+
+    <center><h2>Example: Animal identification</h2></center>
+
+    Our aim is to write an expert system that helps us <i>identify
+      animals</i>.
+
+    <br><br>
+
+    Suppose we have already obtained the following
+    knowledge about animals, which are rules of inference:
+
+    <ul>
+      <li>If it has a <i>fur</i> and says <i>woof</i>, then the animal
+      is a <b>dog</b>.</li>
+
+      <li>If it has a <i>fur</i> and says <i>meow</i>, then the animal
+      is a <b>cat</b>.</li>
+
+      <li>If it has <i>feathers</i> and says <i>quack</i>, then the
+        animal is a <b>duck</b>.</li>
+    </ul>
+
+    These rules are not exhaustive, but they serve as a running
+    example to illustrate a few points about expert systems.
+
+    <br><br>
+
+    The key idea of an expert system is to derive useful new
+    information based on user-provided input. In the following, we see
+    several&nbsp;ways to do this in&nbsp;Prolog.
+
+    <center><h2>Direct Prolog implementation</h2></center>
+
+    We now consider an implementation that
+    uses <a href="concepts#rule"><b>Prolog&nbsp;rules</b></a> <i>directly</i>
+    to implement the mentioned inference rules.
+
+    <br><br>
+
+    This is straight-forward, using <tt>is_true/1</tt> to emit a
+    question and only proceeding with the current clause if the user
+    input is the atom&nbsp;<tt>yes</tt>:
+
+    <pre>
+animal(dog)  :- is_true('has fur'), is_true('says woof').
+animal(cat)  :- is_true('has fur'), is_true('says meow').
+animal(duck) :- is_true('has feathers'), is_true('says quack').
+
+is_true(Q) :-
+        format("~w?\n", [Q]),
+        read(yes).
+    </pre>
+
+    There is a clear drawback of this approach, which is shown in the
+    following sample interaction:
+
+    <pre>
+?- animal(A).
+<b>has fur?</b>
+|: yes.
+says woof?
+|: no.
+<b>has fur?</b>
+|: yes.
+says meow?
+|: yes.
+
+A = cat .
+    </pre>
+
+    The system has asked a question <i>redundantly</i>: Ideally, the
+    fact that the animal <i>does</i> have a fur would have to be
+    stated at most&nbsp;<i>once</i> by the&nbsp;user.
+
+    <br><br>
+
+    How can we best implement this? It is tempting to mess with the
+    global database somehow to store user input over
+    backtracking. However, changing a global state destroys many
+    elementary properties we expect
+    from <a href="purity">pure</a> logical relations and is
+    generally a very bad&nbsp;idea, so we don't do it this way.
+
+    <h2><center>Using a domain-specific language</center></h2>
+
+    To solve the shortcoming explained above, we will
+    now <i>change</i> the representation of our rules from
+    Prolog&nbsp;clauses to a custom language that we write and
+    interpret a bit differently than plain&nbsp;Prolog. A language
+    that is tailored for a specific application domain is aptly
+    called a <i>domain-specific language</i>&nbsp;(DSL).
+
+    <br><br>
+
+    We shall use the following representation to represent the knowledge:
+
+    <pre>
+animals([animal(dog, [is_true('has fur'), is_true('says woof')]),
+         animal(cat, [is_true('has fur'), is_true('says meow')]),
+         animal(duck, [is_true('has feathers'), is_true('says quack')])]).
+    </pre>
+
+    The inference rules are now represented by terms of the
+    form <tt>animal(A, Conditions)</tt>, by which we mean
+    that <tt>A</tt> is identified if all <tt>Conditions</tt>
+    are&nbsp;true. Note especially that using a <i>list</i> is
+    a <a href="data#clean"><b>clean</b></a> representation of
+    conditions.
+
+    <br><br>
+
+    It is a straight-forward exercise to implement
+    an <i>interpreter</i> for this new representation. For example,
+    the following snippet behaves like the expert system we saw in the
+    previous section, assuming <tt>is_true/1</tt> is defined as before:
+
+    <pre>
+animal(A) :-
+        animals(As),
+        member(animal(A,Cs), As),
+        maplist(call, Cs).
+    </pre>
+
+    Notably, this of course also shares the mentioned disadvantage:
+
+    <pre>
+?- animal(A).
+<b>has fur?</b>
+|: yes.
+says woof?
+|: no.
+<b>has fur?</b>
+    </pre>
+
+    Now the point: We can interpret these rules <i>differently</i> by
+    simply changing the interpreter, while leaving the rules
+    unchanged. For example, let us equip this expert system with
+    a <i>memory</i> that records the facts that are
+    already <i>known</i> because they were already entered by the user
+    at some point during the interaction.
+
+    <br><br>
+
+    We implement this memory in a <a href="purity">pure</a> way, by
+    threading through additional arguments that describe
+    the <i>relation</i> between <a href="/tist/">states</a> of the
+    memory before and after the user is queried for additional
+    facts. For convenience, we are using <a href="dcg"><b>DCG
+        notation</b></a> to carry around the state <i>implicitly</i>.
+
+    <br><br>
+
+    Here is an implementation that does this:
+
+    <pre>
+animal(A) :-
+        animals(Animals),
+        Known0 = [],
+        phrase(any_animal(Animals, A), [Known0], _).
+
+any_animal([Animal|Animals], A) --&gt;
+        any_animal_(Animal, Animals, A).
+
+any_animal_(animal(A0, []), Animals, A) --&gt;
+        (   { A0 = A }
+        ;   any_animal(Animals, A)
+        ).
+any_animal_(animal(A0, [C|Cs]), Animals, A) --&gt;
+        state0_state(Known0, Known),
+        { condition_truth(C, T, Known0, Known) },
+        next_animal(T, animal(A0,Cs), Animals, A).
+
+next_animal(yes, Animal, Animals, A)  --&gt; any_animal([Animal|Animals], A).
+next_animal(no, _, Animals, A)        --&gt; any_animal(Animals, A).
+
+state0_state(S0, S), [S] --&gt; [S0].
+    </pre>
+
+    It is only left to define <tt>condition_truth/4</tt>: Depending on
+    what is already&nbsp;<i>known</i>, this predicate either uses the
+    existing knowledge <i>or</i> queries the&nbsp;user for more
+    information.
+
+    <br><br>
+
+    To distinguish these two cases in pure way, we use the
+    meta-predicate&nbsp;<a href="metapredicates#if_3"><tt><b>if_/3</b></tt></a>:
+
+    <pre>
+condition_truth(is_true(Q), Answer, Known0, Known) :-
+        if_(known_(Q,Answer,Known0),
+            Known0 = Known,
+            ( format("~w?\n", [Q]),
+              read(Answer),
+              Known = [known(Q,Answer)|Known0])).
+
+known_(What, Answer, Known, Truth) :-
+        if_(memberd_t(known(What,yes), Known),
+            ( Answer = yes, Truth = true ),
+            if_(memberd_t(known(What,no), Known),
+                ( Answer = no, Truth = true),
+                Truth = false)).
+    </pre>
+
+    And thus, at last, the question no longer appears redundantly:
+
+    <pre>
+?- animal(A).
+<b>has fur?</b>
+|: yes.
+says woof?
+|: no.
+<b>says meow?</b>
+|: yes.
+
+A = cat .
+    </pre>
+
+    Separating the knowledge base from the way it is interpreted has
+    allowed us to add features while leaving the inference rules unchanged.
+
+    <h2><center>Using a different DSL</center></h2>
+
+    Consider now yet another way to solve the exact same problem. Let
+    us view the animal identification task as interpreting the
+    following <b>decision&nbsp;diagram</b>, where dotted lines
+    indicate&nbsp;<i>no</i>, and plain&nbsp;lines
+    indicate&nbsp;<i>yes</i>:
+
+    <center>
+      <object data="animals1.svg" type="image/svg+xml" style="padding:20pt">
+      </object>
+    </center>
+
+    In this case, the diagram is in fact a full
+    <i>binary&nbsp;tree</i> which can be represented naturally using
+    Prolog&nbsp;terms. For example, let us represent the
+    decision&nbsp;tree as follows, using a term of the
+    form <tt>if_then_else/3</tt> for each inner&nbsp;node,
+    and <tt>animal/1</tt> and&nbsp;<tt>false/0</tt> for leaves:
+
+    <pre>
+tree(if_then_else('has fur',
+                  if_then_else('says woof',
+                               animal(dog),
+                               if_then_else('says meow',
+                                            animal(cat),
+                                            false)),
+                  if_then_else('has feathers',
+                               if_then_else('says quack',
+                                            animal(duck),
+                                            false),
+                               false))).
+    </pre>
+
+
+
+
+    Other kinds of decision diagrams can also be
+    represented efficiently with Prolog&nbsp;terms.
+
+    <br><br>
+
+    Such trees can be interpreted in a straight-forward way, using
+    again the definition of&nbsp;<tt>is_true/1</tt> to query
+    the&nbsp;user:
+
+    <pre>
+
+animal(A) :-
+        tree(T),
+        tree_animal(T, A).
+
+tree_animal(animal(A), A).
+tree_animal(if_then_else(Cond,Then,Else), A) :-
+        (   is_true(Cond) ->
+            tree_animal(Then, A)
+        ;   tree_animal(Else, A)
+        ).
+    </pre>
+
+    <div>
+      <blockquote class="box">
+        <b>Note</b>: This fragment uses the <i>impure</i> if-then-else
+        construct. This is logically&nbsp;sound only if the condition is
+        sufficiently instantiated, so that its truth can be safely
+        determined without prematurely committing to one branch.
+      </blockquote>
+    </div>
+
+    <br><br>
+
+    Since each question appears at most once on every path from the
+    root to a leaf, it is <i>not</i> necessary to keep track of which
+    questions have already been&nbsp;answered:
+
+    <pre>
+?- animal(A).
+<b>has fur?</b>
+|: yes.
+says woof?
+|: no.
+<b>says meow?</b>
+|: yes.
+
+A = cat.
+    </pre>
+
+    <center><h2>Comparison of approaches</h2></center>
+
+    We have now seen three different ways to implement an expert
+    system in Prolog:
+
+    <ul>
+      <li>direct Prolog implementation</li>
+      <li>devising and interpreting a domain-specific language</li>
+      <li>using a completely different domain-specific language.</li>
+    </ul>
+
+    Each of these approaches was rather easy to implement
+    in&nbsp;Prolog, and there are several other&nbsp;DSLs that would
+    also be suitable. The question thus arises: Which DSL, if any,
+    should we choose to implement expert systems in&nbsp;Prolog? Let
+    us briefly consider the main&nbsp;points we have seen:
+
+    <ol>
+      <li>Using Prolog <i>directly</i> is straight-forward. However, a
+        naive implementation has a few drawbacks. In our case, the
+        same question was unnecessarily asked repeatedly.</li>
+      <li>Using a <i>domain-specific language</i> lets us cleanly separate
+        the main logic of the expert system from additional features,
+        such as keeping track of already answered questions.</li>
+      <li>A DSL based on decision diagrams is very easy to interpret
+        and automatically avoids redundant questions.</li>
+    </ol>
+
+    From these points alone, option&nbsp;(3) seems very attractive.
+    However, it also raises a few important questions: First, how was
+    the decision&nbsp;diagram even <i>obtained</i>, and does it
+    faithfully model the conditions we want to express? It is rather
+    easy to do&nbsp;it by&nbsp;hand in this example, but how would you
+    do it in more complex cases? Second, how <i>costly</i> is the
+    transformation from a rather straight-forward fact base as in
+    option&nbsp;(2) to using decision diagrams instead? Third, is this
+    really a <i>good</i> diagram, and what do we even mean
+    by&nbsp;<i>good</i>? Are there orderings of nodes that let
+    us <i>reduce</i> the number of questions? In the worst case, on
+    average, in the best case? Fourth, how extensible is the language
+    of decision diagrams? For example, can <i>all</i> animal
+    identification&nbsp;tasks be modeled in this&nbsp;way?&nbsp;etc.
+
+    <br><br>
+
+    These questions show that the best choice depends on many&nbsp;factors.
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

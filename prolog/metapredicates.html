@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Higher-order Predicates</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Higher-order Predicates">
+    <meta name="keywords" content="Prolog,Higher-order predicates">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Higher-order Predicates</h1></center>
+    <br>
+
+    Prolog predicates that take <i>predicates</i> as arguments are
+    called <b>higher-order predicates</b>, or <b>meta-predicates</b>.
+
+    <center><h2 id="call"><tt>call/N</tt></h2></center>
+
+    The <tt>call/N</tt> family
+    of <a href="concepts#builtin">built-in</a> predicates allow
+    us to call Prolog <i>closures</i> dynamically. A <b>closure</b> is
+    a term that denotes a Prolog goal to which zero or more arguments
+    are added before it is called.
+
+    <br><br>
+
+    The mechanism to invoke arbitrary Prolog goals dynamically is
+    called <b>meta-call</b>, and it is the basic building block by
+    which we can define arbitrary meta-predicates in Prolog.
+
+    <br><br>
+
+    Importantly, the <tt>call/N</tt> family of predicates
+    retain <a href="purity"><b>logical purity</b></a> of the
+    predicates they call.
+
+    <br><br>
+
+    Like most meta-predicates, <tt>call/N</tt> could
+    <i>in&nbsp;principle</i> be implemented in&nbsp;Prolog itself. For
+    example, we could implement <tt>call/1</tt> as follows, using one
+    clause for each available predicate:
+
+    <pre>
+call(true).
+call(X #= Y)  :- X #= Y.
+call(call(G)) :- call(G).
+etc.
+    </pre>
+
+    Of course, this would need an impractical number of clauses
+    in&nbsp;practice, and for this reason the <tt>call/N</tt> family
+    of predicates is implemented differently.
+
+    <center><h2 id="maplist"><tt>maplist/N</tt></h2></center>
+
+    The predicates <tt>maplist/2</tt> and <tt>maplist/3</tt> are among
+    the most important and most frequently used meta-predicates. All
+    widely used Prolog systems provide them as built-in or library
+    predicates.
+
+    <br><br>
+
+    The goal <tt>maplist(Pred_1, Ls)</tt> is <i>true</i>
+    iff <tt>call(Pred_1, L)</tt> is true for <i>each</i>
+    element&nbsp;<tt>L</tt> in the list&nbsp;<tt>Ls</tt>.
+
+    <br><br>
+
+    The goal <tt>maplist(Pred_2, As, Bs)</tt> is <i>true</i>
+    iff <tt>call(Pred_2, A, B)</tt> is true for each <i>pair</i> of
+    elements&nbsp;<tt>A&in;As</tt>
+    and <tt>B&in;Bs</tt> that have the same index.
+
+    <br><br>
+
+    There are further predicates in this family
+    (<tt>maplist/[4,5,...]</tt>) that are less frequently used.
+
+    <br><br>
+
+    If your Prolog system does not provide these predicates, you can
+    easily define them yourself. For example, <tt>maplist/3</tt> is
+    declaratively equivalent to:
+
+    <pre>
+maplist(_, [], []).
+maplist(Pred_2, [A|As], [B|Bs]) :-
+        call(Pred_2, A, B),
+        maplist(Pred_2, As, Bs).
+    </pre>
+
+    Using <a href="macros">goal expansion</a>, the meta-call can
+    be compiled away in many cases to improve performance.
+
+    <br><br>
+
+    The primary advantage of <tt>maplist/N</tt> is that you can lift
+    any relation that holds for a <i>single</i> element (or single
+    pair, triple, etc. of elements) to <i>lists</i> of such elements
+    (or <i>corresponding</i> elements).
+
+    <br><br>
+
+    For example, we can state that a term&nbsp;<tt>E</tt>
+    is <i>different</i> from <i>all</i> elements in&nbsp;<tt>Ls</tt>:
+
+    <pre>
+?- maplist(dif(E), Ls).
+Ls = [] ;
+Ls = [_G1274],
+dif(E, _G1274) ;
+Ls = [_G1363, _G1366],
+dif(E, _G1366),
+dif(E, _G1363) ;
+etc.
+    </pre>
+
+    This works in <i>all directions</i>, even if <tt>Ls</tt> is not
+    instantiated.
+
+    <center><h2 id="if_3"><tt>if_/3</tt> and related predicates</h2></center>
+
+    The meta-predicate <tt>if_/3</tt> is an important recent
+    development that is described
+    in <a href="https://arxiv.org/abs/1607.01590"><b><i>Indexing
+          dif/2</i></b></a> by Ulrich&nbsp;Neumerkel and Stefan&nbsp;Kral.
+
+    <br><br>
+
+    Implementations are available for:
+
+    <ul>
+      <li>SICStus Prolog: <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/sicstus/reif.pl"><tt>library(reif)</tt></a></li>
+      
+      <li>SWI-Prolog: <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/swi/reif.pl"><tt>library(reif)</tt></a></li>
+    </ul>
+
+    Importantly, <tt>if_/3</tt> combines desirable declarative
+    properties with good performance in many situations of high
+    practical relevance.
+
+    <br><br>
+
+    For example, the predicate <tt>hailstone/2</tt> that is described
+    in <a href="concepts#collatz"><b>Basic Concepts</b></a> can be
+    expressed with <tt>if_/3</tt> as follows:
+
+    <pre>
+hailstone(N, N).
+hailstone(N0, N) :-
+        R #= N0 mod 2,
+        if_(R = 0,
+            N1 #= N0//2,
+            N1 #= 3*N0 + 1),
+        hailstone(N1, N).
+    </pre>
+
+    <tt>if_/3</tt> correctly commits to one of the two alternatives
+    when admissible <i>and</i> retains full generality.
+
+    <br><br>
+
+    See also the predicates <tt>tfilter/3</tt>, <tt>tpartition/4</tt> and
+    other features that are provided by this important new&nbsp;library.
+
+    <center><h2 id="foldl"><tt>foldl/N</tt></h2></center>
+
+    The <tt>foldl/N</tt> family of predicates describe a <i>fold from
+    the left</i> of a list. You can think of a <b>fold</b> as a list
+    traversal with intermediate states. An intermediate state
+    becomes final when no more elements remain.
+
+    <br><br>
+
+    The most frequently used of these predicates
+    is <tt>foldl/4</tt>:
+
+    <br><br>
+
+    <tt>foldl(Pred_3, Ls, S0, S)</tt> describes a fold from the left
+    of the list <tt>Ls</tt>, where <tt>S0</tt> is the initial state
+    and <tt>S</tt> is the final state. For each
+    element <tt>L&in;Ls</tt> and intermediate
+    state&nbsp;<tt>S<sub>n</sub></tt>, <tt>call(Pred_3, L,
+    S<sub>n</sub>, S<sub>n+1</sub>)</tt> is invoked to relate the
+    current list element&nbsp;<tt>L</tt> and intermediate
+    state&nbsp;<tt>S<sub>n</sub></tt> to the <i>next</i> intermediate
+    state&nbsp;<tt>S<sub>n+1</sub></tt>.
+
+    <br><br>
+
+    Again, these predicates let us focus on the relation for one
+    element at a time, and then lift this relation to <i>lists</i> of
+    elements.
+
+    <br><br>
+
+    For example, consider the following relation between two integers
+    and their <i>sum</i>:
+
+    <pre>
+integer_integer_sum(A, B, S) :- S #= A + B.
+    </pre>
+
+    Using this relation, we can express the sum of
+    a <i>list</i>&nbsp;<tt>Ls</tt> of integers with <tt>foldl/4</tt>,
+    using 0 as the initial state:
+
+    <pre>
+?- foldl(integer_integer_sum, Ls, 0, S).
+Ls = [],
+S = 0 ;
+Ls = [S],
+S in inf..sup ;
+Ls = [_G2017, _G2020],
+_G2020+_G2017#=S ;
+etc.
+    </pre>
+
+    As another example, we can define the <i>maximum</i> of a
+    list&nbsp;<tt>Ls</tt> of integers as follows:
+
+    <pre>
+list_maximum([L|Ls], Max) :- foldl(maximum_, Ls, L, Max).
+
+maximum_(A, B, Max) :- Max #= max(A, B).
+    </pre>
+
+    In this case, we use the first element of the list as the initial state.
+
+    <center><h2 id="solutions">All solutions predicates</h2></center>
+
+    There are several built-in predicates that let us obtain <i>all
+      solutions</i> of a predicate.
+
+    <br><br>
+
+    These predicates transform solutions that are normally found on
+    backtracking to <i>lists</i> of solutions. The former is sometimes
+    called a <i>temporal</i> representation, and the latter
+    a <i>spatial</i> representation.
+
+    <br><br>
+
+    The most important such predicates
+    are <tt>bagof/3</tt>, <tt>setof/3</tt>
+    and <tt>findall/3</tt>.
+
+    <br><br>
+
+    In general, reasoning about the database in this way
+    destroys <i>monotonicity</i> of your programs: After <i>adding</i>
+    a clause, goals that previously succeeded may&nbsp;<i>fail</i> if
+    these predicates are used. This may
+    render <a href="debugging">declarative debugging</a> approaches
+    inapplicable. One way to see why these predicates are problematic
+    is to observe that <tt>(\+)/1</tt> ("not&nbsp;provable") can be
+    implemented via&nbsp;<tt>findall/3</tt>:
+
+    <pre>
+\+ Goal :- findall(., Goal, []).
+    </pre>
+
+
+    For this reason, use these predicates with caution.
+
+    <center><h2>Further reading</h2></center>
+
+    Ulrich
+    Neumerkel's <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/ISO-Hiord.html"><tt>library(lambda)</tt></a>
+    is an important recent proposal for
+    <i>lambda&nbsp;expressions</i> in ISO&nbsp;Prolog. Use this
+    library in cases where you would like to call variations of
+    predicates without introducing auxiliary&nbsp;predicates.
+
+    <br><br>
+
+    Richard O'Keefe's
+    draft, <a href="http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm">An
+    Elementary Prolog Library</a>, also contains descriptions and
+    implementations for many important higher-order predicates.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

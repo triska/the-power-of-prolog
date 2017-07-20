@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>The Future of Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="The Future of Prolog">
+    <meta name="keywords" content="Prolog,Future,Developments">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>The Future of Prolog</h1></center>
+    <br><br>
+
+    <div style="margin-left: 50%; display: inline-block">
+      <br>
+      <pre>
+DUCUNT VOLENTEM FATA NOLENTEM TRAHUNT
+
+(Attributed to Lucius Annaeus Seneca)
+      </pre>
+    </div>
+    <br><br>
+
+    <center><h2>Lessons from the past</h2></center>
+
+    Prolog is harder to learn than many other programming languages.
+
+    <br><br>
+
+    In part, this is due to inherent reasons: Prolog is simpler and
+    more powerful than many other programming languages, and so it
+    takes longer to get used to this if you are more familiar with
+    low-level languages.
+
+    <br><br>
+
+    However, a far more important cause is found in limitations of
+    existing teaching material: In many cases, Prolog is being taught
+    exactly like it was taught in the 1980s and&nbsp;1990s.  Outdated
+    teaching material leads to broken promises: The use of low-level
+    and impure language features complicates or prevents logical
+    reasoning about Prolog&nbsp;programs, forcing students to think
+    procedurally about their programs <i>instead</i> of declaratively.
+    
+    <br><br>
+
+    In the past, this has resulted in a lot of frustration, wrong
+    impressions and <a href="horror">coding&nbsp;horror</a>. For
+    beginners, it is easy to get sidetracked and start wrestling with
+    low-level issues while losing sight of much more important
+    principles. Do not fall into this&nbsp;trap!
+
+    <br><br>
+
+    Prolog is also hard to <i>teach</i>, since it is hard to keep all
+    informal statements you make about Prolog&nbsp;programs
+    sufficiently general to cover all possible
+    usage&nbsp;modes. Conscious effort is necessary to convey this
+    generality to beginners.
+
+    <center><h2>Current developments</h2></center>
+
+    In the Prolog community, most current developments are focused on
+    increasing <a href="purity"><b>logical purity</b></a>, and
+    making pure code more feature-rich and efficient.
+
+    <br><br>
+
+    The <a href="http://www.complang.tuwien.ac.at/ulrich/iso-prolog/">ISO
+    standardization process</a> is an important means to improve
+    compatibility between different Prolog systems.
+
+    <br><br>
+
+    <a href="web">Web services</a> and data analsyis are
+    increasingly relevant application areas for&nbsp;Prolog.
+
+    <br><br>
+
+    Most recent and ongoing developments of Prolog happen in
+    universities and in institutions that are closely associated
+    with&nbsp;academia. Important contemporary research areas include
+    <i>probabilistic</i> logic programming, answer&nbsp;set
+    programming&nbsp;(ASP) and language dialects that satisfy certain
+    safety&nbsp;criteria or other interesting declarative properties.
+
+    <br><br>
+
+    As an application programmer and Prolog practitioner, you can
+    contribute to these developments by getting acquainted with modern
+    Prolog&nbsp;features, applying them in your own&nbsp;programs, and
+    discussing opportunities for&nbsp;improvements with your
+    Prolog&nbsp;vendor. Continuous and wide-spread usage helps to
+    ensure that these features are constantly improving.
+
+    <center><h2>How to proceed</h2></center>
+
+    The advent and wide availability of new, declarative language
+    features justify and moreover <i>necessitate</i> that
+    we <i>teach Prolog&nbsp;differently</i> than we did in
+    the&nbsp;past.
+
+    <br><br>
+
+    Nowadays, it is becoming increasingly inappropriate to dedicate a
+    significant portion of your lectures to explaining the intricacies
+    of low-level language&nbsp;constructs that have long
+    been&nbsp;superseded by more general replacements. The time is
+    better spent elsewhere: in explaining the foundations of logic
+    programming in such a way that modern language constructs
+    are <i>naturally</i> covered. This retains full generality and
+    allows <i>both</i> declarative <i>and</i> procedural readings
+    instead of precluding one or the&nbsp;other.
+
+    <br><br>
+
+    To really appreciate modern Prolog&nbsp;features, you also have to
+    take into account their&nbsp;history: Previous generations of
+    Prolog instructors were acutely aware of the declarative
+    limitations associated with the constructs they were teaching, but
+    had no other options. In many cases, the instructors themselves
+    were also among the pioneers in the difficult search for more
+    elegant and more general constructs.
+
+    <br><br>
+
+    For instance, consider the following section from
+    a <a href="okeefe.txt">manuscript</a> by Richard O'Keefe, written no
+    later than&nbsp;1984:
+
+    <pre>
+<b>Instantiation Faults</b>
+
+The fifth kind of error is when a question has too many variables in it.
+Now this logically speaking is no error at all.  The question "plus(X,X,Y)"
+has a perfectly good set of solutions {(X,Y)|X is an integer and Y=2*X}.
+    </pre>
+    It is evident from this draft that very declarative features have
+    been anticipated for several decades. It has simply taken a
+    certain amount of&nbsp;time until the techniques that were
+    envisioned and even outlined by many pioneers were
+    fully&nbsp;realized. Today, we get in full accordance with what
+    the draft envisaged:
+
+    <pre>
+?- X + X #= Y.
+<b>2*X#=Y</b>.
+    </pre>
+
+    By now, declarative features like constraints are widely spread
+    and available at least to some extent in all popular Prolog
+    systems. For many people working in declarative language research,
+    this is a <i>dream come true</i>, and still materializing. These
+    features are <i>meant to be used</i>. I mean not only as
+    interesting curiosities, but as <b>integral parts</b> of the
+    language. Prolog systems that do not yet include some of these
+    features <i>will adopt&nbsp;them</i> as they become
+    more&nbsp;popular.
+
+    <br><br>
+
+    In the future, the most influential Prolog books will be those
+    which most explicitly expose the <b>pure&nbsp;core</b>
+    of&nbsp;Prolog and the unique advantages and
+    application&nbsp;opportunities of logic&nbsp;programming and
+    constraints, such&nbsp;as:
+
+    <ul>
+      <li><a href="debugging"><b>declarative debugging</b></a></li>
+      <li><a href="clpfd"><b>declarative integer arithmetic</b></a></li>
+      <li><a href="optimization"><b>combinatorial optimization.</b></a></li>
+    </ul>
+
+    By fully embracing such concepts and using them to their utmost
+    advantage, future generations may at last behold and
+    benefit&nbsp;from the true power of&nbsp;Prolog.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

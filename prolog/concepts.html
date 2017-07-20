@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Basic Concepts</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Basic Concepts">
+    <meta name="keywords" content="Prolog,Concepts,Basics,Introduction">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Basic Concepts</h1></center>
+    <br>
+
+    We introduce and define the most basic <b>concepts</b> of Prolog.
+
+    <center><h2>Terms</h2></center>
+
+    In Prolog, <i>all data</i>&mdash;including
+    Prolog <i>programs</i>&mdash;is represented by
+    Prolog <a href="data#term"><b>terms</b></a>.
+
+    <br><br>
+
+    You can define custom prefix-, infix- and postfix <b>operators</b>
+    that let you write terms in different ways. Several standard
+    operators are predefined. For example, you can write <tt>a+b</tt>
+    and <tt>X=Y</tt> instead of <tt>+(a,b)</tt> and <tt>=(X,Y)</tt>,
+    respectively.
+
+    <center><h2 id="program">Programs</h2></center>
+
+    A Prolog <b>program</b> is a set of <i>predicates</i>.
+
+    <br><br>
+
+    Predicates define <b>relations</b> between their
+    arguments. Logically, a Prolog program states what&nbsp;<i>holds</i>.
+
+    <br><br>
+
+    There are a few conventions
+    for <a href="writing"><b>writing</b></a> Prolog programs, and
+    different ways of <a href="reading"><b>reading</b></a> them.
+
+    <br><br><br>
+
+    <center><h3 id="predicate">Predicates</h3></center>
+
+    Each <b>predicate</b> has a <i>name</i>, and zero or
+    more <i>arguments</i>. The predicate <b>name</b> is a
+    Prolog&nbsp;<i>atom</i>. Each <b>argument</b> is an arbitrary
+    Prolog&nbsp;term.
+
+    <br><br>
+
+    A predicate with name <i>Pred</i> and <i>N</i> arguments is
+    denoted by <i>Pred</i>/<i>N</i>, which is called
+    a <b>predicate&nbsp;indicator</b>. <i>N</i> is called
+    the <b>arity</b> of the predicate.
+
+    <br><br>
+
+    A predicate is defined by a collection of <i>clauses</i>.
+
+    <br><br>
+
+    <div id="clause">
+      A <b>clause</b> is either a <i>rule</i> or a <i>fact</i>. The
+      clauses that constitute a predicate denote
+      logical <i>alternatives</i>: If <i>any</i> clause is true, then
+      the whole predicate is&nbsp;true.
+    </div>
+
+    <br><br><br>
+    <center><h3 id="rule">Rules</h3></center>
+
+    A Prolog <b>rule</b> has the form:
+
+    <pre>
+<i>Head</i> :- <i>Body</i>.
+    </pre>
+
+    The notation of the <b>head</b> of a rule depends on the number of
+    arguments:
+
+    <ul>
+      
+      <li>If the predicate has <i>zero</i>
+	arguments, then the head consists only of the predicate name.</li>
+      <li>If a predicate called <i>Name</i> has a <i>positive</i>
+	number&nbsp;<i>N</i> of arguments, then the head is written
+	as:
+<tt><i>Name</i>(<i>Arg</i><sub>1</sub>, <i>Arg</i><sub>2</sub>, ..., <i>Arg</i><sub>N</sub>)</tt>.
+      </li>
+    </ul>
+
+    The <b>body</b> of each rule is a Prolog <i>goal</i>.
+
+    <br><br>
+    
+    A <b>goal</b> is a Prolog term that denotes a predicate and its arguments.
+
+    <br><br>
+
+    A rule is called <b>recursive</b> if one of its goals refers to
+    the predicate that the rule is defining.
+
+    <br><br><br>
+    <center><h3 id="fact">Facts</h3></center>
+
+    A <b>fact</b> is written as:
+
+    <pre>
+<i>Head</i>.
+    </pre>
+
+    This is equivalent to the <a href="#rule">rule</a>:
+    
+    <pre>
+<i>Head</i> :- <b>true</b>.
+    </pre>
+
+    Logically, this means that the rule <i>always&nbsp;holds</i>,
+    because the <a href="#builtin">built-in</a>
+    predicate <tt>true/0</tt> is always&nbsp;true.
+
+    <center><h2 id="toplevel">Toplevel</h2></center>
+
+
+    The Prolog <b>toplevel</b> is the main way in which we <i>run</i>
+    Prolog programs.
+
+    <br><br>
+
+    We invoke a Prolog predicate by posting a <b>query</b> on the
+    toplevel. A query is an arbitrary Prolog&nbsp;<i>goal</i>. In a
+    query, logical variables are <i>existentially</i> quantified. We
+    can thus read a query as: "Are there any cases for which the given
+    predicate&nbsp;<i>holds</i>?"
+
+    <br><br>
+
+    If the goal succeeds, then the toplevel reports an <b>answer</b>.
+    The answer is a Prolog goal that is
+    declaratively <i>equivalent</i> to the query.
+
+    <br><br>
+
+    Every predicate has an associated <b>most general query</b>, which
+    means that <i>all arguments are fresh&nbsp;variables</i>.
+
+    <br><br>
+
+    Note that a goal can succeed <i>more than once</i>. Depending on
+    your Prolog implementation, you either press <tt>SPACE</tt>
+    or&nbsp;";" to see alternatives.
+
+    <center><h2>Running Prolog code</h2></center>
+
+    Running a Prolog program can be regarded as a special case
+    of <a href="https://en.wikipedia.org/wiki/Resolution_(logic)"><b>resolution</b></a>, which is an algorithm that is rooted in
+    formal&nbsp;logic. Logically, when Prolog answers a query, it
+    tries to find a <i>resolution&nbsp;refutation</i> of the negated
+    query and the set of clauses that constitute the program. When a
+    refutation is found, it means that the query is a
+    logical <b>consequence</b> of the program.
+
+    <br><br>
+
+    An important step in this process is syntactic <b>unification</b>
+    of terms. Unification is a generalization of <i>pattern
+    matching</i>. When a clause head is chosen for unification with a
+    Prolog goal, then unification applies to the arguments
+    of&nbsp;<i>both</i>.
+
+    <br><br>
+
+    For this reason, there is <i>no distinction</i> between input and
+    output arguments of <a href="purity">pure</a> predicates, and
+    Prolog predicates can often be used in several directions.
+
+    <br><br>
+
+    If multiple clause heads unify with a goal, then alternatives are
+    tried on <b>backtracking</b>.
+
+    <br><br>
+
+    Informally, you can think of Prolog's execution strategy, which is
+    called <i>depth-first search with chronological backtracking</i>,
+    as a generalization of <i>function&nbsp;calls</i> that are
+    available in other languages. The main differences are that:
+    (1)&nbsp;multiple clauses can match and (2)&nbsp;unification works
+    in both directions.
+
+    <br><br>
+    To find mistakes in Prolog programs,
+    it is typically <i>not necessary</i> to trace the actual execution
+    steps. Instead, <a href="debugging"><b>declarative
+    debugging</b></a> techniques can be applied to narrow down
+    mistakes by logical reasoning.
+
+    <center><h2 id="builtin">Built-ins</h2></center>
+
+    Some predicates are already <i>predefined</i> when you start your
+    Prolog&nbsp;system. These are
+    called <i>built-in</i>&nbsp;predicates or
+    simply&nbsp;<b>built-ins</b>.
+
+    <br><br>
+
+    For example, the built-in <tt>(=)/2</tt> is true <i>iff</i> its
+    arguments <i>unify</i>. The built-in <tt>true/0</tt> is
+    always <i>true</i>, and the built-in <tt>false/0</tt> is
+    always <i>false</i>.
+
+    <br><br>
+
+    Many built-ins are only available for <i>convenience</i>, and you
+    could easily define them yourself by the mechanisms explained
+    above. For example, if they were not already defined, you could
+    define the mentioned predicates as:
+
+    <pre>
+T = T.
+
+true.
+
+false :- a = b.
+    </pre>
+
+    However, not all built-ins can be defined in this way.
+
+    <br><br>
+
+    In addition to <tt>(=)/2</tt>, <tt>true/0</tt>
+    and <tt>false/0</tt>, the most important built-ins you need to
+    know to write useful and pure Prolog programs are:
+
+    <ul>
+      <li> <tt>dif/2</tt> is true <i>iff</i> its arguments are <i>different</i> terms</li>
+      <li> <a href="clpfd"><b>integer constraints</b></a> let you reason about arithmetic expressions</li>
+      <li> <tt>(',')/2</tt> denotes <b>conjunction</b>: <tt>(A,B)</tt> is true <i>iff</i> both <tt>A</tt> <i>and</i> <tt>B</tt> are true</li>
+      <li> <tt>(';')/2</tt> denotes <b>disjunction</b>: <tt>(A;B)</tt> is true <i>iff</i> either <tt>A</tt> <i>or</i> <tt>B</tt> <i>or</i> both are true.</li>
+    </ul>
+
+
+    <hr>
+    <center><h2 id="collatz">Example: Collatz conjecture</h2></center>
+
+    We illustrate all these concepts by means of an example:
+
+    <blockquote>
+      Take any positive integer <i>N</i>. To get the next integer,
+      do the following:
+      <ul>
+        <li>If <i>N</i> is <i>even</i>, divide it by 2.</li>
+        <li>If <i>N</i> is <i>odd</i>, multiply it by 3 and add 1,
+          obtaining 3&times;<i>N</i>&nbsp;+&nbsp;1.
+        </li>
+      </ul>
+      Repeat this indefinitely to obtain the <i>hailstone
+      sequence</i> <i>N</i><sub>0</sub>, <i>N</i><sub>1</sub>, <i>N</i><sub>2</sub>,&nbsp;...
+
+      <br><br>
+
+      The <a href="https://en.wikipedia.org/wiki/Collatz_conjecture">Collatz
+          conjecture</a> is that the integer&nbsp;<b>1</b> appears in
+      this sequence for <i>all</i> positive initial integers.
+    </blockquote>
+
+    We can model the hailstone sequence as follows, using the
+    built-in <a href="clpfd"><b>integer
+    constraint</b></a>&nbsp;<tt>(#=)/2</tt> to denote <i>equality</i>
+    of two integer&nbsp;expressions:
+
+    <pre>
+hailstone(N, N).
+hailstone(N0, N) :-
+        N0 mod 2 #= 0,
+        N1 #= N0 // 2,
+        hailstone(N1, N).
+hailstone(N0, N) :-
+        N0 mod 2 #= 1,
+        N1 #= 3*N0 + 1,
+        hailstone(N1, N).
+    </pre>
+
+    The <b>predicate</b> <tt>hailstone/2</tt> is defined by
+    three <b>clauses</b>: one <b>fact</b> and two <b>rules</b>. It
+    defines a <b>relation</b> between two <b>arguments</b>. The first
+    argument represents the current element of the sequence. The
+    second argument is used to report solutions. After a <b>query</b>
+    is posted and an <b>answer</b> is reported by the <b>toplevel</b>,
+    the <i>alternatives</i> are tried on <b>backtracking</b>:
+
+    <pre>
+?- hailstone(3, N).
+N = 3 ;
+N = 10 ;
+N = 5 ;
+N = 16 ;
+N = 8 ;
+N = 4 ;
+N = 2 ;
+N = 1 ;
+N = 4 ;
+N = 2 ;
+N = 1 .
+    </pre>
+
+    This <b>program</b> illustrates that a sequence of actions can be modeled
+    as a relation between successive <i>states</i>.
+    See <a href="/tist/"><i>Thinking in States</i></a> for more examples.
+
+    <br><br>
+
+    As is characteristic for pure relations, the predicate can be used
+    in <i>all directions</i>. For example, we can post the <b>most
+    general query</b>:
+
+    <pre>
+?- hailstone(X, Y).
+X = Y ;
+X//2#=Y,
+X mod 2#=0 ;
+X//2#=_1824,
+X mod 2#=0,
+_1824//2#=Y,
+_1824 mod 2#=0 ;
+X//2#=_2254,
+X mod 2#=0,
+_2254//2#=_2302,
+_2254 mod 2#=0,
+_2302//2#=Y,
+_2302 mod 2#=0 .
+    </pre>
+
+    When studying a Prolog predicate, try the most general query to see
+    what answers look like <i>in&nbsp;general</i>.
+
+    <br><br>
+
+    We can implement <tt>hailstone/2</tt> more efficiently
+    with&nbsp;<a href="metapredicates#if_3"><tt>if_/3</tt></a>.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

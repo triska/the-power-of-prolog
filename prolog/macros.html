@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Prolog Macros</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prolog Macros">
+    <meta name="keywords" content="Prolog,Macros,Goal Expansion,AST">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Prolog Macros</h1></center>
+    <br><br>
+
+    <center><h2>Introduction</h2></center>
+
+    In the Lisp community, <i>macros</i> are always a big&nbsp;deal. A
+    Lisp macro <i>rewrites Lisp&nbsp;code</i>.
+
+    <br><br>
+
+    Very often, the phrase "code is data" is used in this context. But
+    this also holds for example for C and Java&nbsp;code: C code
+    is <i>also</i> data, and you can store and access C&nbsp;code as a
+    plain text&nbsp;file. Therefore, this does not capture the main
+    reason why we should care about Lisp macros especially. In a more
+    limited sense, a C preprocessor <i>also</i> supports&nbsp;macros.
+
+    <br><br>
+
+    What, then, <i>is</i> the core difference between Lisp and C
+    macros? Clearly, Lisp macros are much more powerful <i>because
+    they can easily analyze Lisp code</i>. Why is this? Because Lisp
+    code has a <b>natural, structure-preserving representation</b> as
+    a Lisp data structure! This is <i>not</i> the case for&nbsp;C
+    or&nbsp;Java. For example, there is no built-in data structure
+    in&nbsp;C that faithfully represents C source&nbsp;code in a
+    <i>structure-preserving&nbsp;way</i>. We can represent C
+    source&nbsp;code within C as an array of characters, but that does
+    not preserve the <i>abstract structure</i> of the source code, and
+    it makes basic operations extremely hard. For example:
+
+    <ul>
+      <li>Which variable names occur in the program?</li>
+      <li>How many if-then-else constructs are used in the code?</li>
+      <li>Are there tail-recursive functions?</li>
+    </ul>
+
+    These are questions that are hard to answer in the case of&nbsp;C
+    because it is hard to reason about the structure of
+    C&nbsp;programs in an abstract way, at least much harder than it
+    is in the case of&nbsp;Lisp.
+
+    <br><br>
+
+    The point of this page is to show you that Prolog has a mechanism
+    that works much like <b>macros</b> in&nbsp;Lisp. In fact, macros
+    are a lot easier to write in Prolog for several reasons. This
+    simplicity is the main reason why Prolog programmers are not as
+    hysteric about this feature as several other language
+    communities. In Prolog, this facility is simply available, and
+    easily used when needed.
+
+    <br><br>
+
+    <center><h2>Code is more than data</h2></center>
+
+    Of course, <i>code is data</i>: We write it down, we read it.
+    Prolog code is <i>more</i> than simply "data" though: Every Prolog
+    clause is a valid <a href="data"><b>Prolog&nbsp;term</b></a>.
+    This is
+    <i>structured</i>&nbsp;data, which we can analyze and process
+    systematically using <a href="concepts#builtin"><i>built-in
+        features</i></a> of&nbsp;Prolog.
+
+    For example, consider a simple Prolog <i>rule</i>:
+
+    <pre>
+f(X, Y) :- g(X), h(Y).
+    </pre>
+
+    This is the following Prolog <i>term</i>:
+
+    <ul>
+      <li>the <a href="data#term"><i>functor</i></a>
+        is <tt>:-</tt>, and the <i>arity</i> is&nbsp;2.</li>
+      <li>the first <i>argument</i> of the term is the term <tt>f(X, Y)</tt></li>
+      <li>the second argument is the compound term <tt>','(g(X),
+          h(Y))</tt>, which in turn again has two arguments.
+      </li>
+    </ul>
+
+    If you are ever unsure about what a term "actually" is,
+    use <tt>write_canonical/1</tt> to obtain a canonical
+    representation:
+
+    <pre>
+?- write_canonical( <b>(f(X, Y) :- g(X), h(Y))</b> ).
+<b>:-(f(A,B),','(g(A),h(B)))</b>
+    </pre>
+
+    Note that we have used parentheses around the term to properly
+    indicate the single argument of the predicate.
+
+    <center><h2>Rewriting Prolog code</h2></center>
+
+    All widely used Prolog systems provide mechanisms that let
+    you <i>rewrite Prolog code</i> <b>at compilation time</b>.
+
+    <br><br>
+
+    The advantage is clear: You can perform complex transformations of
+    Prolog code <i>once</i> at compilation time, resulting in often
+    faster code at <i>run&nbsp;time</i>.
+
+    <br><br>
+
+    In Prolog systems, this facility is typically provided
+    by <i>extensible</i> predicates called <tt>term_expansion/2</tt>
+    and <tt>goal_expansion/2</tt>. These predicates take
+    2&nbsp;arguments:
+
+    <ul>
+      <li>the first argument is a Prolog term as it occurs in the
+        program that is being compiled</li>
+      <li>the second argument denotes the <i>replacement</i> of the term.</li>
+    </ul>
+
+    If a clause of this extensible predicate succeeds, then the
+    replacement&nbsp;term is used <i>instead</i> of the
+    original&nbsp;term during compilation.
+
+    <br><br>
+
+    If your Prolog system does not provide this facility, you can
+    easily implement it yourself, using the built-in
+    predicate <tt>read/1</tt> to read Prolog terms from a file.
+
+    <br><br>
+    <center><h2>Examples</h2></center>
+
+    See the <a href="dcg#implementation">implementation
+    of&nbsp;DCGs</a> for an example of <i>term</i> expansion that is
+    used in almost all widely available Prolog&nbsp;systems. In this
+    case, the expansion mechanism is used to <i>automatically</i>
+    equip DCG&nbsp;rules and all DCG&nbsp;nonterminals with 2
+    additional&nbsp;arguments in a systematic&nbsp;way.
+
+    <br><br>
+
+    In SWI-Prolog, <a href="clpfd">integer arithmetic</a> serves
+    as an example of <i>goal</i> expansion. For instance, consider the
+    following Prolog rule whose body consists of a single&nbsp;goal:
+
+    <pre>
+integer_successor(I0, I) :- <b>I #= I0 + 1</b>.
+    </pre>
+
+    To see how this is automatically expanded, use <tt>listing/2</tt>:
+
+    <pre>
+?- <b>listing(integer_successor/2)</b>.
+integer_successor(B, A) :-
+        (   integer(A)
+        ->  (   integer(B)
+            ->  A=:=B+1
+            ;   C=A,
+                clpfd:clpfd_equal(C, B+1)
+            )
+        ;   integer(B)
+        ->  (   var(A)
+            ->  A is B+1
+            ;   C is B+1,
+                clpfd:clpfd_equal(A, C)
+            )
+        ;   clpfd:clpfd_equal(A, B+1)
+        ).
+    </pre>
+
+    This example illustrates that low-level integer arithmetic is
+    <i>automatically</i> used whenever possible, even if you use
+    higher-level constructs which <i>also</i> work in other directions.
+    
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

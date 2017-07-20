@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Reading Prolog Programs</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Reading Prolog Programs">
+    <meta name="keywords" content="Prolog,Reading,Semantics,Meaning">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Reading Prolog Programs</h1></center>
+    <br><br>
+
+    While you may <a href="writing"><i>write</i></a>
+    a Prolog <a href="concepts#program">program</a>
+    only <i>once</i>, and may even <i>rewrite</i> it a few times, you
+    and others will typically <i>read</i> it many, many, many times.
+
+    Consequently, it is important to know <i>how</i> we can best read
+    Prolog programs: What exactly do they mean?
+
+    <br><br>
+
+    There are several ways to
+    read <a href="purity"><b>pure</b></a> Prolog programs, and we
+    explain some of them in this text.
+
+    <br><br>
+    
+    <center><h2 id="declarative">Declarative reading</h2></center>
+
+    Declaratively, Prolog programs state <i>what holds</i>. A Prolog
+    program consists of <b>clauses</b>, and each clause is either
+    a <b>fact</b> or a <b>rule</b>. <i>Facts</i> state what is
+    <i>always</i> true. <i>Rules</i> state what is true under
+    certain <i>conditions</i>.
+
+    <br><br>
+
+    Declaratively, a rule of the form:
+
+    <pre>
+Head :- Body.
+    </pre>
+
+    is read as: "<i>If</i> <tt>Body</tt> is
+    true, <i>then</i> <tt>Head</tt> is true." In logical terms, we say
+    that <tt>Body</tt> <i>implies</i> <tt>Head</tt>, written
+    as <tt>Body</tt>&rightarrow;<tt>Head</tt>, or equivalently as:
+
+    <pre>
+Head &leftarrow; Body.
+    </pre>
+
+    Note that <tt>:-</tt> is in fact meant to represent the arrow
+    &leftarrow;. Since <tt>Body</tt> defines the conditions under
+    which <tt>Head</tt>&nbsp;holds, it can also be regarded as
+    a&nbsp;<i>constraint</i> on the set of solutions.
+
+    <br><br>
+
+    This way to read Prolog programs is also called <i>concluding</i> reading.
+
+    <br><br>
+
+    A major advantage of this approach is that it is easy to explain,
+    understand and use. You state what holds under what conditions,
+    and the Prolog engine finds solutions for you. A disadvantage of
+    this approach is that it does not explain why logically equivalent
+    program variants may exhibit different performance or termination
+    characteristics.
+
+    <br><br>
+
+    <div class="example" id="list_list_together3">
+      <b>Example:</b> <tt>list_list_together/3</tt>, describing
+      the <i>concatenation</i> of two lists:
+
+      <pre>
+list_list_together([], Bs, Bs).
+list_list_together([A|As], Bs, [A|Cs]) :-
+        list_list_together(As, Bs, Cs).
+      </pre>
+
+      Let us read this definition <i>declaratively</i>, that is in
+      terms of <i>relations</i> that hold between arguments, as
+      described by the two clauses:
+
+      <ol>
+        <li>The concatenation of the <i>empty
+            list</i>&nbsp;<tt>[]</tt> and <i>any</i>
+            list&nbsp;<tt>Bs</tt> is just that
+          list&nbsp;<tt>Bs</tt>.</li>
+        
+        <li><i>If</i> the concatenation of <tt>As</tt>
+        and&nbsp;<tt>Bs</tt> is <tt>Cs</tt>, <i>then</i> the
+        concatenation of <tt>[A|As]</tt> and&nbsp;<tt>Bs</tt>
+        is&nbsp;<tt>[A|Cs]</tt>, for <i>any</i>
+          element&nbsp;<tt>A</tt>.
+        </li>
+      </ol>
+
+      Note how <i>general</i> this reading is: It is applicable if any
+      arguments are <i>instantiated</i>, and <i>also</i> if they
+      are&nbsp;not.
+    </div>
+
+    <center><h2 id="procedural">Procedural reading</h2></center>
+
+    To complement the declarative approach of reading Prolog programs,
+    we can also read them <i>procedurally</i>. This means that we take
+    into account the actual <i>computation strategy</i> of the Prolog
+    engine.
+
+    <br><br>
+
+    Operationally, invocation of a Prolog predicate is similar to
+    a <i>procedure</i> or <i>function</i> call in other
+    languages. However, two critical differences remain: First,
+    Prolog <i>variables</i> are truly <b>logical&nbsp;variables</b>
+    and may be <i>unbound</i> or only <i>partially</i> instantiated.
+    This cannot happen with variables in most other languages. Second,
+    Prolog provides <b>backtracking</b> as a built-in feature, and
+    will exhaustively try alternatives.
+
+    <br><br>
+
+    For these reasons, understanding a Prolog
+    program <i>procedurally</i> is significantly <i>harder</i> than
+    understanding the control flow of many other programming
+    languages. In particular, when tracing Prolog, you need to take
+    into account:
+
+    <ul>
+      <li><b>instantiation</b> of variables</li>
+      <li><b>aliasing</b> between variables</li>
+      <li><b>alternatives</b> found on backtracking.</li>
+    </ul>
+
+    The need to keep track of these complexities and their
+    interactions is a major drawback of this approach. An advantage of
+    the approach is its potential to explain
+    different <a href="efficiency">performance
+    characteristics</a> and <a href="termination">termination
+      properties</a> of program variants.
+
+    <br><br>
+
+    Note also that a procedural reading almost invariably implies a
+    particular <i>direction</i> of&nbsp;use, and therefore typically
+    does not do justice to the full generality of logical relations.
+
+    <br><br>
+    <div class="example">
+      <b>Example:</b> Let us read <a href="#list_list_together3"><tt>list_list_together/3</tt></a> (shown above)
+      <i>procedurally</i> for the query <tt>?-&nbsp;list_list_together([x,y], [z], Cs).</tt>
+
+      <ol>
+        
+        <li>Does the <i>first</i> clause apply? <b>No</b>, because <tt>[x,y]</tt> does not unify with&nbsp;<tt>[]</tt>.</li>
+
+        <li>Does the <i>second</i> clause apply? Note that due to the way
+          resolution works, we must
+          introduce <i>fresh&nbsp;variables</i> when considering a
+          clause. So, let us
+          use <tt>A'</tt>, <tt>As'</tt>, <tt>Bs'</tt>, and <tt>Cs'</tt>
+          for the variables <tt>A</tt>, <tt>As</tt>, <tt>Bs</tt>
+          and <tt>Cs</tt> that appear in the clause head. The answer is:
+          <b>Yes</b>, the second clause applies with the
+          bindings <tt>A'=x</tt>, <tt>As'=[y]</tt>, <tt>Bs'=[z]</tt>, <tt>Cs=[A'|Cs']</tt>.
+          This is already rather cumbersome and error-prone, and it
+          gets even harder to keep track of all bindings as we proceed
+          further.
+        </li>
+        
+        <li>
+          Carrying on, we consider the
+          goal <tt>list_list_together([y], [z], Cs')</tt>, repeating the
+          same questions for this goal.
+        </li>
+
+        
+        <li>Does the <i>first</i> clause apply? <b>No</b>, because <tt>[y]</tt> does not unify with&nbsp;<tt>[]</tt>.</li>
+
+        
+        <li>Does the <i>second</i> clause apply? We need to rename the
+          variables again. Let us
+          use <tt>A''</tt>, <tt>As''</tt>, <tt>Bs''</tt>
+          and&nbsp;<tt>Cs''</tt>. <b>Yes</b>, the clause applies
+          with <tt>A''=y</tt>, <tt>As''=[]</tt>, <tt>Bs''=[z]</tt>
+          and <tt>Cs'=[A''|Cs'']</tt>.
+        </li>
+
+        
+        <li>Now the whole ordeal once more, as we consider the
+          goal <tt>list_list_together([], [z], Cs'')</tt>.</li>
+
+        <li>Does the <i>first</i> clause apply? <b>Yes</b>, at last!
+          Note that we <i>again</i> need to introduce fresh variables
+          of course. Let us use <tt>Bs'''</tt> to denote the single
+          variable of the first clause at this step of the
+          computation. So the first clause applies
+          with <tt>Bs'''=[z]</tt> and <tt>Cs''=Bs'''</tt>. This means
+          that at last a <i>solution</i> is found and reported as
+          a <i>binding</i> for the original variable <tt>Cs</tt> which
+          is the only variable that appears in the query. If you have
+          carefully followed this trace (as I am sure you have, since
+          it is so enjoyable to&nbsp;read), you know that <tt>Cs</tt>
+          was unified with <tt>[A'|Cs']</tt>. Since
+          <tt>A'</tt> was unified with&nbsp;<tt>x</tt>, and
+          <tt>Cs'</tt> was unified with&nbsp;<tt>[A''|Cs'']</tt>, and
+          further <tt>A''</tt> was unified with&nbsp;<tt>y</tt>, this
+          makes <tt>Cs</tt> the same as <tt>[x,y|Cs'']</tt>. As we
+          just mentioned, <tt>Cs''</tt> was unified
+          with&nbsp;<tt>Bs'''</tt>, and <tt>Bs'''</tt>
+          is&nbsp;<tt>[z]</tt>. Thus, the solution we found
+          is&nbsp;<tt>Cs=[x,y,z]</tt>, and this solution is reported
+          by the toplevel.
+        </li>
+        
+        <li>We still need to consider the <i>second</i> clause
+          too&nbsp;though: <b>No</b>, it does not apply,
+          because <tt>[]</tt> does not unify with&nbsp;<tt>[_|_]</tt>.
+        </li>
+      </ol>
+
+      And this was only <i>one particular case</i>! Accurately
+      covering all possible modes of invocation with a procedural
+      reading is extremely complex, and typically would take an
+      extremely elaborate explanation. In general, you will not be
+      able to carry this approach through, because there are too many
+      cases to consider.
+    </div>
+
+    <center><h2 id="slicing">Program slicing</h2></center>
+
+    Program <b>slicing</b> is a simple and powerful technique that
+    uses very general properties of pure Prolog to study the effects
+    of <b>generalizations</b> and <b>specializations</b> of a program.
+
+    <br><br>
+
+    Examples of such properties are:
+
+    <ul>
+      <li><i>removing</i> a <b>goal</b> can make the program at
+        most <i>more general</i>, never more <i>specific</i></li>
+      <li><i>removing</i> a <b>clause</b> can make the program at
+        most <i>more specific</i>, never more <i>general</i></li>
+      <li><i>inserting</i> <tt>false/0</tt> between any two goals in a
+        rule lets us ignore the procedural effects of <i>all</i>
+        goals <i>after</i> that point.</li>
+    </ul>
+
+    
+    In a very precise sense, program slices are <b>explanations</b>
+    that answer <i>why</i> we observe certain phenomena.
+
+    <br><br>
+
+    We illustrate this with a simple example. Suppose a programmer has
+    written <tt>list_length/2</tt>, relating a list to its length as
+    follows:
+
+    <pre>
+list_length([_|Ls], N) :-
+        list_length(Ls, N0),
+        N #&gt; 0,
+        N #= N0 + 1.
+list_length([], 0).
+    </pre>
+
+    The predicate works exactly as intended if the list is sufficiently
+    instantiated. For example:
+
+    <pre>
+?- list_length([], L).
+<b>L = 0.</b>
+
+?- list_length([_,_,_], L).
+<b>L = 3.</b>
+    </pre>
+
+    However, the predicate does <i>not</i> generate a single answer
+    for the most general query:
+
+    <pre>
+?- list_length(Ls, L).
+    </pre>
+
+    Program slicing helps us to see the reason. <s>Strikeout</s> text
+    is used for parts that are not relevant for the behaviour we
+    observe:
+
+    <pre>
+list_length([_|Ls], N) :-
+        list_length(Ls, N0),
+        <b>false</b>,
+        <s>N #&gt; 0</s>,
+        <s>N #= N0 + 1</s>.
+<s>list_length([], 0) :- <b>false</b>.</s>
+    </pre>
+
+    The remaining fragment is <i>by itself</i> already responsible for
+    the <a href="nontermination"><b>nontermination</b></a>. <i>No</i> change
+    in the <s>strikeout</s> parts can prevent&nbsp;it.
+
+    <br><br>
+
+    Program slices can be generated <i>automatically</i> and are a
+    powerful way to <a href="debugging">locate the causes</a> of
+    nontermination and other unintended properties in Prolog programs.
+    See for example Stefan Kral et&nbsp;al., <i>Slicing zur
+    Fehlersuche in Logikprogrammen</i>, WLP&nbsp;2000.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

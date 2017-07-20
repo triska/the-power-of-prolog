@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Combinatorial Optimization with Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Combinatorial Optimization with Prolog">
+    <meta name="keywords" content="Prolog,Optimization,Constraints,Simplex">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Combinatorial Optimization with Prolog</h1></center>
+    <br><br>
+
+    Prolog is eminently suitable for solving <b>combinatorial</b> and
+    <b>optimization</b> tasks, such as:
+
+    <ul>
+      <li>timetabling</li>
+      <li>resource allocation</li>
+      <li>planning, i.e., finding suitable orderings of dependent
+      tasks</li>
+      <li>scheduling</li>
+
+      <li>etc.</li>
+    </ul>
+
+    It is easy to <i>generate&nbsp;and&nbsp;test</i> solutions for
+    such tasks in&nbsp;Prolog. If this is done <i>naively</i> (either
+    in Prolog or with any other language), then it quickly leads to
+    infeasible programs, because there are typically too many
+    combinations to generate them&nbsp;all.
+
+    <br><br>
+
+    To efficiently solve combinatorial optimization tasks in many
+    cases of practical relevance, Prolog provides a declarative
+    solution called <b>constraints</b>. Importantly, constraints
+    can <i>prune</i> large parts of the search&nbsp;tree before the
+    search even begins, and also while the search is progressing. In
+    typical cases, this is vastly more efficient than naively
+    enumerating solutions. In addition, constraints retain the
+    generality we expect from <i>relations</i>, and so you can use
+    constraint-based Prolog programs
+    for <i>generating</i>, <i>testing</i> and <i>completing</i>
+    solutions of combinatorial tasks.
+
+    <br><br>
+
+    In principle, constraints can be provided by any programming
+    language. However, they blend in especially seamlessly
+    into <i>logic&nbsp;programming</i> languages like&nbsp;Prolog due
+    to their relational nature and built-in search and backtracking
+    mechanisms. For this reason, logic programming languages have
+    become the most important host languages for constraints, and all
+    widely used Prolog&nbsp;systems ship with several libraries or
+    built-in predicates for constraint&nbsp;solving.
+
+    <br><br>
+
+    <b>CLP(<i>X</i>)</b> stands for <b>constraint logic
+      programming</b> over the <i>domain</i>&nbsp;<i><b>X</b></i>.
+      Plain Prolog can be regarded as a&nbsp;CLP(<i>H</i>): Constraint
+      logic programming over <i>Herbrand&nbsp;terms</i>,
+      with <tt>(=)/2</tt> and <tt>dif/2</tt> as the most important
+      constraints that denote, respectively, equality and disequality
+    of&nbsp;terms.
+
+    There are dedicated libraries for several important&nbsp;domains.
+    Support of these libraries differs between Prolog systems, so
+    check your Prolog system's manual for more information.
+
+    <br><br>
+
+    For example, SICStus&nbsp;Prolog ships&nbsp;with:
+
+    <ul>
+      <li>CLP(FD) for <b>integers</b></li>
+      <li>CLP(B) for <b>Boolean</b> variables</li>
+      <li>CLP(Q) for <b>rational numbers</b></li>
+      <li>CLP(R) for <b>floating point numbers</b></li>
+    </ul>
+
+    In Prolog,
+    declarative <a href="clpfd"><b>integer&nbsp;arithmetic</b></a>
+    can thus be naturally used for solving combinatorial&nbsp;tasks.
+
+    <br><br>
+
+
+    Here is an example:
+
+    <br>
+    <div class="example">
+        A chicken farmer also has some cows for a total
+        of <b>30&nbsp;animals</b>, and the animals
+        have <b>74&nbsp;legs</b> in&nbsp;all.
+
+        <br><br>
+
+        How many chickens does the
+        farmer have?
+    </div>
+    <br><br>
+
+    Answer:
+
+    <pre>
+?- Chickens + Cows #= 30,
+   Chickens*2 + Cows*4 #= 74,
+   Chickens in 0..sup,
+   Cows in 0..sup.
+<b>Chickens = 23,
+Cows = 7</b>.
+    </pre>
+
+    Note that <i>no search</i> was necessary at all. The constraint
+    solver has deduced the unique solution of the puzzle
+    via <a href="clpfd#propagation"><b>constraint&nbsp;propagation</b></a>.
+
+    <br><br>
+
+    In industrial and academic use, the efficiency of a Prolog
+    system's constraint solvers is often an important factor when
+    choosing a&nbsp;system. This is because many commercial use cases
+    of&nbsp;Prolog also involve combinatorial optimization tasks.
+
+    <br><br>
+
+    Integers are the most relevant domain in practice, because
+    all <i>finite</i> domains can be mapped to finite subsets
+    of&nbsp;<i>integers</i>. Hence, all finite combinatorial
+    optimization tasks can be expressed via CLP(FD)&nbsp;constraints.
+
+    <br><br>
+    <center><h2 id="mapcolouring">Example: Map Colouring</h2></center>
+
+    Let us consider <b>map colouring</b>, i.e., the task of assigning
+    colours to regions of a&nbsp;<i>map</i> in such a way that no
+    adjacent regions are assigned the same&nbsp;colour.
+
+    <br><br>
+
+    We can easily map this task to a combinatorial task
+    over <i>integers</i>, by using one logical variable for each
+    region, and one integer for each&nbsp;colour.
+
+    <br><br>
+
+    For concreteness, let us colour the following map:
+
+    <br><br>
+
+
+    <center>
+      <object data="map.svg" type="image/svg+xml" style="padding:20pt">
+      </object>
+    </center>
+
+    We shall use the <i>integers</i> 0, 1, 2, ..., to represent
+    suitable colours. Moreover, we know from
+    the <a href="https://en.wikipedia.org/wiki/Four_color_theorem">Four
+      Colour Theorem</a> that <i>at&nbsp;most</i> 4 colours suffice.
+
+    <br><br>
+
+    The following Prolog program describes the task
+    using <a href="clpfd">CLP(FD) constraints</a>:
+
+    <pre>
+regions(Rs) :-
+        Rs = [A,B,C,D,E,F],
+        Rs ins 0..3,
+        A #\= B, A #\= C, A #\= D, A #\= F,
+        B #\= C, B #\= D,
+        C #\= D, C #\= E,
+        D #\= E, D #\= F,
+        E #\= F.
+    </pre>
+
+    Disequality constraints (<tt>(#\=)/2</tt>) are used to state that
+    pairs of integers that correspond to adjacent&nbsp;regions must
+    be&nbsp;<i>different</i>.
+
+    To obtain concrete <i>solutions</i>, we use <a href="clpfd#labeling"><i>labeling</i></a>:
+
+    <pre>
+<b>?- regions(Rs), label(Rs).</b>
+Rs = [0, 1, 2, 1, 0, 3] ;
+Rs = [0, 1, 2, 1, 3, 3] ;
+Rs = [0, 1, 2, 3, 0, 1] ;
+etc.
+    </pre>
+
+    To obtain more readable solutions, we can relate integers
+    to colours. For example:
+
+    <pre>
+integer_color(0, red).
+integer_color(1, green).
+integer_color(2, blue).
+integer_color(3, yellow).
+    </pre>
+
+    This allows us to query:
+
+    <pre>
+?- regions(Rs), label(Rs),
+   <b><a href="metapredicates#maplist">maplist</a>(integer_color, Rs, Cs),
+   pairs_keys_values(Pairs, [a,b,c,d,e,f], Cs)</b>.
+Rs = [0, 1, 2, 3, 0, 1],
+Cs = [red, green, blue, yellow, red, green],
+<b>Pairs = [a-red, b-green, c-blue, d-yellow, e-red, f-green]</b> ;
+Rs = [0, 1, 2, 3, 0, 2],
+Cs = [red, green, blue, yellow, red, blue],
+<b>Pairs = [a-red, b-green, c-blue, d-yellow, e-red, f-blue]</b> ;
+etc.
+    </pre>
+
+    These solutions look like this:
+
+    <center>
+      <object data="map_solution1.svg" type="image/svg+xml" style="padding:20pt">
+      </object>
+      <object data="map_solution2.svg" type="image/svg+xml" style="padding:20pt"></object>
+    </center>
+
+
+    The following query shows that <i>at least</i> 4 colours are
+    needed in this case:
+
+    <pre>
+?- regions(Rs), Rs ins 0..2, label(Rs).
+<b>false.</b>
+    </pre>
+
+    Major advantages of using CLP(FD) constraints for combinatorial
+    tasks include:
+
+    <ul>
+      <li><i>compactness</i> and <i>elegance</i> of declarative descriptions</li>
+      <li><i>efficiency</i> due to powerful <a href="sorting#pruning"><i>pruning</i></a></li>
+      <li>intelligent <a href="clpfd#labeling"><i>labeling strategies</i></a> guided by remaining domains</li>
+      <li>availability of <i>global constraints</i> tailored for specific applications.</li>
+    </ul>
+
+    <br><br>
+    <center><h2 id="graph">Graphs</h2></center>
+
+    <b>Graphs</b> are an extremely important concept in mathematics
+    and computer&nbsp;science, and many combinatorial tasks can be
+    formulated as problems involving graphs. For example, the
+    preceding <a href="#mapcolouring">map&nbsp;colouring</a> task is
+    an instance of a more general task
+    called <i>graph&nbsp;colouring</i>.
+
+    <br><br>
+
+    We distinguish between <i>directed</i> and <i>undirected</i>
+    graphs.
+
+    <center><h3>Directed graphs</h3></center>
+
+    A <i>directed</i> graph consists of:
+
+    <ul>
+      <li>a set <i>V</i> of <b>vertices</b></li>
+      <li>a set <i>A</i> of <b>arcs</b>, which are directed edges of
+        the form <i>v</i>&rightarrow;<i>w</i> (<i>v</i>, <i>w</i>
+        &in; <i>A</i>).
+      </li>
+    </ul>
+
+    In Prolog, there are different ways to represent
+    directed&nbsp;graphs. One way to do it is to write down the arcs
+    as Prolog&nbsp;<a href="concepts#fact"><i>facts</i></a>:
+
+    <pre>
+arc_from_to(a, b).
+arc_from_to(b, c).
+arc_from_to(a, c).
+arc_from_to(c, a).
+    </pre>
+
+    Such a representation is called <i>temporal</i>, because solutions
+    are iteratively reported <i>on&nbsp;backtracking</i>. This
+    representation is very well suited for making large amounts
+    of&nbsp;data efficiently accessible. An example use&nbsp;case is a
+    set of <i>public&nbsp;transport</i> routes between different
+    locations.
+
+    <br><br>
+
+    A typical way to describe <i>paths</i> with such a representation is:
+
+    <pre>
+path_from_to(A, A, _) --&gt; [A].
+path_from_to(A, B, Visited) --&gt; [A],
+        { arc_from_to(A, Next),
+          maplist(dif(Next), Visited) },
+        path_from_to(Next, B, [A|Visited]).
+    </pre>
+
+    We keep track of vertices that have already
+    been&nbsp;<i>visited</i> and ensure that any vertex is visited at
+    most&nbsp;<i>once</i>.
+
+    <br><br>
+
+    Example queries:
+
+    <pre>
+<b>?- phrase(path_from_to(a, c, []), Ps).</b>
+Ps = [a, b, c] ;
+Ps = [a, c] ;
+false.
+
+<b>?- phrase(path_from_to(a, To, []), Ps).</b>
+To = a,
+Ps = [a] ;
+To = b,
+Ps = [a, b] ;
+etc.
+    </pre>
+
+
+    <br><br>
+    
+    Using <a href="metapredicates#solutions">all&nbsp;solutions</a>
+    predicates, we can convert any temporal representation to
+    a <i>spatial</i> representation, i.e., Prolog data&nbsp;structures
+    such as&nbsp;<a href="data#list"><i>lists</i></a>:
+
+    <pre>
+?- findall(From-To, arc_from_to(From, To), Arcs).
+<b>Arcs = [a-b, b-c, a-c, c-a].</b>
+    </pre>
+
+    Another example:
+
+    <pre>
+?- bagof(To, arc_from_to(From, To), Arcs).
+From = a,
+<b>Arcs = [b, c] ;</b>
+From = b,
+<b>Arcs = [c] ;</b>
+From = c,
+<b>Arcs = [a].</b>
+    </pre>
+
+    With these predicates, we can obtain a representation of the graph
+    in the form of an <i>adjacency&nbsp;list</i>, where we store which
+    vertices are reachable from any given&nbsp;vertex:
+
+    <pre>
+?- findall(From-Ls, bagof(To, arc_from_to(From, To), Ls), Is).
+<b>Is = [a-[b, c], b-[c], c-[a]].</b>
+    </pre>
+
+    In Prolog, this is often a good representation for&nbsp;graphs. We
+    can easily turn this into
+    an <a href="data#assoc"><i>association&nbsp;list</i></a> of the
+    form <i>V&rightarrow;Vs</i> to obtain <i>logarithmic</i> worst
+    case (and expected) access time when fetching the
+    vertices&nbsp;<i>Vs</i> that are reachable from any given
+    vertex&nbsp;<i>V</i>. For utmost efficiency, if your Prolog system
+    supports&nbsp;it, you can represent each vertex as a
+    Prolog&nbsp;variable, and attach information (including arcs) in
+    the form of variable&nbsp;<i>attributes</i>. This even allows
+    destructive modifications in&nbsp;O(1). With this method, you can
+    for example efficiently compute the <i>strongly connected
+    components</i> of a directed&nbsp;graph.
+    See <a href="/scc.pl"><b><tt>scc.pl</tt></b></a> for more
+    information.
+
+    <br><br>
+
+    Note that <i>isolated</i> vertices do&nbsp;not participate in
+    any&nbsp;arc, and so&mdash;at least in&nbsp;general&mdash;we also
+    need to represent the&nbsp;vertices separately:
+
+    <pre>
+vertices([a,b,c,d]).
+    </pre>
+
+    In the adjacency list representation, the isolated
+    vertex&nbsp;<tt>d</tt> can be represented as&nbsp;<tt>d-[]</tt>.
+
+    <br><br>
+
+    <center><h3>Undirected graphs</h3></center>
+
+    An <i>undirected</i> graph consists of:
+
+    <ul>
+      <li>a set <i>N</i> of <b>nodes</b></li>
+      <li>a set <i>E</i> of undirected <b>edges</b> of the
+        form <i>x</i>&minus;<i>y</i> (<i>x</i>, <i>y</i>
+        &in; <i>N</i>).</li>
+    </ul>
+
+
+    For example, let us reconsider the <i>map</i> colouring task from
+    a graph&nbsp;theoretic perspective. The CLP(FD)&nbsp;formulation
+    can be regarded as <i>implicitly</i> describing a&nbsp;graph that
+    is induced by the <i>constraints</i> that are stated between the
+    variables. We now make that graph available <i>explicitly</i> as a
+    Prolog&nbsp;term that represents an <i>undirected</i>&nbsp;graph:
+
+    <pre>
+edges([a-b,a-c,a-d,a-f,
+       b-c,b-d,
+       c-d,c-e,
+       d-e,d-f,
+       e-f]).
+
+edge(X, Y) :- edges(Es), ( member(X-Y, Es) ; member(Y-X, Es) ).
+    </pre>
+
+    Now we can query:
+
+    <pre>
+?- bagof(E, edge(N, E), Es).
+N = a,
+Es = [b, c, d, f] ;
+N = b,
+Es = [c, d, a] ;
+N = c,
+Es = [d, e, a, b] ;
+N = d,
+Es = [e, f, a, b, c] ;
+N = e,
+Es = [f, c, d] ;
+N = f,
+Es = [a, d, e].
+    </pre>
+
+    An explicit representation is well suited for further analysis of
+    the&nbsp;graph.
+
+    <br><br>
+    <center><h3 id="tree">Trees</h3></center>
+
+    In graph theory, a <b>tree</b> is an undirected graph in which any
+    two nodes are connected by exactly <i>one</i>&nbsp;path.
+    <br><br>
+
+    In Prolog, trees are of special significance because
+    Prolog&nbsp;<a href="data#term">terms</a> naturally correspond
+    to&nbsp;trees.
+
+    <br><br>
+
+    For example, we can <i>fairly enumerate</i> binary trees as follows:
+
+    <pre>
+tree(nil) --&gt; [].
+tree(node(_, Left, Right)) --&gt; [_], tree(Left), tree(Right).
+    </pre>
+
+    Sample query:
+
+    <pre>
+<b>?- length(Ls, _), phrase(tree(T), Ls)</b>.
+Ls = [],
+T = nil ;
+Ls = [_8284],
+T = node(_8296, nil, nil) ;
+Ls = [_8284, _8290],
+T = node(_8302, nil, node(_8310, nil, nil)) ;
+Ls = [_8284, _8290],
+T = node(_8302, node(_8310, nil, nil), nil) ;
+Ls = [_8284, _8290, _8296],
+T = node(_8308, nil, node(_8316, nil, node(_8324, nil, nil))) ;
+Ls = [_8284, _8290, _8296],
+T = node(_8308, nil, node(_8316, node(_8324, nil, nil), nil)) .
+    </pre>
+
+    <br><br>
+    <center><h2>Further reading</h2></center>
+
+    Here are several applications that give you an impression of what
+    you can do with a CLP(FD)&nbsp;system:
+
+    <ul>
+      <li>solve <a href="/sudoku/"><b>Sudoku</b></a> puzzles</li>
+      <li><a href="/simsttab/"><b>timetabling</b></a> for schools</li>
+      <li><a href="/sgp/"><b>sports scheduling</b></a></li>
+      <li><a href="/queens/"><b>N-queens</b></a> puzzle</li>
+      <li>more examples: <a href="https://github.com/triska/clpfd"><b>https://github.com/triska/clpfd</b></a>
+    </ul>
+
+
+    Other constraint solvers and libraries also have important
+    applications. For example, see
+    <a href="puzzles"><b>logic&nbsp;puzzles</b></a> for several use
+    cases of&nbsp;CLP(B), and a <a href="/various/colgen/"><b>delayed
+    column generation</b></a> example with <tt>library(simplex)</tt>.
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

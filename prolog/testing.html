@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Declarative Testing</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Declarative Testing">
+    <meta name="keywords" content="Prolog,Testing,Declarative">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Declarative Testing</h1></center>
+    <br><br>
+
+    We explain several methods of <b>declarative testing</b>.
+    "Declarative" means that we reason about what is
+    being <i>described</i> by the program: We compare the actual
+    <i>meaning</i> of the program with the intended one, and the
+    actual <i>properties</i> with those that we <i>know</i> will hold
+    if the program is implemented correctly.
+
+    <center><h2>Example: Length of a list</h2></center>
+
+    Let us consider a simple Prolog program that <i>contains a
+      <b>mistake</b></i>:
+
+    
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        N #= N0 + 2,
+        list_length(Ls, N0).
+    </pre>
+
+    Our intention is to describe the relation between a <i>list</i>
+    and its&nbsp;<i>length</i>.
+
+    <br><br>
+
+    From a quick glance, the program at
+    first seems to work as intended in several ways. For example, the
+    query <tt>?-&nbsp;list_length([],&nbsp;0).</tt> <i>succeeds</i> as
+    intended, and we can use the program to <i>generate</i> answers:
+
+    <pre>
+?- list_length(Ls, _).
+Ls = [] ;
+Ls = [_G1010] ;
+Ls = [_G1010, _G1271] ;
+etc.
+    </pre>
+
+    Nevertheless, the program is <i><b>wrong</b></i>!
+
+    <br><br>
+
+    <center><h2>Testing nontermination</h2></center>
+
+    Our first tests aim to ensure
+    desired <a href="termination"><b>termination
+    properties</b></a> of the program. For example, in the case
+    of <tt>list_length/2</tt>, we know that the
+    program <i>must&nbsp;not</i> terminate for
+    the <i>most&nbsp;general</i> query. This is because we expect the
+    relation to hold for lists of <i>all</i>&nbsp;lengths, and there
+    is no way to report this set with a finite number of answers.
+
+    <br><br>
+
+    To study termination of a Prolog query&nbsp;<i>Q</i>, we use the
+    query:
+
+    <br>
+
+    <pre>
+?- <i>Q</i>, <b>false</b>.
+    </pre>
+
+    <i>Iff</i> this query terminates, then we say that <i>Q</i> 
+    <b>terminates&nbsp;universally</b>.
+
+    <br><br>
+
+    In our concrete case, we use:
+
+    <pre>
+?- list_length(Ls, L), <b>false</b>.
+    </pre>
+
+    <i>No</i> termination can be observed. In this respect, the
+    program behaves as expected. However, testing termination
+    properties is <i>not sufficient</i> to detect all mistakes. What
+    else can we do?
+
+    <br><br>
+
+    <center><h2>Concrete test cases</h2></center>
+
+    We can try <i>concrete</i> <b>test cases</b> that we <i>know</i>
+    should succeed or fail. Prolog makes it very easy to
+    test <a href="purity">pure</a> programs in this way: You can
+    simply try queries on the toplevel! In addition, Prolog's built-in
+    backtracking mechanism makes it very easy to express a vast
+    collection of concrete test cases at&nbsp;once.
+
+    <br><br>
+
+    For example, as already stated, we <i>know</i> that the
+    relation <i>should</i> yield answers for lists
+    of <i>all</i>&nbsp;lengths. In particular, it should succeed for
+    lists of the form <tt>[]</tt>, <tt>[a]</tt>, <tt>[a,a]</tt>,
+    ...&nbsp;.
+
+    <br><br>
+
+    Let us
+    see if a <b>counterexample</b> exists:
+
+    <pre>
+?- maplist(=(a), Ls), \+ list_length(Ls, _).
+    </pre>
+    
+    None is reported. So, also in this respect, the program behaves as
+    intended. We can push this further and <i>generalize</i> the test
+    cases for example to:
+
+    <pre>
+?- maplist(=(_), Ls), \+ list_length(Ls, _).
+    </pre>
+
+    Again, no counterexample is reported, even with this massive
+    generalization.
+
+    <br><br>
+    <center><h2>Testing against a reference implementation</h2></center>
+
+    What else can we do? We can for example test against
+    a <i>reference</i> implementation. In our concrete case, this is
+    easily possible, because almost all Prolog implementations ship
+    with a predicate called <tt>length/2</tt> which is <i>exactly</i>
+    the relation we are trying to describe. Testing against the
+    reference implementation immediately reveals a mistake in our
+    program:
+
+    <pre>
+?- A #\= B, length(Ls, A), list_length(Ls, B).
+A = 1,
+B = 2,
+Ls = [_G1219] .
+    </pre>
+
+    Of course, in most cases we do <i>not</i> have a reference
+    implementation!
+
+    <br><br>
+
+    <center><h2>Testing declarative properties</h2></center>
+
+    We can test the relation by using further <b>properties</b> that
+    we <i>know</i> must hold if the relation is implemented correctly.
+    For example, in our case, we know that if the length of a
+    list&nbsp;<tt>Ls</tt> is&nbsp;<i>N</i>, then the length
+    of&nbsp;<tt>[_|Ls]</tt> is&nbsp;<i>N</i>+1. Let us again try to
+    find a <b>counterexample</b> of this:
+
+    <pre>
+?- list_length(Ls, N), list_length([_|Ls], N1), N1 #\= N + 1.
+Ls = [],
+N = 0,
+N1 = 2 .
+    </pre>
+
+    So there it is: From this solution, we <i>know</i> that either the
+    length of&nbsp;<tt>[]</tt> or the length of&nbsp;<tt>[_]</tt>
+    is <i>not</i> described correctly. In this case, it is clear that
+    the length of&nbsp;<tt>[_]</tt> <i>should&nbsp;be</i>&nbsp;1, but
+    is <i>incorrectly</i>&nbsp;2. In particular, the following
+    query <i>incorrectly</i> fails:
+
+    <pre>
+?- list_length([_], 1).
+false.
+    </pre>
+
+    Continue with <b><a href="debugging">Declarative
+    Debugging</a></b> to see how we can locate and correct the
+    mistake.
+
+    <br><br>
+
+    <center><h2>Further reading</h2></center>
+    
+    The approaches we describe above are by no means exhaustive. There
+    are several other declarative ways to test Prolog programs. One
+    very promising approach is
+    <i>concolic testing</i>, as explained for example by
+    Mesnard&nbsp;et&nbsp;al. in
+    <a href="http://users.dsic.upv.es/~gvidal/german/iclp15/paper_CORR.pdf"><i><b>Concolic
+    Testing in Logic Programming</b></i></a> and the included
+    references.
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

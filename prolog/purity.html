@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Logical Purity</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Logical Purity">
+    <meta name="keywords" content="Prolog,Purity">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Logical Purity</h1></center>
+    <br>
+
+    At the heart of each great Prolog program is a property we
+    call <b>logical&nbsp;purity</b> or simply <b>purity</b>. Informally,
+    this means that the program behaves like a&nbsp;<b>relation</b>.
+
+    <br><br>
+
+    There are two equally justifiable ways to
+    characterize purity of Prolog programs:
+    <ol>
+      <li><i>intrinsic definition</i>, referring to building blocks
+        that guarantee purity by construction</li>
+      <li><i>extrinsic definition</i>, referring to properties that
+        can be tested without knowing details about the code.
+      </li>
+    </ol>
+
+    In the following, we discuss these variants in more detail and
+    give reasons why we care about this property.
+
+    <center><h2>Intrinsic definition</h2></center>
+
+    One way to characterize logical purity is to refer
+    to <i>intrinsic</i> properties of a program. In particular, we can
+    give an <i>inductive</i> definition of predicates that
+    are <i>pure</i>.
+
+    <br><br>
+
+    For example:
+
+    <ul>
+      <li><tt>true/0</tt> and <tt>false/0</tt> are pure</li>
+      <li><tt>(=)/2</tt> and <tt>dif/2</tt> are pure</li>
+      <li><a href="clpfd">arithmetic constraints</a>
+      like <tt>(#=)/2</tt> and <tt>(#\=)/2</tt> are pure</li>
+      <li><tt><a href="metapredicates#call">call</a>(Goal)</tt> is pure <i>iff</i> <tt>Goal</tt> is pure</li>
+      <li><tt><a href="metapredicates#maplist">maplist</a>(Goal, Ls)</tt> is pure <i>iff</i> <tt>Goal</tt> is pure</li>
+      <li><tt>(A,B)</tt> and <tt>(A;B)</tt> are pure <i>iff</i> <tt>A</tt> and <tt>B</tt> are pure</li>
+      <li><i>more cases omitted</i></li>
+    </ul>
+
+    For a large class of Prolog programs, this approach makes it very
+    easy to determine whether a specific program is pure. That is a
+    clear advantage of the approach. On the other hand, a drawback of
+    this approach is that it does not explain <i>why</i> these
+    predicates are pure, and how we can decide which other predicates,
+    if any, are also pure.
+
+    <center><h2>Extrinsic definition</h2></center>
+
+    A different approach to characterize logical purity only takes
+    into account program properties that can be observed from the
+    outside, without knowing any implementation details.
+
+    <br><br>
+
+    For example:
+
+    <ul>
+      <li>if a goal produces
+        <b>output</b> on the terminal, it is <i>not</i> pure</li>
+      <li>if a goal modifies <a href="global"><b>global state</b></a>,
+      it is <i>not</i> pure</li>
+      <li>if, for a goal <tt>G</tt> that contains the
+        subterm&nbsp;<tt>S</tt>, there is a term <tt>T</tt> such
+        that <tt>(G,S=T)</tt> <i>succeeds unconditionally</i>,
+        but <tt>(S=T,G)</tt> <i>fails</i>, then <tt>G</tt>
+        is not&nbsp;<b>monotonic</b> and hence <i>not</i>&nbsp;pure</li>
+      <li>analogously: if, for a goal <tt>G</tt> that contains the
+        subterm&nbsp;<tt>S</tt>, there is a term&nbsp;<tt>T</tt> such
+        that <tt>(G,S=T)</tt> <i>fails</i>,
+        but <tt>(S=T,G)</tt> <i>succeeds unconditionally</i>,
+        then <tt>G</tt> is <i>not</i>&nbsp;<b>steadfast</b> and
+        hence <i>not</i>&nbsp;pure</li>
+      <li><i>more cases omitted</i></li>
+    </ul>
+
+    An advantage of this approach is that we get a clearer idea about
+    the <i>intention</i> behind logical purity. With this term, we
+    want to denote programs that satisfy laws and invariants that we
+    know from classical first-order logic. Examples of such laws are
+    commutativity of conjunction and monotonicity of the consequence
+    relation. In addition, we want to rule out programs that leave the
+    realm of logic by producing output, deleting files, opening
+    sockets&nbsp;etc. A disadvantage of this approach is that we are
+    unlikely to come up with an exhaustive list of properties that we
+    would like to see preserved. We can certainly cite very prominent
+    and important ones though. Primary examples of predicates
+    that <i>break</i> these properties in general
+    are <tt>!/0</tt>, <tt>assertz/1</tt> and if-then-else.
+
+    <center><h2>Practical importance</h2></center>
+
+    When programming in Prolog, retaining logical purity as far as
+    possible has immense practical benefits.
+
+    <br><br>
+
+    Here are a few advantages that only apply to logically pure code.
+
+    <br><br>
+
+    <b>Pure code</b>...
+
+    <ul>
+      <li>... can be used in <b>all directions</b>, allowing for very
+        concise and general specifications that keep our programs
+        short. We can try the <a href="concepts#toplevel"><i>most
+        general query</i></a> to see what solutions look like.</li>
+
+      <li>... can be <b>changed</b> more flexibly. We can freely
+        reorder pure goals and clauses without changing the meaning of
+        the program. Reordering goals and clauses can lead to much
+        more efficient programs.</li>
+
+      <li>... can be <b>studied</b> more extensively. Reordering goals and
+        clauses allows us to study operational effects that in many
+        cases cannot even be observed with impure code due to its
+        limited generality.</li>
+      
+      <li>... can be <b>reasoned
+        about</b> <i>declaratively</i>. Adding a constraint can at
+        most <i>reduce</i> the set of solutions.  Removing a
+        constraint can at most <i>extend</i> it. This helps a lot
+        when <a href="debugging">debugging</a> unexpected failure
+        or success.</li>
+
+      <li>... can be <b>tested</b> with built-in features that are
+        themselves pure. <a href="testing">Test cases</a> for
+        pure code are simply Prolog queries that must fail or succeed,
+        depending on the desired outcome. Nothing else is needed. In
+        particular, it is not necessary to reason about output that
+        only appears on the terminal.</li>
+
+      <li>... is <b>easier to explain</b> and understand than impure
+        code. This is because the clauses can be read in isolation,
+        and their declarative reading as logical implications is
+        admissible. </li>
+
+      <li>... is automatically <b>thread safe</b>: There are
+        no <i>destructive</i> modifications in pure&nbsp;code, and
+        therefore no data&nbsp;races, where a thread reads data that a
+        different thread is modyfing at the same&nbsp;time. This
+        property is becoming increasingly important
+        for <a href="web">web&nbsp;applications</a>, where a single
+        server handles multiple&nbsp;clients in
+        different&nbsp;threads.</li>
+
+    </ul>
+
+    <center><h2>Applications to teaching Prolog</h2></center>
+
+    When teaching and learning Prolog, it is very helpful when goals
+    and clauses can be freely reordered to study operational effects
+    of changes. As already mentioned, this is possible with pure code.
+    If you leave the pure monotonic subset of Prolog, phenomena that
+    can only be explained procedurally will arise. For example, here
+    are a few Prolog queries and a declarative reading of
+    corresponding answers:
+
+    <br><br>
+
+    <center>
+      <table width="80%">
+        <tr>
+          <td width="20%"><b>Query and answer</b>&nbsp;&nbsp;</td>
+          <td><center><b>Declarative reading</b></center></td>
+        </tr>
+        <tr>
+          <td colspan="2"><hr></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- integer(I).
+<b>false.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>No integer exists.</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- integer(3).
+<b>true.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>Yet, 3 is an integer.</i>
+          </td>
+        </tr>
+
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- X \= Y.
+<b>false.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>There are no terms for which <tt>X&nbsp;\=&nbsp;Y</tt> holds.</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- a \= b.
+<b>true.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>In contrast to what the system just said,
+            <tt>X&nbsp;\=&nbsp;Y</tt> does hold for example for <tt>X
+            = a</tt> and <tt>Y = b</tt>.</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- X =:= Y.
+<b>ERROR: =:=/2: ...&nbsp;</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>Insufficient instantiation.</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- 3 =:= X,
+   X =:= Y.
+<b>ERROR: =:=/2: ...&nbsp;</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>Insufficient instantiation.</i>
+          </td>
+        </tr>
+
+      </table>
+    </center>    
+
+    <br><br>
+
+    It is clear that several properties we expect from pure logic
+    programs are violated if we use such legacy predicates. For
+    comparison, consider these queries if we use pure
+    predicates <i>instead</i>:
+
+    <br><br>
+
+    <center>
+      <table width="80%">
+        <tr>
+          <td width="20%"><b>Query and answer</b>&nbsp;&nbsp;</td>
+          <td><center><b>Declarative reading</b></center></td>
+        </tr>
+        <tr>
+          <td colspan="2"><hr></td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- I in inf..sup.
+<b>I in inf..sup.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>True iff <tt>I</tt> is an integer.</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- 3 in inf..sup.&nbsp;
+<b>true.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>In particular, 3 is an integer.</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- dif(X, Y).
+<b>dif(X, Y).</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>The query holds <i>iff</i> <tt>X</tt> and <tt>Y</tt>
+            are different terms.</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- dif(a, b).
+<b>true.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i> In particular, <tt>dif(X, Y)</tt> holds for example for <tt>X
+            = a</tt> and <tt>Y = b</tt>.</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- X #= Y.
+<b>X = Y,
+Y in inf..sup.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>The query holds <i>iff</i> <tt>X</tt> and <tt>Y</tt>
+            are the same integer.</i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <div class="query">
+              <pre>
+?- 3 #= X,
+   X #= Y.
+<b>X = Y, Y = 3.</b>
+              </pre>
+            </div>
+          </td>
+          <td>
+            <i>In particular, it holds if <tt>X</tt> and <tt>Y</tt> are
+            equal to&nbsp;3.</i>
+          </td>
+        </tr>
+
+      </table>
+    </center>    
+
+    From such examples, we see that using pure predicates allows us to
+    teach and reason about important and desirable properties of logic
+    programs in a uniform and logical&nbsp;way.
+
+    <center><h2>How far can we take this?</h2></center>
+
+    To what extent and how can we solve the tasks we want to express
+    with pure code <i>exclusively</i>, making the code as elegant and
+    general as possible while retaining acceptable performance? This
+    is an open <b>research&nbsp;question</b>, arguably the most
+    important question in declarative language research.
+
+    <br><br>
+
+    It is sometimes argued that impure language constructs are
+    <i>necessary</i> to obtain acceptable performance. There is no
+    evidence for this. In fact, there is some indication that supports
+    the opposite conclusion: Many important optimizations may
+    realistically be applicable <i>only&nbsp;if</i> sufficiently large
+    program fragments are kept pure. For example, the declarative
+    language <a href="https://mercurylang.org/"><b>Mercury</b></a>
+    totally omits many impure constructs that are sometimes used in
+    Prolog, yet still remains practical <i>and</i> much more efficient
+    than almost all Prolog
+    implementations. <a href="https://www.haskell.org/"><b>Haskell</b></a>
+    is another example of a programming language that allows
+    aggressive <a href="https://wiki.haskell.org/Performance">compiler&nbsp;optimizations</a> <i>due&nbsp;to</i>
+    its purity.
+
+    <br><br>
+
+    Recent developments in many Prolog implementations are designed to
+    let us describe ever larger subsets of our programs by pure
+    methods. In modern Prolog systems, even reading from files can be
+    described in a pure way under quite general assumptions. See Ulrich
+    Neumerkel's <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/swi/pio.pl"><b>library(pio)</b></a>
+    for more information.
+
+    <br><br>
+
+    An important recent publication showing how to preserve logical
+    purity while retaining acceptable performance in many situations
+    of high practical relevance
+    is <a href="https://arxiv.org/abs/1607.01590"><b><i>Indexing
+          dif/2</i></b></a> by Ulrich&nbsp;Neumerkel and Stefan&nbsp;Kral.
+        
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

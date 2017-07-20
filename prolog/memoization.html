@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Memoization</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Memoization">
+    <meta name="keywords" content="Prolog,Memoization,Tabling,Perforamnce">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Memoization</h1></center>
+
+    <center><h2>Introduction</h2></center>
+
+    The two best rules for
+    improving <a href="efficiency">efficiency</a> of
+    Prolog&nbsp;programs were given by Richard&nbsp;O'Keefe:
+
+    <ol>
+      <li>Don't do it.</li>
+      <li>Don't do it again.</li>
+    </ol>
+
+    To illustrate option&nbsp;1: If we need to solve a&nbsp;task that
+    is exorbitantly&nbsp;hard, we could look&nbsp;for a different,
+    easier task&nbsp;whose results <i>approximate</i> optimality
+    within a sufficient&nbsp;range.
+
+    <br><br>
+
+    In this text, we discuss option&nbsp;2, that is ways to not do
+    it&nbsp;<i>again</i>. The common theme is that we
+    <i>remember</i> results of previous computations, which is a
+    technique known as <i>memoization</i> in computer&nbsp;science.
+
+    <br><br>
+    <center><h2>Tabling</h2></center>
+
+    <b>Tabling</b> is a <i>built-in</i> method to apply memoization to
+    Prolog predicates. This means that the underlying Prolog system
+    can <i>automatically</i> perform memoization for&nbsp;you, if you
+    request&nbsp;it. Tabling is also known
+    as <b>SLG&nbsp;resolution</b>.
+
+    <br><br>
+
+    Different Prolog systems provide tabling in various forms and with
+    different characteristics. Your Prolog system's&nbsp;manual should
+    contain the exact details. In the following, we are using
+    SWI-Prolog as one example.
+
+    <br><br>
+
+    To enable tabling in SWI-Prolog, you need to:
+
+    <ol>
+      <li>Use <tt>library(tabling)</tt> via the directive <tt>:-
+          use_module(library(tabling)).</tt> in your source&nbsp;file.</li>
+      <li>Enable tabling via the <tt>table/1</tt> directive.</li>
+    </ol>
+
+    For example, to enable tabling
+    for <a href="nontermination"><tt>adjacent/2</tt></a>, you can write:
+
+    <pre>
+<b>:- use_module(library(tabling)).
+
+:- table adjacent/2.</b>          
+
+adjacent(a, b).
+adjacent(e, f).
+adjacent(X, Y) :- adjacent(Y, X).
+    </pre>
+
+    In this case, tabling has made the predicate <i>terminating</i>:
+
+    <pre>
+?- adjacent(X, Y), false.
+<b>false.</b>
+    </pre>
+
+    As the second example, let us consider the series
+    of <a href="https://en.wikipedia.org/wiki/Fibonacci_number"><b>Fibonacci&nbsp;numbers</b></a>,
+    which we can describe in Prolog for example as follows:
+
+    <pre>
+fibonacci(0, 1).
+fibonacci(1, 1).
+fibonacci(N, F) :-
+        N #> 1,
+        N1 #= N - 1,
+        N2 #= N - 2,
+        fibonacci(N1, F1),
+        fibonacci(N2, F2),
+        F #= F1 + F2.
+    </pre>
+
+    The relation works as intended in the most general case:
+
+    <pre>
+?- fibonacci(N, F).
+N = 0,
+F = 1 ;
+N = F, F = 1 ;
+N = F, F = 2 ;
+N = F, F = 3 ;
+N = 4,
+F = 5 .
+    </pre>
+
+    It can also be used for more specific queries:
+
+    <pre>
+?- fibonacci(17, F).
+F = 2584 ;
+false.
+    </pre>
+
+    However, the computation runs out of stack or takes too long for
+    larger arguments:
+
+    <pre>
+?- fibonacci(100, F).
+<b>ERROR: Out of local stack</b>
+    </pre>
+
+    We can easily enable tabling by adding the following directives to
+    the&nbsp;file:
+
+    <pre>
+:- use_module(library(tabling)).
+
+:- table fibonacci/2.
+    </pre>
+
+    Using SLG resolution, the answer to the previous query is now
+    readily&nbsp;found:
+
+    <pre>
+?- fibonacci(100, F).
+<b>F = 573147844013817084101</b>.
+    </pre>
+
+    
+    <br><br>
+    <center><h2>Doing it manually</h2></center>
+
+    We can <i>emulate</i> tabling by <i>manually</i> storing results
+    in the global&nbsp;database.
+
+    <br><br>
+
+    Consider for example the following definition of <tt>memo/1</tt>:
+
+    <br><br>
+    <pre class="box">
+:- dynamic memo_/1.
+
+memo(Goal) :-
+        (   memo_(Goal)
+        -&gt;  true
+        ;   once(Goal),
+            assertz(memo_(Goal))
+        ).
+    </pre>
+    <br><br>
+
+    As long as <tt>Goal</tt> is semi-deterministic or deterministic,
+    <tt>memo(Goal)</tt> is equivalent to <tt>Goal</tt>
+    and <i>reuses</i> results that have already been computed. This
+    leads to a technique known as <i>dynamic&nbsp;programming</i> in
+    computer&nbsp;science.
+
+    <br><br>
+
+    Note that this is less powerful than tabling: First, it
+    requires <i>modifications</i> of the original program that go
+    beyond adding simple directives. You have to manually wrap the
+    goals for which you want to enable memoization
+    with&nbsp;<tt>memo/1</tt>. Second, this rather <i>ad&nbsp;hoc</i>
+    definition does not help to improve termination&nbsp;properties of
+    your programs. On the plus side, the technique can still help to
+    improve performance tremendously when it is applicable, and it
+    is <i>portable</i> to all Prolog&nbsp;systems.
+
+    <br><br>
+
+    Applied to <tt>fibonacci/2</tt>, it could look as follows:
+
+    <pre>
+fibonacci(0, 1).
+fibonacci(1, 1).
+fibonacci(N, F) :-
+        N #> 1,
+        N1 #= N - 1,
+        N2 #= N - 2,
+        <b>memo</b>(fibonacci(N1, F1)),
+        <b>memo</b>(fibonacci(N2, F2)),
+        F #= F1 + F2.
+    </pre>
+
+    Sample query and answer:
+
+    <pre>
+?- fibonacci(100, F).
+<b>F = 573147844013817084101</b>.
+    </pre>
+
+
+    <br><br>
+    <center><h2>Doing it more explicitly</h2></center>
+
+    In many cases, we want more explicit control over what is being
+    stored. For example, we may want to ensure that we do not
+    accidentally clutter the global database or tabling storage. In
+    such cases, we can carry around a custom "database" of existing
+    results as predicate <i>arguments</i>.
+
+    <br><br>
+
+    We can use <a href="dcg#semicontext">semicontext notation</a> to
+    carry around the state <i>implicitly</i> while still retaining
+    full control over the storage.
+
+    <br><br>
+
+    As an example, we present the calculation of the <b>minimum
+      edit&nbsp;distance</b> between two lists, using the
+      nonterminals <a href="dcg#state"><tt>state//1</tt></a>
+      and <a href="dcg#state"><tt>state//2</tt></a>:
+
+    <pre>
+min_edit(As, Bs, Min-Es) :-
+        empty_assoc(Assoc0),
+        phrase(min_dist(As, Bs, Min-Es), [Assoc0], _).
+
+min_dist([], [], 0-[]) --&gt; [].
+min_dist(As, Bs, Min-Es) --&gt;
+        (   state(S0), { get_assoc(store(As,Bs), S0, Min-Es) } -&gt; []
+        ;   { findall(option(Action,Cost,As1,Bs1),
+                      edit_option(As, Bs, Action, Cost, As1, Bs1),
+                      Options) },
+            assess_options(Options, CostOptions),
+            state(S0, S),
+            { keysort(CostOptions, [Min-Es|_]),
+              put_assoc(store(As,Bs), S0, Min-Es, S) }
+        ).
+
+assess_options([], []) --&gt; [].
+assess_options([option(Action,Cost,As,Bs)|Options], [Min-[Action|Es]|Rest]) --&gt;
+        min_dist(As, Bs, Min0-Es),
+        { Min #= Min0 + Cost },
+        assess_options(Options, Rest).
+    </pre>
+
+    This code is quite flexible, and can be adapted to various use
+    cases by providing a suitable definition
+    of&nbsp;<tt>edit_option/6</tt>, declaratively describing the
+    actions that are allowed to transform one list into another. For
+    example, a typical use case may look like&nbsp;this:
+
+    <pre>
+edit_option([A|As], Bs, drop(A), 1, As, Bs).
+edit_option(As, [B|Bs], insert(B), 1, As, Bs).
+edit_option([A|As], [A|Bs], use(A), 0, As, Bs).
+    </pre>
+
+    This means that there are three possible actions (dropping,
+    inserting and using an element), with associated costs of one, one
+    and zero, respectively.
+
+    <br><br>
+
+    Example query and answer:
+
+    <pre>
+?- min_edit([a,b,c,e,f], [a,x,b,d,e,f], Min).
+<b>Min = 3-[use(a), insert(x), use(b), drop(c), insert(d), use(e), use(f)] </b>;
+false.
+    </pre>
+
+    If it were implemented naively, <tt>min_edit/3</tt> would exhibit
+    <i>exponential</i>&nbsp;runtime in the length of the lists. Using
+    memoization has reduced this to polynomial&nbsp;runtime.
+    
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

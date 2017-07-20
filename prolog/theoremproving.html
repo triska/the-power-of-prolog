@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Theorem Proving with Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Theorem Proving with Prolog">
+    <meta name="keywords" content="Prolog,Theorem,Proving">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Theorem Proving with Prolog</h1></center>
+    <br><br>
+
+    Is Prolog a <b>theorem prover</b>? Richard O'Keefe said it best:
+
+    <div>
+      <blockquote class="box">
+        <br>
+        Prolog is an efficient programming language because it is a
+        very stupid theorem prover.
+        <br><br>
+      </blockquote>
+    </div>
+
+    Thus, there is a <i>connection</i> between Prolog and theorem
+    proving. In fact, execution of a Prolog program can be regarded as
+    a special case of <i>resolution</i>, called SLDNF&nbsp;resolution.
+
+    <br><br>
+
+    However, Prolog is <i>not</i> a full-fledged theorem prover. In
+    particular, Prolog is logically <i>incomplete</i> due to its
+    depth-first search strategy: Prolog may be unable to find a
+    resolution refutation even if one&nbsp;exists.
+
+    <br><br>
+
+    <b>But</b>, and that is the critical point, we can of
+    course <b>implement</b> theorem provers in&nbsp;Prolog! This is
+    because Prolog is a
+    Turing&nbsp;complete <b>programming&nbsp;language</b>, and every
+    theorem prover that can be implemented on a computer
+    can <i>also</i> be implemented in&nbsp;Prolog.
+
+    <br><br>
+
+    Theorem provers often require some kind
+    of <a href="sorting#searching"><i>search</i></a>, such as a search
+    for <i>proofs</i> or&nbsp;<i>counterexamples</i>. It is very easy
+    to implement various search strategies in Prolog: We <i>can</i>,
+    but need not, reuse its built-in depth-first search.
+
+    <br><br>
+
+    Here as an example of a theorem prover written in Prolog,
+    implementing the <i>resolution calculus</i>
+    for <b>propositional&nbsp;logic</b>:
+
+    <pre>
+pl_resolution(Clauses0, Chain) :-
+        maplist(<a href="sorting#sort">sort</a>, Clauses0, Clauses), % remove duplicates
+        length(Chain, _),
+        pl_derive_empty_clause(Chain, Clauses).
+
+pl_derive_empty_clause([], Clauses) :-
+        member([], Clauses).
+pl_derive_empty_clause([C|Cs], Clauses) :-
+        pl_resolvent(C, Clauses, Rs),
+        pl_derive_empty_clause(Cs, [Rs|Clauses]).
+
+pl_resolvent((As0-Bs0) --&gt; Rs, Clauses, Rs) :-
+        member(As0, Clauses),
+        member(Bs0, Clauses),
+        select(Q, As0, As),
+        select(not(Q), Bs0, Bs),
+        append(As, Bs, Rs0),
+        <a href="sorting#sort">sort</a>(Rs0, Rs), % remove duplicates
+        maplist(dif(Rs), Clauses).
+    </pre>
+
+    The complete file is available
+    from <a href="/logic/plres.pl"><b><tt>plres.pl</tt></b></a>.
+
+    <br><br>
+
+    Here is an example query, using <tt>portray_clause/1</tt> to print
+    the resulting refutation&nbsp;chain in such a&nbsp;way that any
+    subsequent program that <i>verifies</i> the&nbsp;proof can easily
+    read&nbsp;it with the built-in predicate&nbsp;<tt>read/1</tt>:
+
+    <pre>
+?- Clauses = <b>[[p,not(q)], [not(p),not(s)], [s,not(q)], [q]]</b>,
+   pl_resolution(Clauses, Rs),
+   maplist(portray_clause, Rs).
+    </pre>
+
+    It leads to the following refutation chain:
+
+    <pre>
+[p, not(q)]-[not(p), not(s)] --&gt;
+	[not(q), not(s)].
+[s, not(q)]-[not(q), not(s)] --&gt;
+	[not(q)].
+[q]-[not(q)] --&gt;
+	[].
+    </pre>
+
+    Note in particular:
+
+    <ul>
+      <li>We are <i>not</i> using Prolog's built-in search strategy as
+        the search strategy of the&nbsp;prover! In this case, the
+        prover uses <b>iterative deepening</b> to
+        guarantee&nbsp;<i>refutation-completeness</i>: <i>If</i> a
+        refutation exists, <i>then</i> it is found. Iterative
+        deepening is easy to implement in Prolog,
+        since <tt>length/2</tt> creates longer and longer lists on
+        backtracking, and they can be used for limiting
+        the&nbsp;search. Iterative deepening may seem like a very
+        inefficient search strategy at first glance, but it is in fact
+        an <i>optimal</i> search strategy under very general
+        assumptions.</li>
+      <li>We are <i>not</i> using Prolog variables to represent
+        variables from the object level! In this case,
+        Prolog <i>atoms</i> represent propositional variables. This is
+        called a <b>ground&nbsp;representation</b> of variables. If we
+        use Prolog variables instead, then we can
+        use <b>Boolean&nbsp;constraints</b> as an alternative solution
+        method for showing that the formula is unsatisfiable:
+
+        <pre>
+?- sat(P + ~Q), sat(~P + ~S), sat(S + ~Q), sat(Q).
+<b>false</b>.
+        </pre>
+
+        The choice of <a href="data">data representation</a> can
+        thus significantly influence how we can reason about
+        such&nbsp;formulas.
+      </li>
+    </ul>
+
+    Therefore, when discussing theorem provers that are implemented
+    using&nbsp;Prolog, we must keep in mind that the way Prolog works
+    internally can differ significantly from the <i>implemented</i>
+    behaviour of the prover&nbsp;itself: Its search strategy, its
+    representation of variables, its logical properties, and indeed
+    anything at all can differ from the way Prolog&mdash;regarded as a
+    simplistic theorem prover&mdash;works internally, since we are
+    using Prolog only as one of many possible implementation
+    languages for theorem&nbsp;provers.
+
+    <br><br>
+
+    That being said, many properties make Prolog an <i>especially
+      suitable</i> language for <i>implementing</i> theorem provers.
+    For example:
+
+    <ul>
+      
+      <li>Prolog's built-in <b>search</b> and <b>backtracking</b> can
+      be readily used when searching for proofs and
+      counterexamples</li>
+      
+      <li><b>complete</b> search strategies, such as iterative deepening,
+      can be easily expressed in Prolog</li>
+
+      <li>Prolog's <b>logical variables</b> can often be used to
+        represent variables from the object&nbsp;level, allowing us
+        to <i>absorb</i> built-in Prolog features
+        like <b>unification</b> </li>
+
+      <li>built-in <b>constraints</b> allow for
+        declarative <b>specifications</b> that often lead to very
+        elegant and efficient programs.</li>
+    </ul>
+
+    Other examples of theorem provers implemented in Prolog are:
+
+    <ul>
+      <li><a href="/presprover/"><b>Presprover</b></a>: Proves formulas
+        of <i>Presburger&nbsp;arithmetic</i></li>
+      <li><a href="/various/trs.pl"><b><tt>trs.pl</tt></b></a>: Implements a
+        completion procedure for <i>Term Rewriting&nbsp;Systems</i> in
+        Prolog.</li>
+    </ul>
+
+    Many <a href="puzzles">logic puzzles</a> can be solved by applying
+    some form of theorem&nbsp;proving.
+    
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

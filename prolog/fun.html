@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Fun Facts about Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Fun Facts about Prolog">
+    <meta name="keywords" content="Prolog,Fun facts">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Fun Facts about Prolog</h1></center>
+    <br><br>
+
+    There is more to say about Prolog than can ever be&nbsp;said. At
+    the same&nbsp;time, you also need to collect your own experiences
+    with the language, and ponder certain aspects for&nbsp;yourself.
+    Here are a few <i>true</i> facts about&nbsp;Prolog to help you
+    begin your own observations and reflections.
+
+
+    <center><h2>Tail recursion often arises naturally</h2></center>
+
+    In Prolog, due to the power of <i>logical&nbsp;variables</i>, many
+    predicates can be <i>naturally</i> written in a
+    tail&nbsp;recursive way.
+
+    <br><br>
+
+    For example, consider
+    again <a href="reading#list_list_together3"><tt>list_list_together/3</tt></a>:
+
+    <pre>
+list_list_together([], Bs, Bs).
+list_list_together([A|As], Bs, [A|Cs]) :-
+        list_list_together(As, Bs, Cs).
+    </pre>
+
+    It is easy to see that <tt>list_list_together(As, Bs, Cs)</tt> is
+    a call in a&nbsp;<i>tail&nbsp;position</i>, because <i>no further
+      goal follows</i>.
+
+    Contrast this with a function like <tt>append</tt> in Lisp:
+
+    <pre>
+(defun append (x y)
+  (if x
+      (<b>cons</b> (car x) (append (cdr x) y))
+    y))
+    </pre>
+
+    This version of <tt>append</tt> is <i>not</i> tail&nbsp;recursive
+    in&nbsp;Lisp, because the recursive call is wrapped within a call
+    of&nbsp;<tt>cons</tt> and thus <i>not</i> the final
+    function&nbsp;call in this&nbsp;branch.
+
+    <br><br>
+
+    It is somewhat remarkable that such a basic function is <i>not</i>
+    naturally tail&nbsp;recursive in&nbsp;Lisp, but the corresponding
+    relation <i>is</i> tail recursive in&nbsp;Prolog!
+
+    <br><br>
+
+    In Prolog, many more predicates are <i>naturally</i> tail recursive.
+
+    <center><h2>Tail recursion is sometimes inefficient</h2></center>
+
+
+    In many cases, tail recursion is good for performance: When the
+    predicate is <b>deterministic</b>, a tail call means that the
+    Prolog system can automatically <i>reuse</i> the allocated space
+    of the environment on the local&nbsp;stack. In typical cases, this
+    measurably reduces memory consumption of your&nbsp;programs, from
+    O(N) in the number of recursive&nbsp;calls to&nbsp;O(1). Since
+    decreased memory consumption also reduces the stress on memory
+    allocation and garbage&nbsp;collection, writing tail recursive
+    predicates often improves both space and
+    time <a href="efficiency">efficiency</a> of your
+    Prolog&nbsp;programs.
+
+    <br><br>
+
+    However, take into account that many Prolog programs
+    are <i>not</i>&nbsp;deterministic. As long as choice points
+    remain, the current environment on the local stack <i>cannot be
+    discarded</i>, because it may still be needed on backtracking.
+
+    <br><br>
+
+    For example, let us define the
+    relation <tt>list_element_rest/3</tt> between
+    a <a href="data#list">list</a>, one of its elements, and the
+    list <i>without</i> that element:
+
+    <pre>
+list_element_rest([L|Ls], L, Ls).
+list_element_rest([L|Ls0], E, [L|Ls]) :-
+        list_element_rest(Ls0, E, Ls).
+    </pre>
+
+    <div style="border: 1px dotted; padding: 5pt">
+      <a href="reading#declarative"><b>Declarative reading</b></a>:
+      <ol>
+        <li>The relation quite obviously holds for the
+          list&nbsp;<tt>[L|Ls]</tt>, its
+          <i>first</i> element&nbsp;<tt>L</tt>, and the remainder&nbsp;<tt>Ls</tt>.
+        </li>
+        
+        <li><i>If</i> the relation holds for the
+          list&nbsp;<tt>Ls0</tt>, one of its elements&nbsp;<i>E</i>,
+          and the remainder&nbsp;<tt>Ls</tt>, <i>then</i> the relation
+          also holds for <tt>[L|Ls0]</tt> and <tt>E</tt>, and the
+          remainder&nbsp;<tt>[L|Ls]</tt>. This rule is
+          clearly <i>tail&nbsp;recursive</i>, because the recursive
+          call is its only&nbsp;goal.
+        </li>
+      </ol>
+    </div>
+    <br><br>
+
+    This predicate is quite versatile. Operationally, we can use it
+    to <i>remove</i> one element from a list, to <i>add</i> an element
+    to a&nbsp;list, and also in several other directions to either
+    generate, complete or test possible&nbsp;solutions. For example:
+
+    <pre>
+?- list_element_rest([a,b], E, Rest).
+E = a,
+Rest = [b] ;
+E = b,
+Rest = [a] ;
+false.
+    </pre>
+
+    And also:
+
+    <pre>
+?- list_element_rest(Ls, c, [a,b]).
+Ls = [c, a, b] ;
+Ls = [a, c, b] ;
+Ls = [a, b, c] ;
+false.
+    </pre>
+
+
+    In
+    the <a href="https://www.complang.tuwien.ac.at/ulrich/iso-prolog/prologue">Prologue
+    for Prolog</a> draft and several Prolog systems, an almost
+    identical predicate is available under the
+    name&nbsp;<a href="https://www.complang.tuwien.ac.at/ulrich/iso-prolog/prologue#select"><tt>select/3</tt></a>.
+
+    <br><br>
+
+    Using <tt>list_element_rest/3</tt> as a building block, we now
+    define <tt>list_permutation1/2</tt> to describe the relation
+    between a list and one of its <i>permutations</i>:
+
+    <pre>
+list_permutation1([], []).
+list_permutation1(Ls, [E|Ps]) :-
+        list_element_rest(Ls, E, Rs),
+        <b>list_permutation1</b>(Rs, Ps).
+    </pre>
+
+    Note that that this predicate is <i>also</i> tail recursive.
+
+    Here is an example query:
+
+    <pre>
+<b>?- list_permutation1([a,b,c], Ps).</b>
+Ps = [a, b, c] ;
+Ps = [a, c, b] ;
+Ps = [b, a, c] ;
+Ps = [b, c, a] ;
+Ps = [c, a, b] ;
+Ps = [c, b, a] ;
+false.
+    </pre>
+
+    Let us now run a few benchmarks. We generate <i>all</i> solutions
+    for lists of length 9, 10 and&nbsp;11:
+
+    <pre>
+?- L in 9..11, indomain(L), portray_clause(L),
+   length(Ls, L),
+   <b>time((list_permutation1(Ls,_),false))</b>.
+<b>9.</b>
+% 3,322,110 inferences, 0.440 CPU in 0.457 seconds (96% CPU, 7546288 Lips)
+<b>10.</b>
+% 33,221,103 inferences, 4.447 CPU in 5.166 seconds (86% CPU, 7470928 Lips)
+<b>11.</b>
+% 365,432,136 inferences, 49.162 CPU in 58.028 seconds (85% CPU, 7433257 Lips)
+    </pre>
+
+    Now consider an alternative definition of this relation, which we
+    call&nbsp;<tt>list_permutation2/2</tt>:
+
+    <pre>
+list_permutation2([], []).
+list_permutation2([L|Ls0], Ps) :-
+        <b>list_permutation2</b>(Ls0, Ls),
+        list_element_rest(Ps, L, Ls).
+    </pre>
+
+    This version is <i>not</i> tail recursive. Let us run the same
+    benchmarks with this new version:
+
+    <pre>
+?- L in 9..11, indomain(L), portray_clause(L),
+   length(Ls, L),
+   <b>time((list_permutation2(Ls,_),false))</b>.
+<b>9.</b>
+% 772,005 inferences, 0.094 CPU in 0.099 seconds (94% CPU, 8252942 Lips)
+<b>10.</b>
+% 7,666,725 inferences, 0.922 CPU in 1.044 seconds (88% CPU, 8313976 Lips)
+<b>11.</b>
+% 83,871,526 inferences, 10.084 CPU in 13.271 seconds (76% CPU, 8317163 Lips)
+    </pre>
+
+    Note that this version is <i>several times faster</i> in each of
+    the above cases! If you care a lot about performance, try to
+    understand why this is&nbsp;so.
+
+    <br><br>
+
+    Together with the previous section, this example illustrates that
+    tail recursion <i>does</i> have its uses, yet you should not
+    overemphasize&nbsp;it. For beginners, it is more important to
+    understand <a href="termination">termination</a>
+    and <a href="nontermination">nontermination</a>, and to&nbsp;focus
+    on clear declarative descriptions.
+
+    <center><h2>Most cuts are red</h2></center>
+
+    Almost every time you add a <tt>!/0</tt> to your program, it will
+    be a so-called <i>red&nbsp;cut</i>. This means that it will make
+    your program <i>wrong</i> in that it incorrectly omits some
+    solutions only in <i>some</i> usage&nbsp;modes.
+
+    <br><br>
+
+    This is a tough truth to accept for most Prolog programmers. There
+    always seems hope that we can somehow outsmart the system and get
+    away with <i>green&nbsp;cuts</i>, which improve performance and
+    honor all usage patterns. This hope is quite unfounded, because
+    there typically are simply too many cases to consider, and you
+    will almost invariably forget at least one of&nbsp;them.
+    Especially if you are used to imperative programming, it is easy
+    to fall into the trap of <i>ignoring general cases</i>.
+
+    <br><br>
+
+    For example, many beginners can correctly write a Prolog predicate
+    that describes a&nbsp;<i>list</i>:
+
+    <pre>
+list([]).
+list([_|Ls]) :-
+        list(Ls).
+    </pre>
+
+    This is a very general relation that works in all directions. For example:
+
+    <pre>    
+?- list([a,b,c]).
+true.
+
+?- list(Ls).
+Ls = [] ;
+Ls = [_15346] ;
+Ls = [_15346, _15352] .
+
+?- list(true).
+false.
+    </pre>
+
+    After seeing they can actually affect the control flow of Prolog
+    with&nbsp;<tt>!/0</tt>, many beginners will <i>incorrectly</i>
+    apply this construct in cases where it <i>cuts away solutions</i>.
+
+    <br><br>
+
+    For example, from a quick first glance, it may appear that the two
+    clauses are <i>mutually&nbsp;exclusive</i>. After all, a list is
+    <i>either</i> empty or has at least one element, right? And
+    so <a href="horror"><i>the&nbsp;horror</i></a> begins when
+    you&nbsp;write:
+
+    <pre>
+list([]) :- <b>!</b>. % <b>incorrect</b>!
+list([_|Ls]) :-
+        list(Ls).
+    </pre>
+
+    A quick test case "confirms" that <i>everything</i> still works:
+
+    <pre>
+?- list([a,b,c]).
+true.
+    </pre>
+
+    The <i>flaw</i> in this reasoning is that the clauses are in
+    fact <i>not</i> mutually exclusive. They are only exclusive if the
+    argument is <i>sufficiently instantiated</i>!
+
+    <br><br>
+
+    In Prolog, there are <i>more general cases</i> than you may be
+    used&nbsp;to from other programming languages. For example, with
+    the broken definition, we get:
+
+    <pre>
+?- list(Ls).
+Ls = []. % <b>incompleteness</b>!
+    </pre>
+
+    Thus, instead of an <i>infinite</i> set of solutions, the
+    predicate now only describes a <i>single</i> solution!
+
+    <br><br>
+
+    To truly benefit from declarative programming, stay in
+    the <a href="purity">pure</a>&nbsp;subset.
+    Use <i>pattern&nbsp;matching</i> or meta-predicates
+    like&nbsp;<tt><a href="metapredicates#if_3">if_/3</a></tt> to
+    efficiently express logical alternatives while retaining full
+    generality of your&nbsp;relations.
+
+    <center><h2><tt>flatten/2</tt> is no relation</h2></center>
+
+    In some introductory Prolog courses, you will be required to
+    implement a predicate called&nbsp;<tt>flatten/2</tt>.
+
+    <br><br>
+
+    In such cases, consider the following query:
+
+    <pre>
+?- flatten(Xs, Ys).
+    </pre>
+
+    What is a valid answer in such situations? Suppose your predicate
+    answers as follows:
+
+    <pre>
+Ys = [Xs].
+    </pre>
+
+    From a declarative point of view, this answer
+    is&nbsp;<b>wrong</b>! The reason is that <tt>Xs</tt> may as well
+    be a&nbsp;list, and in such cases, the result
+    is <i>not&nbsp;flattened</i>! Witness the evidence for yourself:
+
+    <pre>
+?- flatten(Xs, Ys), Xs = [a].
+Xs = [a],
+Ys = [[a]].
+    </pre>
+
+    Thus, <tt>Y</tt> is <i>not</i> a flat&nbsp;list, but
+    a <i>nested</i>&nbsp;list! In contrast, exchanging the goals yields:
+
+    <pre>
+?- Xs = [a], flatten(Xs, Ys).
+Xs = Ys, Ys = [a].
+    </pre>
+
+    This means that exchanging the order of goals <i>changes</i> the
+    set of solutions.
+
+    <br><br>
+
+    Your instructor should be able to understand this fundamental
+    declarative shortcoming if you point it&nbsp;out. In practice,
+    use <tt>append/2</tt> to remove precisely one level
+    of&nbsp;nesting in a sound&nbsp;way.
+
+
+    <center><h2>Iterative deepening is often a good strategy</h2></center>
+
+    Prolog's default search strategy is <i>incomplete</i>, and we can
+    often easily make it <i>complete</i> by turning it
+    into <i>iterative&nbsp;deepening</i>. This means that we search
+    for solutions of depth&nbsp;0, then for those of depth&nbsp;1, then
+    for those of depth&nbsp;2,&nbsp;etc.
+
+    <br><br>
+
+    From a quick first glance, this may seem very inefficient to you,
+    because we are visiting the same solutions over and over, although
+    we need each of them only&nbsp;<i>once</i>.
+
+    <br><br>
+
+    Now consider a search tree of depth&nbsp;<i>k</i>, with a
+    branching factor of&nbsp;<i>b</i>. With iterative&nbsp;deepening
+    up to and including depth&nbsp;<i>k</i>, we visit the <i>root</i>
+    node <i>k+1</i>&nbsp;times, since we start at depth&nbsp;0, and
+    revisit the root in each iteration, up to&nbsp;<i>k</i>. Further,
+    we visit the <i>b</i>&nbsp;nodes at depth&nbsp;1
+    exactly <span class="nobr"><i>k</i> times</span>. In general, we
+    visit the <i>b</i><sup><i>j</i></sup>&nbsp;nodes at
+    <span class="nobr">depth <i>j</i> (0&le;<i>j</i>&le;<i>k</i>)</span>
+    exactly <span class="nobr"><i>k</i>+1&minus;<i>j</i> times</span>.
+
+    <br><br>
+
+    Let us now sum this up to calculate the total number of visits:
+    <i>b</i><sup>0</sup>(<i>k</i>+1) + <i>b</i><sup>1</sup><i>k</i> +
+    <i>b</i><sup>2</sup>(<i>k</i>&minus;1) + &hellip;
+    +<i>b</i><sup><i>k</i></sup>.
+
+    <br><br>
+
+    Now the point: This sum is asymptotically <i>dominated</i> by the
+    number of visits at the final depth&nbsp;<i>k</i>, where we visit
+    <i>b</i><sup><i>k</i></sup>&nbsp;nodes, each
+    exactly&nbsp;<i>once</i>. This shows that iterative deepening is
+    in fact an asymptotically&nbsp;<i>optimal</i> search strategy
+    under very general&nbsp;assumptions, because <i>every</i>
+    uninformed search strategy must visit
+    these <i>b</i><sup><i>k</i></sup>&nbsp;nodes at least&nbsp;once
+    for completeness.
+
+    <br><br>
+
+    It also shows that people usually <i>underestimate</i> what
+    exponential&nbsp;growth really&nbsp;means. If you find yourself in
+    a situation where you really need to traverse such a
+    search&nbsp;tree, iterative deepening is often a very good
+    strategy, combining the memory efficiency of
+    depth-first&nbsp;search with the <i>completeness</i> of
+    breadth-first&nbsp;search. In addition, iterative deepening is
+    easy to implement in Prolog via its built-in backtracking.
+    <br><br>
+
+    Note that iterative deepening requires <i>monotonicity</i>!
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Efficiency of Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prolog Efficiency">
+    <meta name="keywords" content="Prolog,Performance,Efficiency">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Efficiency of Prolog</h1></center>
+    <br>
+
+    <div style="margin-left: 50%; display: inline-block">
+      <br>
+      <pre>
+The key point about Prolog is that the PURE things are fast and the
+imperative things are slow, which is the direct opposite of languages
+like Pascal. (<a href="http://www.cs.otago.ac.nz/staffpriv/ok/">Richard O'Keefe</a>, Prolog Digest, 1987)
+      </pre>
+    </div>
+    <br><br>
+
+    <center><h2>Introduction</h2></center>
+
+    <i>Is Prolog <i>fast</i>? Is it <i>slow</i>? Will it be fast enough
+      for your&nbsp;task?</i> (Most likely: <b>yes</b>.)
+
+    <br><br>
+
+    Prolog is a <i>programming language</i>, and like for any
+    programming language, there are many different ways to
+    <i>implement</i>&nbsp;it. For example, we can <i>compile</i> a
+    Prolog program to abstract or concrete <i>machine&nbsp;code</i>,
+    or we can <i>interpret</i> a Prolog program with various
+    techniques. The most popular implementation technique for Prolog
+    is <i>compiling</i> it to <i>abstract machine code</i>. This is
+    similar to the most common implementation methods of other
+    languages like Pascal, Lisp and&nbsp;Java. The <b>Warren Abstract
+    Machine (WAM)</b> is among the most well-known target machines for
+    Prolog. Other popular choices are the ZIP and&nbsp;TOAM. Some
+    implementations also compile to <i>native&nbsp;code</i>.
+
+    <br><br>
+
+    For example, in GNU&nbsp;Prolog, the
+    predicate <a href="clpfd#list_length"><tt>list_length/2</tt></a>
+    is translated to the following <i>abstract</i> machine
+    instructions, represented using a
+    Prolog&nbsp;<a href="data#term">term</a>:
+
+    <pre>
+predicate(list_length/2,5,static,private,user,[
+    switch_on_term(1,2,fail,4,fail),
+
+label(1),
+    try_me_else(3),
+
+label(2),
+    get_nil(0),
+    get_integer(0,1),
+    proceed,
+
+label(3),
+    trust_me_else_fail,
+
+label(4),
+    allocate(2),
+    get_list(0),
+    unify_void(1),
+    unify_variable(y(0)),
+    put_value(x(1),0),
+    put_structure((+)/2,1),
+    unify_variable(y(1)),
+    unify_integer(1),
+    call((#=)/2),
+    put_value(y(0),0),
+    put_value(y(1),1),
+    deallocate,
+    execute(list_length/2)]).
+    </pre>
+
+    It is such instructions that are <i>actually</i> interpreted when
+    you invoke this&nbsp;predicate in any&nbsp;way. In fact,
+    GNU&nbsp;Prolog even goes beyond this, and further translates such
+    instructions to <i>native</i> code.
+
+    <br><br>
+
+    Throughout the following, keep in mind that <i>efficiency</i> is a
+    property of a Prolog <i>implementation</i>, <i>not</i> of the
+    language itself!
+
+    <br><br>
+
+    We distinguish at least two <i>kinds</i> of efficiency:
+
+    <ul>
+      <li><b>space</b> efficiency, denoting how
+        much <i>main&nbsp;memory</i>&nbsp;(RAM) a program uses</li>
+      
+      <li> <b>time</b> efficiency, denoting how <i>long</i> a program runs.
+    </ul>
+
+    Both kinds of efficiency are of considerable importance in
+    practice, also when programming in&nbsp;Prolog.
+
+    <center><h2>Space efficiency</h2></center>
+
+    To understand memory usage of Prolog programs, you need to have a
+    basic understanding of how Prolog programs are executed. See
+    Richard O'Keefe's book <i>The Craft of&nbsp;Prolog</i> for a very
+    nice introduction.
+
+    <br><br>
+
+    The concrete memory usage depends on the Prolog compiler or
+    interpreter you are using, the optimizations it applies, and
+    which <i>virtual&nbsp;machine</i> architecture is used.
+
+    <br><br>
+
+    However, almost all Prolog compilers and interpreters distinguish
+    at least the following memory areas:
+
+    <ul>
+      <li>the <b>global stack</b>, sometimes also called
+        the&nbsp;<i>heap</i> or only
+        the&nbsp;<i>stack</i>. Prolog <i>terms</i> are created and
+        stored in this area.</li>
+      <li>the <b>local stack</b>, used for predicate invocations.</li>
+      <li>the <b>trail</b>, used to undo bindings on backtracking.</li>
+    </ul>
+
+    You can test how your Prolog system behaves when you&mdash;for
+    example&mdash;use more global stack than is available:
+
+    <pre>
+?- length(_, E), L #= 2^E, portray_clause(L), length(Ls, L), false.
+1.
+2.
+4.
+...
+16777216.
+33554432.
+67108864.
+ERROR: Out of global stack
+    </pre>
+
+    Prolog does not provide any means to manipulate system memory
+    directly. For this reason, large classes of mistakes that are
+    typical for lower-level languages <i>cannot arise at&nbsp;all</i>
+    when programming in&nbsp;Prolog. For example, with&nbsp;Prolog,
+    you cannot double-free a pointer, you cannot access an invalid
+    reference, and you cannot accidentally write into unforeseen
+    regions of the system&nbsp;memory. Since you cannot control any
+    low-level aspects of program execution, the Prolog implementation
+    must <i>automatically</i> perform some tasks for&nbsp;you.
+
+    <br><br>
+
+    Prolog implementations automatically apply various optimizations
+    to reduce their memory consumption. The most important
+    optimizations are:
+
+    <ul>
+    <li id="indexing"><b>argument indexing</b> of clauses to prevent
+      the creation of redundant choicepoints. You can expect any
+      Prolog system to index <i>at&nbsp;least</i> on the outermost
+      functor and arity of the <i>first</i> argument of any predicate.
+      Modern Prolog systems perform <i>JIT&nbsp;indexing</i> to
+      dynamically index those arguments that are
+      likely <i>most&nbsp;relevant</i> for performance.</li>
+    <li><b>tail call optimization</b> to call predicates without
+      consuming local stack space if the call occurs at
+      a <i>tail&nbsp;position</i> and no choice points remain.</li>
+    </ul>
+
+    Tail <i>recursion</i> optimization is a special case of
+    tail <i>call</i> optimization.
+
+    <br><br>
+
+    Prolog implementations typically apply <i>garbage collection</i>
+    to automatically reclaim areas of the stack that can be safely
+    used&nbsp;again.
+
+    <center><h2>Time efficiency</h2></center>
+
+    The <b>time efficiency</b> of any Prolog program depends a lot on the
+    compiler or interpreter you are using, and available Prolog
+    implementations differ <i>significantly</i> regarding performance.
+
+    <br><br>
+
+    However, a few general points hold for all Prolog implementations:
+    First, Prolog programs are typically much more general than
+    comparable programs in other languages. For example, Prolog
+    implementations support <i>logical&nbsp;variables</i>, which are
+    much more general than variables in most other programming
+    languages. In addition, Prolog supports built-in backtracking and
+    nondeterminism, which also need additional mechanisms. The
+    overhead of this generality is, in almost all
+    cases, <i>acceptably&nbsp;small</i>. Look at it this way: If you
+    need these features, then a <i>roughly&nbsp;comparable</i>
+    overhead would have been necessary to implement them in other
+    languages that do not ship with these features.
+
+    <br><br>
+
+    Second, <a href="purity">pure</a> Prolog
+    lacks <i>destructive</i> updates to terms. For this reason,
+    implementing (for example) efficient matrix operations requires
+    special support from the Prolog compiler. Alternatively, at least
+    logarithmic overhead is necessary to express updates in a
+    pure&nbsp;way. Prolog programs are efficient under the
+    so-called <i>tree&nbsp;model</i> of computation. Whether Prolog
+    programs can be as efficient as possible under the
+    so-called <i>pointer&nbsp;model</i> is an open research problem.
+    It is known
+    that <a href="https://dtai.cs.kuleuven.be/CHR/">Constraint
+    Handling Rules</a>&nbsp;(CHR) satisfy this property, so each
+    imperative algorithm can be implemented with
+    <i>asymptotically&nbsp;optimal</i> efficiency with&nbsp;CHR.
+
+    <br><br>
+
+    Third, the choice of algorithm typically has <i>far larger</i>
+    impact on running time than any particular implementation. You may
+    make a Prolog program run 10&nbsp;times faster by rewriting it
+    in&nbsp;C++, but you typically will not make it 100 or
+    1000&nbsp;times faster, for example.
+
+    <br><br>
+
+    Nevertheless, Prolog is sometimes associated with
+    being&nbsp;<i>slow</i>. In our experience, the main reasons for
+    this are:
+
+    <ol>
+      <li>Exponential-time algorithms can be conveniently encoded in
+        Prolog.</li>
+      <li>Beginners sometimes accidentally write Prolog programs that
+        do not even terminate, then call them "slow".</li>
+    </ol>
+
+    In response to point&nbsp;(1), we can only say that
+    exponential-time algorithms will eventually turn unacceptably slow
+    in <i>any</i> programming language, using <i>any</i>
+    implementation method. Also, many Prolog systems provide built-in
+    methods and libraries that let you solve large classes
+    of <a href="optimization">combinatorial&nbsp;optimization</a>
+    tasks very efficiently.
+
+    <br><br>
+
+    In response to point&nbsp;(2), we point to declarative ways of
+    reasoning about <a href="nontermination"><b>nontermination</b></a>
+    of Prolog programs via <i>failure&nbsp;slicing</i>. When you run a
+    program that is <i>"too&nbsp;slow"</i>, first apply this technique
+    to ensure that the program even <i>terminates</i>, or at
+    least <i>may&nbsp;terminate</i>.
+
+    <br><br>
+
+    In general, regarding efficiency, Prolog is at least as acceptable
+    a choice as for example Python or Java for most projects, and will
+    typically perform in roughly the same&nbsp;way.
+
+    <center><h2>Writing efficient Prolog code</h2></center>
+
+    Here are a few tips for obtaining efficient Prolog&nbsp;code:
+
+    <ol>
+      <li>First, before even thinking about performance, make sure
+        that your predicates <i>describe only the
+        intended&nbsp;objects</i>
+        and <a href="termination"><i>terminate</i></a> for those cases
+        where you <i>expect</i> them to terminate. When beginners
+        complain about performance of&nbsp;Prolog, they are typically
+        writing predicates that don't&nbsp;terminate. Use <tt>?-
+        Goal, <b>false</b>.</tt> to test universal termination
+        of&nbsp;<tt>Goal</tt>.
+      </li>
+
+      <li>Always aim for <a href="data#clean">clean</a>
+        data&nbsp;structures. These let you <i>symbolically</i>
+        distinguish different cases and make automatic
+        argument&nbsp;indexing applicable.
+      </li>
+      
+      <li>If you cannot use argument indexing, use
+        <a href="metapredicates#if_3"><tt>if_/3</tt></a> to
+        distinguish different cases, preserving generality <i>and</i>
+        determinism.
+      </li>
+
+      <li>If your predicate depends on the outcome of an arithmetic
+        comparison between <a href="clpfd"><i>integers</i></a>,
+        consider using <tt>zcompare/3</tt> to <i>reify</i> the
+        comparison. This makes its result available as an atom
+        (<tt>&lt;</tt>, <tt>=</tt> or&nbsp;<tt>&gt;</tt>) which is
+        again amenable to argument indexing.
+      </li>
+
+      
+      <li>Perform <a href="sorting#pruning">pruning</a> early to
+        reduce the size of the search&nbsp;space. A simple heuristic
+        is to place those goals first
+        that <i>always&nbsp;terminate</i>, such as
+        CLP(FD)&nbsp;constraints and <tt>dif/2</tt>.
+      </li>
+      
+      <li>Learn more about <a href="memoization">memoization</a>.</li>
+
+      <li>Consider using <a href="macros">macros</a>
+        and <a href="/acomip/#pe">partial evaluation</a> to produce
+        more efficient code at compilation&nbsp;time.</li>
+    </ol>
+
+    Good performance is often important. However, do not get carried
+    away with micro-optimizations. For example, leaving an occasional
+    choice-point is often completely acceptable in user&nbsp;programs.
+    Likewise, reporting redundant solutions is not
+    inherently&nbsp;bad. For beginners, it is easy to get dragged into
+    procedural aspects too early. Do not fall into this&nbsp;trap!
+    Instead, focus on those aspects of your programs where your
+    attention is most warranted. Let the machine and
+    Prolog&nbsp;system take care of the more trivial aspects.
+    Not <i>everything</i> needs to be implemented with utmost
+    efficiency.
+
+    <br><br>
+
+    Most importantly: <i>Never sacrifice correctness for
+    performance</i>! When writing Prolog programs, the most elegant
+    solutions are often also among the most efficient.
+
+    <br><br>
+
+    Therefore, when <a href="writing">writing</a> Prolog&nbsp;code,
+    always aim for elegant and general solutions. If they are not
+    efficient enough even though you have followed the advice on this
+    page, it may be a sign that you need a <i>new language
+    construct</i> from which many other Prolog&nbsp;programmers could
+    potentially benefit&nbsp;too. In such cases, ask the
+    Prolog&nbsp;community for more information! For example, the
+    newsgroup <a href="https://groups.google.com/forum/#!forum/comp.lang.prolog"><tt>comp.lang.prolog</tt></a> is a good place for such discussions.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

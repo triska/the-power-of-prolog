@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Prolog Data Structures</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prolog Data Structures">
+    <meta name="keywords" content="Prolog,Data Structures">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Prolog Data Structures</h1></center>
+    <br><br>
+
+    <center><h2 id="term">Terms</h2></center>
+
+    In Prolog, all data is represented by Prolog <b>terms</b>.
+
+    <br><br>
+
+    Terms are defined inductively:
+
+    <ul>
+      <li>an <b>atom</b> is a term. Examples of atoms
+        are: <tt>x</tt>, <tt>test</tt> and <tt>'quotes and space'</tt>.</li>
+      
+      <li> a <b>variable</b> is a term. Variables start with an
+        uppercase letter or underscore&nbsp;<tt>_</tt>. A single
+        underscore denotes an <i>anonymous&nbsp;variables</i> and can
+        be read as "any&nbsp;term".</li>
+      
+      <li><b>integers</b> and <b>floating point numbers</b> are terms.
+        Examples: 42 and 42.42. </li>
+      
+      <li>a <b>compound term</b> is a term, defined inductively as
+        follows: <i>If</i> <tt>T<sub>1</sub></tt>, <tt>T<sub>2</sub></tt>,
+        ..., <tt>T<sub>n</sub></tt> are
+        terms, <i>then</i> <i>F</i>(<tt>T<sub>1</sub></tt>, <tt>T<sub>2</sub></tt>, ..., <tt>T<sub>n</sub></tt>)
+        is also a term, where <i>F</i> is called the <i>functor</i> of the
+        compound term, and <tt>n</tt> is called the <i>arity</i>. Examples: <tt>f(a)</tt>, <tt>g(f(X))</tt> and <tt>+(a, f(X))</tt>.</li>
+    </ul>
+
+    All data can be represented in this way. Terms come into existence
+    by simply writing them&nbsp;down.
+
+    <br><br>
+
+    Prolog is <i>dynamically typed</i> and allows us great freedom for
+    representing data. For example, we <i>could</i> represent natural
+    numbers as follows:
+
+    <ul>
+      <li>we <i>could</i> use the atom <tt>zero</tt> to represent&nbsp;0</li>
+      <li>we <i>could</i> use the compound term <tt>s(X)</tt> to
+        represent the successor of&nbsp;<tt>X</tt>.</li>
+    </ul>
+
+    In this representation, the term <tt>s(s(s(zero)))</tt> represents
+    the number&nbsp;3. Such a representation is of course highly
+    impractical due to its enormous size for large&nbsp;numbers. For
+    this reason, Prolog provides <a href="clpfd">integer
+      arithmetic</a> with a much more efficient number representation.
+
+    <br><br>
+
+    Prolog terms naturally correspond
+    to&nbsp;<a href="optimization#tree">trees</a>. There is a
+    <a href="sorting#order">standard&nbsp;order</a> on&nbsp;terms.
+
+    <center><h2 id="list">Lists</h2></center>
+
+    Prolog <b>lists</b> are a special case of <a href="#term"><i>terms</i></a>.
+    <br><br>
+    Lists are defined inductively:
+
+    <ul>
+      <li>the atom <tt>[]</tt> is a list, denoting the <i>empty list</i></li>
+      <li><i>if</i> <tt>Ls</tt> is a list, <i>then</i> the term <tt>'.'(L,
+          Ls)</tt> is <i>also</i> a list.</li>
+    </ul>
+
+    There is a special syntax for denoting lists conveniently in Prolog:
+
+    <ol>
+      <li>The list <tt>'.'(a, '.'(b, '.'(c, [])))</tt> can also be
+        written as <tt>[a,b,c]</tt>.</li>
+      
+      <li>The term <tt>'.'(L, Ls)</tt> can also be written as <tt>[L|Ls]</tt>.
+      </li>
+    </ol>
+
+    These notations can be combined in any way. For example, the term
+    <tt>[a,b|Ls]</tt> is a list <i>iff</i> <tt>Ls</tt> is a list.
+
+    <br><br>
+
+    Lists naturally represent <i>collections</i> of elements and arise
+    in almost all Prolog&nbsp;programs. When choosing between lists
+    and any other way to represent collections of elements, ask
+    yourself the following questions:
+
+    <ul>
+      <li>Can there be <i>arbitrarily many</i> elements?</li>
+      <li>Can there be <i>zero</i> elements?</li>
+      <li>Is the <i>order</i> of elements significant?</li>
+      <li>Are the elements of the same <i>kind</i>?</li>
+    </ul>
+
+    If your answer is "yes" to most of these questions, lists are
+    often a good&nbsp;fit.
+
+    <br><br>
+
+    In contrast, consider for example the case where each collection
+    comprises exactly three elements. You can use lists of the
+    form <tt>[A,B,C]</tt> to represent such collections, and thus
+    benefit from <a href="metapredicates">meta-predicates</a> that
+    reason over&nbsp;lists. On the other hand, using compound terms of
+    the form <tt>f(A,B,C)</tt> is more memory efficient: This is
+    because the list <tt>[A,B,C]</tt> is the compound
+    term <tt>'.'(A,'.'(B,'.'(C,[])))</tt> and thus takes
+    roughly <i>twice</i> the space of the term <tt>f(A,B,C)</tt>
+    in&nbsp;memory.
+    
+    <br><br>
+
+    <a href="dcg">DCG notation</a> is frequently used for
+    describing&nbsp;lists.
+
+    <center><h2 id="pair">Pairs</h2></center>
+
+    By convention, the functor <tt>(-)/2</tt> is often used to denote
+    <i>pairs</i> of elements in Prolog. For example, the term <tt>-(A,
+    B)</tt> denotes the pair of elements <tt>A</tt> and <tt>B</tt>. In
+    Prolog, <tt>(-)/2</tt> is defined as an infix <i>operator</i>.
+    Therefore, the term can be written equivalently
+    as&nbsp;<tt>A-B</tt>.
+
+    <br><br>
+
+    Many commonly available predicates also use this syntax to denote
+    pairs. Examples of this
+    are <a href="sorting#keysort"><tt>keysort/2</tt></a>
+    and <tt>pairs_keys_values/3</tt>.
+
+    <center><h2 id="assoc">Association lists</h2></center>
+
+    In many Prolog systems, <b>association lists</b> are available to
+    allow faster than linear access to a collection of elements. These
+    association lists are typically based on balanced trees
+    like <b>AVL</b>&nbsp;trees.
+
+    <br><br>
+
+    There is a public domain library called <tt>library(assoc)</tt>
+    that ships with many Prolog systems and
+    provides <i>O(log(N))</i>&nbsp; operations for inserting, fetching
+    and changing elements of a collection.
+
+
+    <center><h2 id="string">Strings?</h2></center>
+
+    Almost everything that needs to be said about <i>strings</i> has
+    been brilliantly said by Richard O'Keefe in
+    his <a href="http://www.cs.otago.ac.nz/staffpriv/ok/pllib.htm">Prolog
+    Library Proposal</a>. In particular, <b>strings
+    are&nbsp;wrong</b>, and:
+
+    <blockquote>
+      For almost any use case that involves some kind of processing,
+      the only sensible thing to do with string data is to turn it
+      into some kind of tree <i>early</i>. Prolog is brilliant with
+      trees.
+    </blockquote>
+
+    In Prolog, a convenient representation of strings is available as
+    lists of <i>characters</i>, which are <i>atoms</i>. This
+    representation is available if you add the following directive to
+    your program:
+    <br><br>
+    <pre class="box">
+<b>:- set_prolog_flag(double_quotes, chars).</b></pre>
+
+    <br><br>
+    With this setting, we obtain for example:
+
+    <pre>
+?- Cs = "test".
+<b>Cs = [t, e, s, t]</b>.
+    </pre>
+
+    Thus, working with strings is reduced to working
+    with&nbsp;<a href="#list">lists</a>, which can be easily handled
+    in&nbsp;Prolog.
+
+
+    <center><h2>Arrays?</h2></center>
+
+    What about <b>arrays</b>? Is there any data structure in Prolog to
+    represent a collection of terms, allowing
+    for <i>O(1)</i>&nbsp;access to individual elements?
+
+    <br><br>
+
+    First of all, the concept of <i>destructive</i> modifications is
+    alien to logic programming. In Prolog, we
+    describe <i>relations</i> between entities, not destructive
+    effects. To express a change in a Prolog data structure, we define
+    a predicate that relates the state of the structure <i>before</i>
+    the change to a different structure <i>after</i> the change. For
+    this reason, <a href="purity"><b>pure</b></a> modifications
+    often entail some <i>copying</i> of data and typically lead to at
+    least logarithmic overhead (for example, to copy a subtree of a
+    balanced tree).
+
+    <br><br>
+
+    That being said, we can access the <i>arguments</i> of a term
+    in <i>O(1)</i> with the built-in predicate <tt>arg/3</tt>. There
+    even is an impure predicate called <tt>setarg/3</tt> which allows
+    destructive modifications to a term. Use it at your own peril: If
+    you use <tt>setarg/3</tt>, you can no longer reason about your
+    code in the way you expect from pure relations.
+
+    <center><h2 id="clean">Clean vs. defaulty representations</h2></center>
+
+    When representing data with Prolog terms, ask yourself the following question:
+
+    <blockquote>
+      Can I <i>distinguish the kind</i> of each component from
+      its <i>outermost functor and arity</i>?
+    </blockquote>
+
+    If this holds, your representation is called <b>clean</b>. If
+    you <i>cannot</i> distinguish the elements by their outermost
+    functor and arity, your representation is
+    called&nbsp;<b>defaulty</b>, a wordplay combining "default"
+    and&nbsp;"faulty". This is because <i>reasoning</i> about your
+    data will need a "<i>default&nbsp;case</i>", which is applied if
+    everything else fails. In addition, such a representation prevents
+    argument indexing, and is considered
+    <i>faulty</i> due to this shortcoming. Always aim to <i>avoid</i>
+    defaulty representations! Aim for cleaner representations instead.
+
+    <br><br>
+
+    For example, suppose you represent a <b>full binary tree</b> in
+    Prolog. There are two <i>kinds</i> of elements in a full binary
+    tree:
+
+    <ul>
+      <li><b>leaves</b>, which are concrete elements of the tree</li>
+      <li><b>nodes</b>, which have two children that are again full
+      binary trees.</li>
+    </ul>
+    
+    We can represent such trees with Prolog terms as follows:
+
+    <ul>
+      <li><tt>leaf(L)</tt> represents the <i>leaf</i> <tt>L</tt></li>
+      <li><tt>node(Left, Right)</tt> represents a <i>node</i> and its
+        two&nbsp;children.</li>
+    </ul>
+
+    The above is a <b>clean</b> representation: It lets us distinguish
+    the kinds of elements by their outermost functor. We can reason
+    about such trees in a way that keeps the code very general and
+    usable in all directions. Such a representation is also amenable
+    to <a href="efficiency#indexing">argument&nbsp;indexing</a>.
+
+    <br><br>
+
+    You can also recognize a clean representation if it lets you
+    describe the general <i>structure</i> of your data while retaining
+    enough flexibility to keep the concrete elements unspecified. For
+    example, in the case of full binary trees, we can represent the
+    general outline of all trees with exactly <i>two leaves</i>
+    as <tt>node(leaf(_),leaf(_))</tt>. If you had chosen
+    to <i>omit</i> the <tt>leaf/1</tt> wrapper for representing
+    leaves, this would become <tt>node(_,_)</tt>: a <i>defaulty</i>
+    representation that no longer represents precisely such
+    manifestations.
+
+    <br><br>
+
+    Sometimes, it will appear to you that there is no clean way out.
+    For instance, you may be faced with a representation
+    that <i>requires</i> you to distinguish different cases in an
+    impure and non-monotonic way, such as by testing
+    the <i>instantiation</i> of certain arguments
+    via&nbsp;<tt>var/1</tt>. In such cases, it is good practice to
+    restrict the impure parts of your program to small fragments, and
+    to <i>convert</i> any defaulty representation to a clean&nbsp;one
+    by introducing suitable wrappers that let you distinguish the
+    cases by pattern&nbsp;matching. This helps to ensure that you can
+    use your core predicates in multiple directions.
+
+    <center><h2>Term inspection</h2></center>
+
+    In Prolog, the most natural way to reason about&nbsp;terms is to
+    rely on <i>unification</i>. In addition, there are several
+    predicates that let you decompose and analyze&nbsp;terms. The most
+    important of these <b>term&nbsp;inspection</b> predicates
+    are <tt>functor/3</tt>, <tt>arg/3</tt> and <tt>(=..)/2</tt>.
+
+    <br><br>
+
+    Here are examples that illustrate their usage:
+
+    <pre>
+<b>?- functor(f(a,g(X)), Functor, Arity).</b>
+Functor = f,
+Arity = 2.
+
+<b>?- functor(Term, f, 2).</b>
+Term = f(_25002, _25004).
+
+<b>?- arg(2, f(a,g(X)), Arg).</b>
+Arg = g(X).
+
+<b>?- f(a,g(X)) =.. [Functor|Args].</b>
+Functor = f,
+Args = [a, g(X)].
+
+<b>?- Term =.. [f,a,g(X)].</b>
+Term = f(a, g(X)).
+    </pre>
+
+    These predicates cannot be defined by a finite set of clauses, and
+    can therefore be considered <a href="metapredicates">higher-order
+    predicates</a>. Do not get carried away with these predicates!
+    Everything that <i>can</i> be expressed by
+    pattern&nbsp;matching <i>should</i> be expressed by
+    pattern&nbsp;matching. For example, instead of <tt>functor(Term,
+    f, 2)</tt>, you can simply write <tt>Term = f(_,_)</tt>.
+
+    <br><br>
+
+    Every Prolog term has a <b>canonical</b> representation. If you
+    are ever unsure about the structure of a&nbsp;term,
+    use <tt>write_canonical/1</tt> to obtain the canonical
+    representation. For example:
+
+    <pre>
+?- write_canonical(a+b=[x,y,z]).
+<b>=(+(a,b),'.'(x,'.'(y,'.'(z,[]))))</b>
+    </pre>
+
+    The canonical representation shows the structure of the&nbsp;term
+    in such a way that it can also be easily parsed by
+    external&nbsp;programs.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

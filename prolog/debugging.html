@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Declarative Debugging</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Declarative Debugging">
+    <meta name="keywords" content="Prolog,Debugging,Declarative">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Declarative Debugging</h1></center>
+    <br><br>
+
+    First, a note on terminology: In the following, the
+    word <b>mistake</b> is used <i>instead</i> of "bug". The reasons
+    for this are:
+
+    <ul>
+      <li><i>We</i> are making these mistakes. They do not occur by themselves.</li>
+      <li>Mistakes in software should be taken seriously. We should
+        not trivialize them or find excuses.</li>
+      <li>Mistakes should be <i>corrected</i>.</li>
+    </ul>
+
+    We will now explain declarative ways to <i>locate</i>
+    and <i>correct</i> mistakes in Prolog programs. The techniques we
+    explain have been invented and popularized
+    by <a href="http://www.complang.tuwien.ac.at/ulrich/">Ulrich
+    Neumerkel</a> in the Prolog teaching environment
+    <a href="http://www.complang.tuwien.ac.at/ulrich/papers/PDF/#2002-wlpe"><b>GUPU</b></a>.
+
+    <br><br>
+    
+    The methods are based on declarative ways
+    of <a href="reading"><b>reading Prolog programs</b></a>,
+    exploiting logical properties to quickly narrow down mistakes.
+
+    <center><h2>Tracing falls short</h2></center>
+
+    When you detect a mistake in a Prolog program, and you are used to
+      procedural languages, you may try to think about the Prolog
+      program mostly <i>procedurally</i> and attempt to understand its
+      control flow by <i>tracing</i> the computation. There are
+    several tools that help you with this: Try
+
+    <pre>
+?- trace, your_goal.
+    </pre>
+
+    and
+
+    <pre>
+?- gtrace, your_goal.
+    </pre>
+
+    to trace your programs in textual or graphical tracers that your
+    Prolog system provides.
+
+    <br><br>
+
+    Unfortunately, <b>tracing falls short</b> in several critical respects.
+    One important reason is that tracers are <i>programs</i>
+    and <i>also</i> contain mistakes. Very often, and especially for
+    more complex programs, you will wrestle with mistakes, omissions
+    and shortcomings in the tracer <i>in&nbsp;addition</i> to mistakes
+    in your program. Another important reason is that traces quickly
+    get very&nbsp;<i>complex</i> and hard to understand. Finally,
+    using tracers only further encourages procedural thinking, which
+    makes it even harder for you to learn more elegant techniques and
+    practices for locating mistakes in declarative programs.
+
+    <br><br>
+
+    For these reasons, we focus on <i>declarative</i> approaches in
+    this text. They are easy to apply, let you quickly locate
+    mistakes, and encourage the use of declarative techniques that
+    also make declarative approaches for locating mistakes more widely
+    applicable.
+    
+
+    <center><h2>Mistakes in a Prolog program</h2></center>
+
+    There are two main ways in which a pure Prolog program
+    that <i>terminates</i> can be wrong. It can be:
+
+    <ul>
+      <li><i>too general</i></li>
+      <li><i>too specific</i>.</li>
+    </ul>
+
+    A Prolog program is too <b>general</b> if it yields solutions that
+    are not intended. A Prolog program is too <b>specific</b> if
+    intended solutions are not reported. In the former
+    case, <i>constraints</i> must be added to rule out unintended
+    solutions. In the latter case, the program must
+    be <i>generalized</i>. These cases are <i>not</i> mutually
+    exclusive: A Prolog program may be too general <i>and</i> too
+    specific.</li>
+
+
+    <center><h2>Example: Length of a list</h2></center>
+
+    Let us consider a simple Prolog program that <i>contains a
+      <b>mistake</b></i>:
+
+    
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        N #= N0 + 2,
+        list_length(Ls, N0).
+    </pre>
+
+    Our intention is to describe the relation between a <i>list</i>
+    and its&nbsp;<i>length</i>. We can use the methods described
+    in <a href="testing"><b>Declarative Testing</b></a> to detect
+    that the program is <i>too specific</i> because the following
+    query <i>incorrectly</i> <b>fails</b>:
+
+    <pre>
+?- list_length([_], 1).
+false.
+    </pre>
+
+    In fact, the program is also <i>too general</i>, because the
+    following query <b>succeeds</b> unintentionally:
+
+    <pre>
+?- list_length([_], 2).
+true.
+    </pre>
+
+    Note that we declaratively reason about the <i>meaning</i> of the
+    program, without attempting to understand details of the
+    computation.
+    
+    <center><h2>Locating mistakes</h2></center>
+
+    How can we find the precise <b>location</b> of mistakes in our
+    program? A very nice method, applicable for the
+    the <a href="purity"><b>pure</b></a> monotonic subset of
+    Prolog, was described by Ulrich Neumerkel in a posting to the
+    SWI-Prolog mailing list, and we will use his technique here.
+
+    <br><br>
+
+    The idea is to make the following definitions available in your programs:
+
+    <div>
+      <pre class="box">
+:- op(920,fy, *).
+
+*_. </pre>
+    </div>
+
+    Putting <tt>(*)/1</tt> in front of a goal lets us <b>generalize
+        away</b> the goal. This means that the goal is treated as if
+    it were not stated <i>at&nbsp;all</i>. We could also "comment&nbsp;out"
+    the goal, but using <tt>(*)/1</tt> is a lot more convenient
+    because it also works for the <i>last</i>&nbsp;goal of a
+    clause, whereas "commenting&nbsp;out" the&nbsp;period would lead
+    to syntax errors. In the following, we use <s>strikeout</s>
+    text to denote that the goal is treated as if it did not
+    appear at&nbsp;all.
+
+    <br><br>
+
+    We start by generalizing away <i>all</i> explicit goals:
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        <b>*</b> <s>N #&gt; 0</s>,
+        <b>*</b> <s>N #= N0 + 2</s>,
+        <b>*</b> <s>list_length(Ls, N0)</s>.
+    </pre>
+
+    This makes the program significantly <i>more general</i>. Of
+    course it is now much <i>too</i> general, but at least it is no
+    longer too specific. In particular, the query that previously
+    unintentionally <i>failed</i> now <i>succeeds</i>:
+
+    <pre>
+?- list_length([_], 1).
+true.
+    </pre>
+
+    By systematically removing some of the <tt>(*)/1</tt> we
+    introduced, we can <b>narrow down</b> the mistake. In particular,
+    if we use the following definition:
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        * <s>N #= N0 + 2</s>,
+        list_length(Ls, N0).
+    </pre>
+
+    then the query still <i>succeeds</i>, but if we <i>include</i> the
+    single goal that is now still generalized away, then the
+    query <i>fails</i> again. Therefore, <b>check this goal for
+    mistakes</b>! A bit of reflection quickly leads to the following
+    correction:
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], N) :-
+        N #&gt; 0,
+        N #= N0 + <b>1</b>,
+        list_length(Ls, N0).
+    </pre>
+
+    This corrected program passes all tests explained
+    in <a href="testing"><b>Declarative Testing</b></a>.
+
+    <center><h2>Appreciating the technique</h2></center>
+
+    Let us briefly pause and reflect on the approach outlined above.
+    Clearly, the method is based on the following important property:
+
+    <blockquote>
+      <b>Removing a goal</b> can make a predicate
+      at most <b>more&nbsp;general</b>, <i>never</i> more specific.
+    </blockquote>
+
+    This property clearly <b>holds</b> for pure and monotonic
+    Prolog&nbsp;code. That is
+    a <a href="https://en.wikipedia.org/wiki/Turing_completeness">Turing&nbsp;complete</a>
+    subset of Prolog and therefore suffices to express all
+    computations that are currently known. However, solely for the
+    sake of argument, suppose that your application ideas are so
+    colossal that they <i>exceed</i> the expressiveness of this
+    fragment. Even if that were the case, it would <i>still</i> be
+    remarkable that such a strong, general statement can be made about
+    how <i>changes</i> to a program affect its meaning. Since that
+    fragment is, in reality, as expressive as the whole language in
+    computational terms, it is all the <i>more</i> remarkable!
+
+    <br><br>
+
+    In fact, Prolog is rather unique due to this property alone
+    already. Compare this property to other programming languages: How
+    do comparable changes in a Java, C++ or Haskell program affect its
+    meaning? For example, what changes if you remove
+    a <tt>for</tt>&nbsp;loop in a Java program,
+    an <tt>if-then-else</tt> block in a C++ program, or one of the
+    lines in a <tt>do</tt> block in a Haskell program? Does such a
+    program even <i>compile</i> in all cases?
+
+    <br><br>
+
+    Can you make any such statement for <i>any</i> fragment
+    of <i>any</i> programming language other than Prolog?
+
+    <br><br>
+
+    There are many other interesting properties that <i>also</i> hold
+    for pure and monotonic Prolog&nbsp;code, and which can be
+    exploited for locating mistakes in our programs. It is our hope
+    that the availability and usefulness of such declarative methods
+    encourage you to value and retain logical&nbsp;purity of your
+    Prolog programs.
+
+
+    <center><h2>Further reading</h2></center>
+
+    See <a href="nontermination"><b>Nontermination</b></a> for
+    reasoning about programs that inadvertently <i>don't</i> terminate.
+
+    See
+    the <a href="http://stackoverflow.com/questions/tagged/failure-slice"><b>failure-slice</b></a>
+    tag on stackoverflow,
+    <a href="http://stackoverflow.com/a/30791637/1613573">additional
+    definitions</a> for reasoning declaratively about programs,
+    and <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/diadem.pl"><b>library(diadem)</b></a>.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Prolog Web Applications</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prolog Web Applications">
+    <meta name="keywords" content="Prolog,Web,Application,Development">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Prolog Web Applications</h1></center>
+    <br>
+
+    Prolog is extremely well suited for
+    developing <b>web&nbsp;applications</b>. Web pages are naturally
+    represented as <a href="data">Prolog terms</a> and can be
+    easily created, inspected and processed recursively.
+
+    <br><br>
+
+    We distinguish between <b>client</b> and <b>server</b>
+    applications. This page explains in more detail how to use Prolog
+    for these tasks.
+
+    <br><br>
+
+    Support for web development differs between Prolog systems. At the
+    most basic level, a few simple predicates that let you access
+    network&nbsp;streams would suffice to build rudimentary
+    web&nbsp;applications. Of course, the most widely used Prolog
+    systems typically go far beyond this and ship with more thorough
+    and high-level support for such applications. For example,
+    SICStus&nbsp;Prolog and several other systems ship with the
+    <a href="http://cliplab.org/Software/pillow/pillow.html">PiLLoW
+    library</a> for WWW&nbsp;programming. In SICStus, it is available
+    as
+    <a href="https://sicstus.sics.se/sicstus/docs/latest4/html/sicstus.html/lib_002dpillow.html#lib_002dpillow"><tt>library(pillow)</tt></a>.
+
+    <br><br>
+    
+    In the following, we
+    use <a href="http://eu.swi-prolog.org">SWI-Prolog</a> as an
+    example of a Prolog dialect with excellent capabilities for web
+    applications.
+
+
+    <center><h2>HTTP Clients</h2></center>
+
+    <center><h3>Fetching pages</h3></center>
+
+    A <b>client</b> fetches pages from a <i>server</i>. Using
+    SWI-Prolog, we can easily fetch a page via&nbsp;HTTP
+    and&nbsp;HTTPS
+    using <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=http_open/3"><tt><b>http_open/3</b></tt></a>.
+
+    <br><br>
+
+    Example:
+
+    <pre>
+?- use_module(library(http/http_open)).
+true.
+
+?- <b>http_open</b>('https://www.metalevel.at/prolog', Stream, []).
+Stream = &lt;stream&gt;(0x1cadaf0,0x1cad920).
+    </pre>
+
+    This opens <tt>Stream</tt> for reading the page. The third
+    argument of <tt>http_open/3</tt> is a list of&nbsp;<i>options</i>
+    that we can use to obtain header fields and control various
+    aspects of the connection.
+
+    <br><br>
+
+    Since the <tt>https</tt> scheme was specified in the example
+    above, a <i>secure</i> connection is automatically established
+    and&nbsp;used. You can
+    use <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=section(%27packages/ssl.html%27)"><tt>library(ssl)</tt></a>
+    to establish secure connections explicitly.
+
+    <br><br>
+    <center><h3>Parsing HTML</h3></center>
+
+    Once we obtain a stream handle for a web page, we can read the
+    page in several ways. For example, we can read one character at a
+    time or use a <a href="dcg">DCG</a> to process the stream in
+    a <a href="purity">pure</a>&nbsp;way.
+
+    <br><br>
+
+    Very often, it is most convenient to convert the HTML&nbsp;page to
+    a <a href="data">Prolog&nbsp;term</a> that reflects the page
+    structure in a uniform way. The
+    predicate <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=load_html/3"><tt><b>load_html/3</b></tt></a>
+    performs this conversion:
+
+    <pre>
+?- http_open('https://www.metalevel.at/prolog', Stream, []),
+   <b>load_html</b>(stream(Stream), DOM, []).
+Stream = ...,
+<b>DOM = [element(html, [], [element(head, [], [element(title, ...)])])]</b>.
+    </pre>
+
+    See
+    <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/sgml.html%27%29"><tt><b>library(sgml)</b></tt></a>
+    for more information, and related predicates for parsing markup
+    languages like&nbsp;XML.
+
+    <br><br>
+
+    <center><h3>Processing HTML</h3></center>
+
+    Plain Prolog already makes it extremely convenient to process such
+    a nested list of SGML&nbsp;elements, where each element is
+    represented as&nbsp;<tt>element(Name, Attributes,
+    Content)</tt>. We could simply process such structures
+    recursively, using <a href="concepts#builtin">built-in</a>
+    Prolog features.
+
+    <br><br>
+
+    Amazingly, we can do even better: In
+    SWI-Prolog, <a href="http://eu.swi-prolog.org/pldoc/man?section=xpath"><tt><b>library(xpath)</b></tt></a>
+    allows us to access HTML&nbsp;elements by
+    <a href="https://en.wikipedia.org/wiki/XPath">XPath</a>&nbsp;specifications
+    in a straight-forward way.
+
+    <br><br>
+
+    For example, let us obtain the text of all <i>list items</i> that
+    appear on a page, in continuation of the previous example:
+
+    <pre>
+?- use_module(library(xpath)).
+true.
+      
+?- http_open('https://www.metalevel.at/prolog', Stream, []),
+   load_html(stream(Stream), DOM, []),
+   <b>xpath(DOM, //li(text), Item)</b>.
+Stream = ...,
+DOM = ...,
+<b>Item = '<a href="introduction">Introduction</a>'</b> ;
+Stream = ...,
+DOM = ...,
+<b>Item = '<a href="facets">Facets of Prolog</a>'</b> ;
+Stream = ...,
+DOM = ...,
+<b>Item = '<a href="concepts">Basic Concepts</a>'</b> ;
+Stream = ...,
+DOM = ...,
+<b>Item = '<a href="data">Data Structures</a>'</b> ;
+etc.
+    </pre>
+
+    On backtracking, all solutions are reported.
+
+    
+
+    <center><h2 id="server">HTTP Servers</h2></center>
+
+    SWI-Prolog makes it extremely easy to write HTTP and
+    HTTPS <b>servers</b>.
+
+    <br><br>
+
+    To get started, consider a very rudimentary HTTP&nbsp;server:
+
+    <pre>
+:- use_module(library(http/thread_httpd)).
+:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_unix_daemon)).
+
+:- http_handler(/, handle_request, []).
+
+handle_request(_Request) :-
+    format("Content-type: text/plain~n~n"),
+    format("Hello!").
+    </pre>
+
+    The snippet uses the
+    HTTP <a href="http://eu.swi-prolog.org/pldoc/doc/_SWI_/library/http/http_unix_daemon.pl">Unix
+    daemon library</a> to implement a server that simply responds
+    with&nbsp;<i>Hello!</i> to every request. This library implicitly
+    augments your code with options that you can use on the command
+    line.
+
+    <br><br>
+
+    To run the server, copy the snippet to <tt>server.pl</tt> and find
+    out more with:
+
+    <pre>
+swipl server.pl --help
+    </pre>
+
+    For example, you can start the server on port&nbsp;3040 using:
+
+    <pre>
+swipl server.pl <b>--port=3040 --interactive</b>
+    </pre>
+
+    Once the server is running, you can test it by browsing
+    to&nbsp;<tt><a href="http://127.0.0.1:3040">http://127.0.0.1:3040</a></tt>.
+
+    <br><br>
+
+    In a more realistic
+    HTTP&nbsp;server, the response will of course depend on the actual
+    <i>request</i> of the client. The server libraries represent
+    the <a href="http://eu.swi-prolog.org/pldoc/man?section=request">parsed&nbsp;request</a>
+    as a list of <tt>Name(Value)</tt>&nbsp;elements, which can be
+    easily processed in Prolog.
+
+    <br><br>
+
+    Using different or additional <tt>http_handler/3</tt> directives,
+    you can change the behaviour of the server. For example, to serve
+    <i>files</i> from the current directory, use the following
+    directives instead:
+
+    <pre>
+:- use_module(library(http/http_files)).
+:- http_handler(root(.), <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=http_reply_from_files/3"><b>http_reply_from_files</b></a>('.', []), [prefix]).
+    </pre>
+
+    To emit HTML pages, you have several options:
+
+    <ul>
+      <li>You can simply emit any reply you want on <tt>stdout</tt>,
+        as in the example above. This is quite error-prone, making it
+        easy to forget closing tags&nbsp;etc.</li>
+      <li>You can emit the contents of an existing HTML file
+        with <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=http_reply_file/3"><tt>http_reply_file/3</tt></a>.</li>
+      <li>You can
+      use <a href="http://eu.swi-prolog.org/pldoc/man?section=htmlwrite"><tt>library(http/html_write)</tt></a>
+      to create HTML pages from Prolog terms. Here is an example,
+      using
+      the <a href="dcg">DCG&nbsp;nonterminal</a> <tt>html//1</tt>
+      to convert a Prolog term to&nbsp;HTML and printing it:
+
+        <pre>
+?- phrase(html(<b>center(h1('Heading'))</b>), As), print_html(As).
+
+
+<b>&lt;center&gt;
+
+&lt;h1&gt;Heading&lt;/h1&gt;
+
+&lt;/center&gt;</b>
+
+As = [nl(2), &lt;, center, &gt;, nl(1), nl(2), &lt;, h1, &gt;|...].
+        </pre>
+      </li>
+    </ul>
+
+    Depending on the task, some of these options will be more appropriate than others.
+
+    <br><br>
+
+    See
+    the <a href="http://eu.swi-prolog.org/pldoc/man?section=httpserver"><b>HTTP&nbsp;server&nbsp;libraries</b></a>
+    for more information.
+
+    <br><br>
+
+    To run a Prolog-based HTTPS server,
+    see <a href="https://github.com/triska/letswicrypt"><b>LetSWICrypt</b></a>.
+
+    <br><br>
+
+    <a href="https://github.com/triska/proloxy"><b>Proloxy</b></a> is
+    a Prolog-based <b>proxy</b> that uses extensible
+    Prolog&nbsp;clauses for flexible configurations.
+
+    <center><h2>Client/Server Applications</h2></center>
+
+    <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/pengines.html%27%29"><b>Pengines</b></a>
+    allow us to implement powerful client/server applications in&nbsp;Prolog.
+
+    <br><br>
+    
+    Using Pengines, you can query a remote Prolog server <i>as if it
+    were local</i>, using its results in client Prolog programs or web
+    pages with JavaScript.
+
+    <br><br>
+
+    For example, consider again the animal identification task
+    described in <a href="expertsystems"><b>Expert
+        Systems</b></a>. We can implement it as a client/server application with:
+
+    <ul>
+      <li><a href="animal_server.pl">animal_server.pl</a></li>
+      <li><a href="animal_client.pl">animal_client.pl</a></li>
+    </ul>
+
+    Importantly, the application logic resides completely on the
+    server.
+
+    <br><br>
+
+    See <a href="/rits/"><b>RITS</b></a> for an example of a more
+    complex application.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

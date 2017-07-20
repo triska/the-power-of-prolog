@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Prolog Business Cases</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prolog Business Cases">
+    <meta name="keywords" content="Prolog,Business,Serious">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Prolog Business Cases</h1></center>
+    <br><br>
+
+    To establish the use of Prolog in an organization, management must
+    be made&nbsp;aware of the immense benefits it has from
+    a <i>business&nbsp;perspective</i>, such&nbsp;as:
+
+    <ul>
+      <li>Prolog is <b>ISO&nbsp;standardized</b>. This is an extremely
+        important asset from a legal perspective, since it means that
+        Prolog&nbsp;vendors can be <i>held&nbsp;accountable</i> when
+        violating the standard.</li>
+      <li>Prolog <b>cuts&nbsp;costs</b>: Since Prolog programs are
+        so&nbsp;general, you typically need <i>less&nbsp;code</i>,
+        which you can type in less&nbsp;time.</li>
+      <li>Prolog has a proven <b>track&nbsp;record</b> in many very
+      serious applications. See for example the SICStus
+        <a href="https://sicstus.sics.se/customers.html">customer&nbsp;references</a>.</li>
+      <li>Prolog is ideally suited for <b>rule&nbsp;based</b> systems
+        that express your <b>business&nbsp;rules</b>.</li>
+      <li>etc.</li>
+    </ul>
+
+    In any organization, there are countless possible applications
+    for&nbsp;Prolog. In the following, we consider some of them.
+
+    <br><br>
+    <center><h2 id="database">Prolog as a database</h2></center>
+
+    One of the <i>most basic</i> use cases of Prolog is to rely on its
+    ability to act as a&nbsp;<b>database</b>.
+
+    <br><br>
+
+    By this, we mean applications that simply <i>store&nbsp;data</i>
+    and make it available for <i>querying</i>.
+
+    <br><br>
+
+    Prolog is very well suited for such applications, since you can
+    dynamically add and remove data, and rely on
+    automatic <i>indexing</i> to obtain good performance in many
+    situations of practical relevance. Also, you can easily edit and
+    process Prolog&nbsp;programs by various means, which makes
+    exporting, importing and processing the accumulated knowledge in
+    general very convenient. In addition, formulating Prolog queries
+    is often more natural and easier than formulating
+    SQL&nbsp;queries. For such reasons, Prolog is often a good
+    alternative for other database systems.
+
+    <br><br>
+
+    There is a syntactic subset of Prolog that is
+    called <a href="https://en.wikipedia.org/wiki/Datalog"><b>Datalog</b></a>,
+    and it is especially suitable for such use&nbsp;cases.
+
+
+    <br><br>
+    <center><h2>Analyzing events and anomalies</h2></center>
+
+    A <b>logfile</b> records events.
+
+
+    For example, the Prolog <a href="web#server">HTTPS&nbsp;sever</a>
+    that sent you this page keeps a logfile that
+    describes <i>each&nbsp;request</i> it&nbsp;processes.
+
+    <br><br>
+
+    When I locally test the server by fetching the
+    page <a href="/prolog"><tt>/prolog</tt></a>, it writes an entry
+    similar to the following in its logfile:
+
+    <pre>
+/*Sun Apr  9 23:01:19 2017*/
+request(45, 1491771679.213,
+         [peer(ip(127,0,0,1)),
+          method(get),request_uri('/prolog'),path('/prolog'),
+          http_version(1-1),host(localhost),port(3037),
+          connection('keep-alive'),upgrade_insecure_requests('1'),
+          if_modified_since('Wed, 05 Apr 2017 23:24:08 GMT')]).
+    </pre>
+
+    This entry describes the <i>request</i> of the&nbsp;client.
+
+    <br><br>
+
+    After processing the request, the server automatically writes an
+    additional entry that describes how the request was processed. For
+    example, in my&nbsp;case, the following entry was&nbsp;added:
+
+    <pre>
+completed(45, 0.0009790000000000076, 0, 304, not_modified).
+    </pre>
+
+    The key point is that this logfile is a series of
+    Prolog&nbsp;<i>facts</i>. Hence, the whole logfile can be easily
+    analyzed <i>using&nbsp;Prolog</i>!
+
+    <br><br>
+
+    A single invocation of Prolog suffices to <i>load the
+    entire&nbsp;file</i>, and at the same time makes it ready for
+    posting arbitrary&nbsp;queries over the accumulated&nbsp;data.
+
+    <br><br>
+
+    For example, in the case above, we can ask: <i>Are there any
+      client&nbsp;requests that were not served?</i> In Prolog,
+      this&nbsp;becomes:
+
+    <pre>
+?- request(R, _, _), \+ completed(R, _, _, _, _).
+<b>false.</b>
+    </pre>
+
+    In our case, this means that the server at least <i>handled</i>
+    each request in some&nbsp;way, and did not silently
+    ignore&nbsp;one.
+
+    <br><br>
+
+    Of course, not <i>all</i> logfiles can be parsed directly
+    with&nbsp;Prolog. However, the more you use Prolog&nbsp;syntax
+    within your organization, the more you will benefit from being
+    able to post queries over such&nbsp;data. In addition, you can
+    typically easily convert any logfile format to valid
+    Prolog&nbsp;facts, and then apply the same&nbsp;reasoning.
+
+    <center><h2>Rule-based reporting</h2></center>
+
+    In every organization, there is a constant need for
+    excellent&nbsp;<b>reports</b>. Prolog is ideally suited
+    for <i>generating</i> such reports from available&nbsp;data.
+
+    <br><br>
+
+    For example, imagine you are responsible for reporting the number
+    of monthly <i>visitors</i> of your company's&nbsp;homepage.
+    Further, for historic&nbsp;reasons, your team of technicians sends
+    you the <i>average&nbsp;number</i> of
+    visitors <i>per&nbsp;day</i>, at the end of each&nbsp;month. That
+    is, the data you have available is stored in the following
+    convenient form, using Prolog&nbsp;facts, indicating a nice growth
+    of daily visitors to your&nbsp;site:
+
+    <pre>
+year_month_daily_visitors(2017, jan, 30018).
+year_month_daily_visitors(2017, feb, 32913).
+year_month_daily_visitors(2017, mar, 35871).
+    </pre>
+
+    However, your management wants <i>you</i> to report
+    the <i>total</i> number of visitors for each&nbsp;month, not the
+    daily&nbsp;average.
+
+    <br><br>
+
+    Using Prolog <b>rules</b>, it is straight-forward
+    to <i>convert</i> your data to the data that
+    your <i>management</i> wants to&nbsp;see. For example,
+    using <a href="clpfd">integer&nbsp;arithmetic</a>, we can readily
+    relate the daily&nbsp;average to the monthly&nbsp;total:
+
+    <pre>
+year_month_total(Year, Month, Total) :-
+        Total #= Days*Daily,
+        year_month_days(Year, Month, Days),
+        year_month_daily_visitors(Year, Month, Daily).
+    </pre>
+
+    This only requires the definition of <tt>year_month_days/3</tt>,
+    with clauses that may look as&nbsp;follows:
+
+    <pre>
+year_month_days(2017, jan, 31).
+year_month_days(2017, feb, 28).
+year_month_days(2017, mar, 31).
+    </pre>
+
+    This suffices to produce the answers we need, for example:
+
+    <pre>
+?- year_month_total(Year, Month, Total).
+Year = 2017,
+Month = jan,
+Total = 930558 ;
+Year = 2017,
+Month = feb,
+Total = 921564 ;
+Year = 2017,
+Month = mar,
+Total = 1112001.
+    </pre>
+
+    Using <tt>format/2</tt>, you can turn this into a more readable report:
+
+    <pre>
+?- <b>format("year month visitors~n", []),</b>
+   year_month_total(Year, Month, Total),
+   <b>format("~w ~w ~t~D~20|~n", [Year,Month,Total]),</b>
+   false.
+<b>year month visitors
+2017 jan     930,558
+2017 feb     921,564
+2017 mar   1,112,001</b>
+    </pre>
+
+    Notice the use of <i>forced backtracking</i>
+    via <a href="concepts#builtin"><tt>false/0</tt></a>.
+
+    <br><br>
+
+    A few weeks later, management needs a different report: They now
+    want neither the daily average, nor the total number, but rather
+    the <i>cumulative&nbsp;sum</i> of visitors for the current
+    year, <i>up&nbsp;to</i> and including the current&nbsp;month.
+
+    <br><br>
+
+    Using Prolog, it is straight-forward to generate this report by
+    simply <i>formulating the required&nbsp;rules</i>, while retaining
+    the original&nbsp;data exactly as it&nbsp;was. For example:
+
+    <pre>
+cumulative(Pred, Until, C) :-
+        months(Ms),
+        cumulative_(Ms, Pred, Until, 0, C).
+
+cumulative_([], _, _, C, C).
+cumulative_([M|Ms], Pred, Until, C0, C) :-
+        C1 #= C0 + Current,
+        call(Pred, M, Current),
+        if_(M=Until, C=C1,
+            cumulative_(Ms, Pred, Until, C1, C)).
+
+months([jan,feb,mar,apr,may,jun,jul,aug,sept,oct,nov,dec]).
+    </pre>
+
+    This uses the
+    meta-predicates</a> <a href="metapredicates#call"><tt>call/3</tt></a>
+    and&nbsp;<a href="metapredicates#if_3"><tt>if_/3</tt></a> to
+    describe the cumulative&nbsp;sum in a very general and
+    flexible&nbsp;way. For example:
+
+    <pre>
+?- cumulative(year_month_total(2017), M, C).
+M = jan,
+C = 930558 ;
+M = feb,
+C = 1852122 ;
+M = mar,
+C = 2964123 ;
+false.
+    </pre>
+
+    As a special case of this query, we can of course also inquire any
+    particular&nbsp;month:
+
+    <pre>
+?- cumulative(year_month_total(2017), feb, C).
+<b>C = 1852122</b> ;
+false.
+    </pre>
+
+    Note the massive advantages of such a way to <i>reason</i> about
+    your data. For example, it suffices to send
+    around <i>Prolog&nbsp;facts</i>, which you can easily do via
+    plain&nbsp;text. Augmenting these facts is also very easy: It
+    suffices to add one fact per month to keep the above
+    report&nbsp;current.
+
+    <center><h2>Strategic considerations</h2></center>
+
+    Suppose you are successfully applying Prolog within your company
+    to solve difficult problems. Would you publicly announce the fact
+    that you are using Prolog, so that your competitors can benefit
+    from the same technology? My personal guess is: <i>No</i>,
+    you <i>wouldn't</i>.
+
+    <br><br>
+
+    Sometimes, when you introduce Prolog in an organization, people
+    will dismiss the language because they have never heard of anyone
+    who uses&nbsp;it.
+    Yet, <a href="https://www.sics.se/projects/sicstus-prolog-leading-prolog-technology"><b>a
+    third of all airline tickets</b></a> is handled by systems that
+    run SICStus&nbsp;Prolog. NASA uses SICStus&nbsp;Prolog for a
+    voice-controlled system onboard the International
+    Space&nbsp;Station. Windows&nbsp;NT used an embedded Prolog
+    interpreter
+    for <a href="http://web.archive.org/web/20040603192757/research.microsoft.com/research/dtg/davidhov/pap.htm">network&nbsp;configuration</a>.
+    New&nbsp;Zealand's
+    dominant <a href="https://dtai.cs.kuleuven.be/CHR/files/Elston_SecuritEase.pdf">stock
+    broking system</a> is written in Prolog and&nbsp;CHR.
+
+    <br><br>
+
+    A commercial Prolog system easily costs <i>thousands</i> of
+    dollars. This is not software you "just&nbsp;buy" as an
+    individual. A professional Prolog system is typically bought by
+    companies who simply <i>need</i> the power of&nbsp;Prolog to solve
+    their&nbsp;tasks. They are unlikely to advertise their internal
+    technologies. Still, a few of them do. For example, the
+    <a href="https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-0-preface7.html">Java
+    Virtual Machine Specification</a> contains a lot of
+    Prolog&nbsp;code, and
+    <a href="https://www.cs.nmsu.edu/ALP/2011/03/natural-language-processing-with-prolog-in-the-ibm-watson-system/">IBM&nbsp;Watson
+    uses&nbsp;Prolog</a> for natural language processing.
+
+    <br><br>
+
+    Sometimes, instead of trying to introduce Prolog in an
+    organization, it is more efficient to start working for one where
+    it is already being&nbsp;used!
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CLP(FD): Prolog Integer Arithmetic</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="CLP(FD): Constraint Logic Programming over Finite Domains">
+    <meta name="keywords" content="Prolog,CLPFD,Integer,Arithmetic,Constraints">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>CLP(FD): Prolog Integer Arithmetic</h1></center>
+    <br>
+
+    <div style="margin-left: 50%; display: inline-block">
+      It is rather as if the professional community had been suddenly
+      transported to another planet where familiar objects are seen in
+      a different&nbsp;light and are joined by unfamiliar&nbsp;ones
+      as&nbsp;well. (Thomas S. Kuhn, <i>The Structure of
+      Scientific&nbsp;Revolutions</i>)
+      <br><br>
+    </div>
+
+    <br>
+
+    <center><h2>Introduction</h2></center>
+
+    To fully appreciate declarative <b>integer arithmetic</b>
+    in&nbsp;Prolog, let us first consider arithmetic
+    over <i>natural&nbsp;numbers</i> as a simpler special&nbsp;case.
+
+    <br><br>
+
+    The <b>natural numbers</b> are defined by
+    the <a href="https://en.wikipedia.org/wiki/Peano_axioms">Peano&nbsp;axioms</a>.
+    In particular, <b>0</b> is a natural&nbsp;number, and for every
+    natural number&nbsp;<i>n</i>,
+    its <i>successor</i>&nbsp;<i>S(n)</i> is <i>also</i> a
+    natural&nbsp;number. Thus, we <i>could</i> use the following
+    Prolog program to define the set of natural&nbsp;numbers:
+
+    <pre>
+natnum(0).
+natnum(s(N)) :-
+        natnum(N).
+    </pre>
+
+    In this representation, the natural number <b>0</b> is represented
+    by the Prolog&nbsp;integer&nbsp;<tt>0</tt>, and
+    the <i>successor</i> of any natural number&nbsp;<tt>N</tt> is
+    represented by the
+    compound <a href="data#term">term</a>&nbsp;<tt>s(N)</tt>. For
+    example, the integer&nbsp;2 is represented as <tt>s(s(0))</tt>,
+    since it is the successor of the successor of&nbsp;zero.  This
+    representation is variously
+    called <b>successor&nbsp;arithmetic</b>, <b>successor notation</b>
+    and also <b>Peano&nbsp;arithmetic</b>.
+
+    <br><br>
+
+    With this representation, we <i>could</i> use the following
+    Prolog&nbsp;program to define <i>addition</i>, which is
+    a <i>relation</i> between two natural numbers and
+    their&nbsp;<i>sum</i>:
+
+    <pre>
+nat_nat_sum(0, M, M).
+nat_nat_sum(s(N), M, s(Sum)) :-
+        nat_nat_sum(M, N, Sum).
+    </pre>
+
+    This is a <a href="purity">pure</a> predicate
+    that <i>terminates</i> if any of the arguments is instantiated. We
+    can read the
+    clauses <a href="reading#declarative">declaratively</a> to reason
+    about the cases that this relation describes. Other elementary
+    relations between natural numbers can be defined analogously.
+
+    <br><br>
+
+    Unfortunately, this representation of natural&nbsp;numbers suffers
+    from several significant disadvantages:
+
+    <ul>
+      <li>First, this is not really the way we <i>want</i> to enter
+        and read numbers. We would like to use a more familiar
+        notation&mdash;such as 1, 2 and&nbsp;3&mdash;to represent
+        natural&nbsp;numbers.</li>
+      <li>With some practice, we may get used to the
+        successor&nbsp;notation. However, a more fundamental problem
+        remains: This representation takes space that is directly
+        proportional to the <i>magnitude</i> of the numbers we
+        need&nbsp;to represent. Thus, the space requirement
+        grows <i>exponentially</i> with the length of any number's
+        decimal representation. Therefore, reasoning about larger
+        numbers is infeasible with this representation.
+        </li>
+      <li>More complex relations such as <i>multiplication</i>
+        and <i>exponentiation</i> are hard to define in such a way
+        that they work in <i>all</i> directions and retain good
+        termination&nbsp;properties.</li>
+      <li>To extend this representation to <i>integers</i>, we also
+        need a way to represent <i>negative</i>&nbsp;numbers.</li>
+    </ul>
+
+    Therefore, successor notation&mdash;albeit useful to illustrate
+    different ways in which we <i>could</i> represent
+    our&nbsp;data&mdash;is&nbsp;<i>not</i> how we typically reason
+    about numbers in&nbsp;Prolog.
+
+    <br><br>
+
+    Instead, we use
+    <a href="concepts#builtin">built-in&nbsp;predicates</a> to reason
+    about <i>numbers</i> in Prolog. In the case of <b>integers</b>,
+    these predicates are known as <b>CLP(FD)&nbsp;constraints</b>.
+    CLP(FD) stands for <i>Constraint Logic Programming</i>
+    over <i>Finite&nbsp;Domains</i> and reminds us of the fact that in
+    reality, we can only represent a <i>finite</i> subset of integers
+    on actual&nbsp;machines.
+
+    <br><br>
+
+    All widely used Prolog implementations provide
+    CLP(FD)&nbsp;constraints. However, the exact details differ
+    slightly between various systems. For example, in GNU&nbsp;Prolog,
+    B-Prolog and other systems, CLP(FD) constraints are conveniently
+    available right from the start. In contrast, you need to load
+    a <i>library</i> to use&nbsp;them in SICStus&nbsp;Prolog and
+    other&nbsp;systems.
+
+    <br><br>
+
+    If your Prolog systems provides CLP(FD) constraints as a library,
+    adjust your initialization file so that this library is
+    automatically available in all your programs. For example, in
+    SICStus Prolog, you can put the following directive in your
+    initialization file:
+
+    <div>
+      <pre class="box">
+:- use_module(library(clpfd)).</pre>
+    </div>
+
+    For SICStus Prolog, also consider
+    using&nbsp;<a href="https://github.com/triska/clpz"><b>CLP(Z)</b></a>,
+    which is a generalization of&nbsp;CLP(FD).
+
+    <br><br>
+
+    It is highly advisable to make CLP(FD) or CLP(Z) constraints
+    automatically available in all your programs, since almost all
+    Prolog programs also reason about&nbsp;integers.
+
+    <br><br>
+    <center><h2 id="constraint">Constraints</h2></center>
+
+    Generally, an <i>n</i>-ary <b>constraint</b> is a <i>relation</i>
+    between <i>n</i>&nbsp;variables. For example, <tt>(=)/2</tt>
+    and&nbsp;<tt>dif/2</tt> fit this definition: These predicates
+    are <i>also</i> constraints! In fact, <i>every</i> predicate you
+    impose can be regarded as a&nbsp;<i>constraint</i> on the set
+    of&nbsp;solutions.
+
+    <br><br>
+
+    In the following, we are considering CLP(FD)&nbsp;constraints.
+    These are built-in predicates that enable reasoning
+    over <i>integers</i> in a pure and declarative&nbsp;way.
+
+    <br><br>
+
+    The most important CLP(FD) constraints are the <i>arithmetic</i>
+    constraints <tt>(#=)/2</tt>, <tt>(#&lt;)/2</tt>, <tt>(#&gt;)/2</tt>
+    and&nbsp;<tt>(#\=)/2</tt>:
+
+    <center>
+      <table style="padding: 10pt">
+        <tr>
+          <td width="20%"><b>Constraint</b>&nbsp;&nbsp;</td>
+          <td><center><b>Meaning</b></center></td>
+        </tr>
+        <tr>
+          <td colspan="2"><hr></td>
+        </tr>
+
+        <tr>
+          <td>
+            <pre>A #= B</pre>
+          </td>
+          <td>
+            <i><tt>A</tt> is <i>equal to</i> <tt>B</tt></i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <pre>A #&lt; B</pre>
+          </td>
+          <td>
+            <i><tt>A</tt> is <i>less than</i> <tt>B</tt></i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <pre>A #&gt; B</pre>
+          </td>
+          <td>
+            <i><tt>A</tt> is <i>greater than</i> <tt>B</tt></i>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <pre>A #\= B</pre>
+          </td>
+          <td>
+            <i><tt>A</tt> is <i>not equal to</i> <tt>B</tt></i>
+          </td>
+        </tr>
+      </table>
+    </center>
+
+    In this table, <tt>A</tt> and <tt>B</tt> are
+    arithmetic <i>expressions</i>. Expressions are
+    defined <i>inductively</i>:
+
+    <ul>
+      <li>a logical <i>variable</i> is an expression</li>
+      <li>an <i>integer</i> is an expression</li>
+      <li><i>if</i> <tt>X</tt> and <tt>Y</tt> are
+        expressions, <i>then</i> <tt>X+Y</tt>, <tt>X-Y</tt>
+        and&nbsp;<tt>X*Y</tt> are <i>also</i> expressions.</li>
+    </ul>
+
+
+    There are several more cases of arithmetic expressions, and also
+    other categories of constraints, such as <i>combinatorial</i>
+    constraints. See your Prolog&nbsp;system's manual for more
+    information.
+
+    <br><br>
+    <center><h2>Evaluating integer expressions</h2></center>
+
+    The most basic use of CLP(FD) constraints is <b>evaluation</b> of
+    arithmetic expressions.
+
+    <br><br>
+
+    To evaluate integer expressions, we use the
+    predicate <tt>(#=)/2</tt> to denote <b>equality</b> of arithmetic
+    expressions over integers.
+
+    <br><br>
+
+    Here are a few examples:
+
+    <pre>
+?- X #= 5 + 3.
+X = 8.
+
+?- 2 #= X + 9.
+X = -7.
+
+?- 1 #= 1 + Y.
+Y = 0.
+    </pre>
+
+    Equality is one of the most important predicates when reasoning
+    about integers. As these examples illustrate, <tt>(#=)/2</tt> is a
+    <a href="purity">pure</a> relation that can be used in all
+    directions, also of components of its arguments are still variables.
+
+    <center><h2 id="list_length">Example: Length of a list</h2></center>
+
+    For example, we can readily relate
+    a&nbsp;<a href="data#list">list</a> to its&nbsp;<i>length</i> as follows:
+
+    <pre>
+list_length([], 0).
+list_length([_|Ls], Length) :-
+        Length #= Length0 + 1,
+        list_length(Ls, Length0).
+    </pre>
+
+    A <a href="reading#declarative">declarative reading</a> of this
+    predicate makes clear what this relation means:
+
+    <ul>
+      
+      <li>The length of the <i>empty&nbsp;list</i> is&nbsp;0.</li>
+      <li><i>If</i> <tt>Length0</tt> is the length
+        of&nbsp;<tt>Ls</tt> <i>and</i> <tt>Length</tt>
+        is <tt>Length0</tt> plus&nbsp;1, <i>then</i> the length
+        of&nbsp;<tt>[_|Ls]</tt> is&nbsp;<tt>Length</tt>.
+      </li>
+    </ul>
+
+    Example query:
+
+    <pre>
+?- list_length([a,b,c,d], Length).
+<b>Length = 4</b>.
+    </pre>
+
+    Importantly, this also works in more general cases. For example:
+
+    <pre>
+?- list_length(Ls, Length).
+<b>Ls = [],
+Length = 0 ;
+Ls = [_1716],
+Length = 1 ;
+Ls = [_42, _150],
+Length = 2</b> .
+    </pre>
+
+    It can also be used in a different direction. For example:
+
+    <pre>
+?- list_length(Ls, 3).
+<b>Ls = [_898, _1064, _1230]</b> .
+    </pre>
+
+    Note though that this does not terminate:
+
+    <pre>
+?- list_length(Ls, 3), <b>false</b>.
+<b>nontermination</b>
+    </pre>
+
+    It takes only a single additional goal to make this
+    query <i>terminate</i>. This is left as an exercise.
+
+    <br><br>
+
+    To avoid the accumulation of <i>constraints</i>, we can introduce
+    an explicit <i>accumulator</i>. By this, we mean a term that
+    represents intermediate states that arise. For example, here is
+    an <i>alternative</i> solution for relating a list to
+    its&nbsp;length:
+
+    <pre>
+list_length(Ls, L) :-
+        list_length_(Ls, 0, L).
+
+list_length_([], L, L).
+list_length_([_|Ls], L0, L) :-
+        L1 #= L0 + 1,
+        list_length_(Ls, L1, L).
+    </pre>
+
+    Again, making the goal <tt>list_length(Ls, 3)</tt> <i>terminate</i> is left as an exercise.
+    <center><h2>Domains</h2></center>
+
+    We can reason even more generally over integers. Consider a
+    logical variable&nbsp;<tt>V</tt> that we want to use as a
+    placeholder for an integer between 0 and&nbsp;2. We express this
+    on the toplevel using the constraint&nbsp;<tt>(in)/2</tt>:
+
+    <pre>
+?- V in 0..2.
+V in 0..2.
+    </pre>
+
+
+    If we place additional goals on the toplevel, the system
+    automatically takes into account the admissible set of integers we
+    specified for&nbsp;<tt>V</tt>, which we call its associated
+    <b>domain</b>. In particular, the system prevents us from unifying
+    <tt>V</tt> with integers that are not elements of its domain:
+
+    <pre>
+?- V in 0..2, V #= 3.
+<b>false.</b>
+    </pre>
+
+    In contrast, the following query succeeds:
+
+    <pre>
+?- V in 0..2, V #= 1.
+<b>V = 1.</b>
+    </pre>
+
+    Now two variables <tt>X</tt> and <tt>Y</tt>, both constrained to
+    the interval&nbsp;0..2:
+
+    <pre>
+?- X in 0..2, Y in 0..2.
+X in 0..2,
+Y in 0..2.
+    </pre>
+
+    Or, equivalently:
+
+    <pre>
+?- [X,Y] ins 0..2.
+X in 0..2,
+Y in 0..2.
+    </pre>
+
+    Thus, the predicate <tt>(ins)/2</tt> lifts <tt>(in)/2</tt>
+    to <i>lists</i> of variables.
+
+
+    <center><h2 id="labeling">Labeling</h2></center>
+
+    We can successively bind a variable to all integers of its
+    associated domain via backtracking, using the <i>enumeration</i>
+    predicate&nbsp;<tt>indomain/1</tt>:
+
+    <pre>
+?- V in 0..2, indomain(V).
+V = 0 ;
+V = 1 ;
+V = 2.
+    </pre>
+
+
+    Assigning concrete values to constrained variables is called
+    <b>labeling</b>. The predicate&nbsp;<tt>label/1</tt>
+    lifts <tt>indomain/1</tt> to <i>lists</i> of variables:
+
+    <pre>
+?- [X,Y] ins 0..1, label([X,Y]).
+X = Y, Y = 0 ;
+X = 0, Y = 1 ;
+X = 1, Y = 0 ;
+X = Y, Y = 1.
+    </pre>
+
+    If <tt>label/1</tt> were not available, you could define it like this:
+
+    <pre>
+label(Vs) :- <a href="metapredicates#maplist">maplist</a>(indomain, Vs).
+    </pre>
+
+
+    Labeling is a form of <a href="sorting#searching">search</a>
+    that <i>always&nbsp;terminates</i>. This property is of extreme
+    importance for termination analysis and allows us to cleanly
+    separate the modeling part from the actual search.
+
+    <br><br>
+
+
+    In practice, the order in which variables are bound to concrete
+    values of their domains matters. For this reason, the
+    predicate <tt>labeling/2</tt>, which is a <i>generalization</i>
+    of <tt>label/1</tt>, lets you specify different <b>strategies</b>
+    when enumerating admissible values. A simple and often very
+    effective heuristics is to always label that variable next whose
+    domain contains the <i>smallest</i> number of elements. This
+    strategy is called "first-fail", since these variables are often
+    most likely to cause failure of the labeling process, and trying
+    them early can prune huge portions of the search tree. It is
+    available via <tt>labeling([ff], Vars)</tt>.
+
+    <br><br>
+
+    For other problems, a static reordering of variables may suffice.
+    With <a href="/queens/">N-queens</a> for example, it is worth
+    trying to order the variables so that labeling starts from the
+    board's center and gradually moves to the borders.
+
+    <center><h2 id="propagation">Constraint propagation</h2></center>
+
+    From what we have seen above, it follows that we
+    can <i>combine</i> different constraints by stating them as
+    a&nbsp;<i>conjunction</i>. For instance, we can state
+    that <tt>Z</tt> is the sum of <tt>X</tt> and&nbsp;<tt>Y</tt>, both
+    of which are integers between 0 and&nbsp;2:
+
+    <pre>
+?- [X,Y] ins 0..2, Z #= X + Y.
+X in 0..2,
+X+Y#=Z,
+Y in 0..2,
+<b>Z in 0..4.</b>
+    </pre>
+
+    Note that the domain of <tt>Z</tt> is <i>deduced</i> from the
+    posted constraints without being stated explicitly. Narrowing
+    domains based on posted constraints is called
+    (constraint) <b>propagation</b>, and it is performed automatically
+    by the constraint&nbsp;solver. If we bind
+    <tt>Z</tt> to&nbsp;0, the system deduces that both <tt>X</tt>
+    and&nbsp;<tt>Y</tt> are also&nbsp;0:
+
+    <pre>
+?- [X,Y] ins 0..2, Z #= X + Y, Z #= 0.
+X = 0,
+Y = 0,
+Z = 0.
+    </pre>
+
+    In this case, propagation yields ground instances for all
+    variables. In other cases, constraint propagation detects
+    unsatisfiability of a set of constraints without any labeling:
+
+    <pre>
+?- X in 0..1, X #&gt; 2.
+<b>false.</b>
+    </pre>
+
+    In yet other cases, domain boundaries are adjusted:
+
+    <pre>
+?- [X,Y] ins 0..2, Z #= X + Y, Z #= 1.
+<b>Z = 1,
+X in 0..1,</b>
+X+Y#=1,
+<b>Y in 0..1.</b>
+    </pre>
+
+    A set of constraints and variables with associated domains is
+    called (globally) <b>consistent</b> if all variables can be
+    simultaneously bound to (at least) one value of their respective
+    domains such that all constraints are satisfied. In general, all
+    variables must be <i>labeled</i> to find out whether a set of
+    constraints is consistent. However, there exist weaker forms of
+    consistency that are guaranteed without labeling.
+
+    <br><br>
+
+    For example, the <tt>all_different/1</tt> constraint does not
+    detect unsatisfiability of the following:
+
+    <pre>
+?- [X,Y,Z] ins 0..1, all_different([X,Y,Z]).
+X in 0..1,
+all_different([X, Y, Z]),
+Y in 0..1,
+Z in 0..1.
+    </pre>
+
+    The <tt>all_distinct/1</tt> constraint, in contrast, detects the
+    inconsistency without labeling any variables:
+
+    <pre>
+?- [X,Y,Z] ins 0..1, all_distinct([X,Y,Z]).
+<b>false.</b>
+    </pre>
+
+    To guarantee that stronger form of consistency, the
+    <tt>all_distinct/1</tt> constraint must do extra work for
+    propagation. It therefore depends on the problem at hand whether
+    it pays off to use it instead of <tt>all_different/1</tt>. If
+    there are many solutions distributed throughout the whole
+    search&nbsp;space, a naive search for solutions may easily find
+    them, and additional pruning may only make this&nbsp;process
+    slower. On the other hand, if solutions are relatively sparse, the
+    additional pruning of <tt>all_distinct/1</tt> can&nbsp;help to
+    more effectively prune irrelevant parts of the search&nbsp;space.
+    In practice, <tt>all_distinct/1</tt> is
+    typically <i>fast&nbsp;enough</i> and is preferable due to its
+    much stronger&nbsp;propagation.
+
+    <br><br><br>
+    <center><h2>Legacy predicates</h2></center>
+
+    CLP(FD) constraints have been available only for a
+    few&nbsp;decades. This means that they are still
+    a <i>comparatively</i> recent development in Prolog systems. Most
+    available textbooks have not yet had a chance to take such
+    innovations into account. Many Prolog&nbsp;instructors have
+    completed their formal education before constraints have become
+    widely available. As a result, many Prolog programmers have never
+    even heard of&nbsp;constraints.
+
+    <br><br>
+
+    Instead of arithmetic constraints like&nbsp;<tt>(#=)/2</tt>
+    and&nbsp;<tt>(#&gt;)/2</tt>, you can also use lower-level
+    arithmetic predicates like&nbsp;<tt>(is)/2</tt>
+    and&nbsp;<tt>(>)/2</tt> to reason about integers. However, this
+    comes with several hefty drawbacks. For example:
+
+    <ul>
+      <li><tt>(is)/2</tt> and other low-level predicates
+      are <i>moded</i>. This means that they can only be used in a
+      few&nbsp;directions, making them unsuitable for more
+      general&nbsp;relations. This severe limitation also
+      prevents <a href="debugging"><i>declarative&nbsp;debugging</i></a>.
+      </li>
+
+      <li><tt>(is)/2</tt> and other low-level predicates intermingle
+      reasoning about integers with reasoning about floating point
+      numbers, and in some systems even
+      about <i>rational</i>&nbsp;numbers. This means that when readers
+      of your code see such predicates, they will wonder whether you
+      are using&nbsp;them because floating point&nbsp;numbers may
+      arise somewhere. In contrast, <tt>(#=)/2</tt> and other CLP(FD)
+      constraints make it perfectly clear that you intend to reason
+      about&nbsp;<i>integers</i>. These constraints will help you to
+      find certain classes of mistakes in your code more easily,
+      because they throw <i>type&nbsp;errors</i> instead of failing
+        silently.</li>
+
+      <li><tt>(is)/2</tt> and other low-level predicates force
+        beginners to understand the procedural execution of
+        Prolog&nbsp;programs <i>in addition</i> to understanding the
+        declarative&nbsp;semantics. This is too&nbsp;hard in almost
+        all&nbsp;cases.</li>
+      
+      <li><tt>(is)/2</tt> itself is not sufficient: You also
+        need <tt>(=:=)/2</tt>. In contrast, the CLP(FD)
+        constraint&nbsp;<tt>(#=)/2</tt>
+        subsumes <i>both</i> <tt>(is)/2</tt> and&nbsp;<tt>(=:=)/2</tt>
+        when reasoning over integers, making Prolog easier to&nbsp;teach.</li>
+    </ul>
+
+    For these reasons, I regard <tt>(is)/2</tt>, <tt>(>)/2</tt> and
+    other low-level predicates as <i>legacy&nbsp;predicates</i>. I
+    expect them to gradually&nbsp;disappear from application&nbsp;code
+    when the current generation of Prolog instructors is replaced, and
+    more general techniques are&nbsp;taught instead.
+
+    <br><br>
+
+    By the way: <tt>(=&lt;)/2</tt> is <i>not</i> written
+    as <tt>(&lt;=)/2</tt>, because the latter would look too much like
+    an <i>arrow</i> which is often used
+    for <a href="theoremproving">theorem&nbsp;proving</a>
+    in&nbsp;Prolog.
+
+    <br><br><br>
+    <center><h2>Further reading</h2></center>
+
+    CLP(FD) constraints let you solve a large variety
+    of <a href="optimization"><b>combinatorial
+    optimization&nbsp;tasks</b></a>
+    and <a href="puzzles#cryptoarithmetic">puzzles</a>.
+
+    <br><br>
+
+    <a href="/drt.pdf"><i>Correctness Considerations in CLP(FD)
+        Systems</i></a> contains an introduction to CLP(FD) and many
+    pointers to further literature.
+
+    <br><br>
+
+    Several CLP(FD) examples are available
+    from: <a href="https://github.com/triska/clpfd"><b>https://github.com/triska/clpfd</b></a>
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

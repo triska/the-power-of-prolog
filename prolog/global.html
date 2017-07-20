@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Global Variables in Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Global Variables in Prolog">
+    <meta name="keywords" content="Prolog,Global variables,Global state">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Global Variables in Prolog</h1></center>
+    <br>
+
+    <div style="margin-left: 50%; display: inline-block">
+      <br>
+It is not the <i>skilful</i> poet that bemoans the rigid rules of the sonnet. 
+    </div>
+    <br><br>
+
+    
+    <br><br>
+
+    When you start learning Prolog, the language will initially seem
+    very limited to&nbsp;you. Where are all the features you know from
+    other programming languages? In particular, where are
+    the <b>global&nbsp;variables</b> that you can use in other
+    languages to pass information around?
+
+
+    <br><br>
+
+    In Prolog, we pass information around in
+    predicate <i>arguments</i>. We are <i>not</i> using global
+    variables.
+
+    <br><br>
+
+    Why is this? Think about it: Suppose there were a global state
+    that is modified by a predicate. This would have consequences that
+    clash fundamentally with how we expect relations to behave. For
+    example, when programming in terms of relations, we expect:
+
+    <ul>
+      <li>to be able to use them <i>in reverse</i> too</li>
+      <li>to be able to reason about them <i>in isolation</i> from each other, allowing <a href="testing">declarative testing</a></li>
+      <li>that repeated use of the same relation has exactly the same meaning</li>
+      <li>that all changes are <i>undone</i> on backtracking</li>
+      <li>thread-safety for <i>parallel</i> evaluation</li>
+      <li>etc.</li>
+    </ul>
+
+    Therefore, we <i>avoid</i> the use of global state in Prolog.
+    Instead, we describe <i>relations</i> between states of interests.
+    When you are stuck, consider adding an argument to your predicate
+    that lets you express the state of interest.
+    See <a href="/tist/"><i><b>Thinking in States</b></i></a> for
+    examples.
+
+    <br><br>
+
+    That being said, there <i>are</i> of course ways to modify the
+    global state of your programs. However, using them should be
+    the <b>exception</b>, not the norm. For example, you can modify
+    the global&nbsp;database using <tt>assertz/1</tt>. The global
+    database is very good for <i>reading</i> information, but quite
+    bad for often <i>modifying</i> the data. This is because the
+    global database performs <i>indexing</i> over its entries, and you
+    pay the price for indexing every time you assert new&nbsp;clauses.
+    In addition, you cannot use this kind of modifications in the
+    other direction. On backtracking, the data will still be there,
+    and running the same code twice may also add the data redundantly.
+
+    <br><br>
+
+    Using <i>predicate arguments</i> to pass around information
+    therefore more naturally leads to Prolog programs that
+    are <a href="purity">pure</a> <i>and</i> efficient.
+    <a href="dcg#semicontext"><b>Semicontext&nbsp;notation</b></a>
+    lets you pass around information without the need to introduce
+    many additional predicate arguments.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

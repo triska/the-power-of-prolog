@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Introduction</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Introduction">
+    <meta name="keywords" content="Prolog,Introduction">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Introduction</h1></center>
+    <br>
+
+    <div style="margin-left: 70%; display: inline-block">
+    A Prolog Haiku:
+    <br>
+      <pre>
+        Unification&mdash;
+        and backtracking predicates.
+        Throughout the seasons.
+      </pre>
+    </div>
+    <br>
+
+    <center><h2>About Prolog</h2></center>
+
+    Prolog is a <b>programming language</b> that is rooted in
+    classical <b>logic</b>. It supports <i>backtracking</i>
+    and <i>unification</i> as built-in features. Prolog allows us to
+    elegantly&nbsp;solve many&nbsp;tasks with short and general
+    programs.
+
+    <br><br>
+
+    Prolog has a <a href="/prolog/purity"><b>pure</b></a> monotonic
+    core. The following documents are centered around this important
+    aspect of Prolog, allowing <a href="/prolog/debugging">declarative
+    debugging</a> and many other approaches that are impossible or
+    only rudimentarily developed in other programming languages.
+
+    <br><br>
+
+    A Prolog <b>program</b> consists of <b>predicates</b>. Each Prolog
+    predicate defines a <b>relation</b> between its arguments. A
+    relation is a generalization of a <i>function</i>. Prolog
+    predicates are often more versatile than functions in other
+    programming languages, and are typically usable in
+    multiple <i>directions</i>.
+
+    <br><br>
+
+    Prolog has several
+    <a href="/prolog/facets"><b>facets</b></a> that distinguish
+    it from many other programming languages. In addition, the
+    language has undergone significant developments in the last
+    few&nbsp;decades. The increasing availability of more declarative
+    features allows us to present the language in a more uniform way
+    that is easier to understand and at the same time yields more
+    general programs with less effort than was the case with early
+    Prolog&nbsp;versions.
+
+    <br><br>
+
+    The goal of this material is to <i>bridge the&nbsp;gap</i> between
+    the great traditional Prolog textbooks of the&nbsp;past and the
+    language <i>as it currently is</i>, several decades after these
+    books were&nbsp;written. You will see that many limitations of the
+    past are no longer relevant, while several new constructs are now
+    of great importance even though they are not yet covered in any
+    available Prolog&nbsp;book. If you are new to Prolog, read the
+    chapters in&nbsp;order for a self-contained exposition of many
+    important language features. If you already have some experience
+    with Prolog and would like to learn more about more recent
+    aspects, I recommend you start with the chapter on
+    <a href="clpfd">integer&nbsp;arithmetic</a> and proceed with the
+    chapters it links&nbsp;to.
+
+    <br><br>
+
+    You can use <a href="/pceprolog/">PceProlog</a> to configure Emacs
+    for Prolog&nbsp;programming.
+
+    <br><br>
+
+    <center><h2>About you</h2></center>
+
+    You are currently learning or teaching Prolog and find the
+    existing literature somewhat unsatisfying. Is Prolog still the
+    same language it was decades&nbsp;ago?  Are the existing books
+    still applicable? If not, what does modern Prolog&nbsp;code
+    look&nbsp;like?
+
+    <br><br>
+
+    You can sense that Prolog is a powerful language, yet you are
+    currently unable to use&nbsp;it to its fullest&nbsp;potential.
+    In fact, it sometimes seems too limited to&nbsp;you to solve
+    real&nbsp;problems. On the other hand, you know that Prolog is
+    the most widely used logic programming language. How can
+    this&nbsp;be?
+
+    <br><br>
+
+    Parts of the presented material seem new and unusual
+    to&nbsp;you, and even contradict what others tell&nbsp;you
+    about&nbsp;Prolog. In such cases, it is only natural to ask how
+    legitimate the material&nbsp;is. Can you rely on what the author
+    is saying?
+
+    <center><h2>About me</h2></center>
+
+    In 2005, I contributed <a href="http://eu.swi-prolog.org/pldoc/man?section=simplex"><tt>library(simplex)</tt></a> to SWI-Prolog and worked on
+    <a href="http://eu.swi-prolog.org/pldoc/man?section=assoc"><tt>library(assoc)</tt></a>.
+    Together with a colleague, I won the online version of
+    the <a href="/contests/">Prolog Programming&nbsp;Contest</a> in
+    2006 and&nbsp;2007. Since&nbsp;2007, I am contributing
+    the <a href="http://eu.swi-prolog.org/man/clpfd.html">CLP(FD)&nbsp;solver</a>
+    that ships with SWI-Prolog. Also since&nbsp;2007, I have been
+    maintaining
+    the <tt>comp.lang.prolog</tt> <a href="/prolog/faq/">Frequently
+      Asked&nbsp;Questions</a>.
+
+    <br><br>
+
+    In 2008, I received a Master's degree from the Vienna University
+    of&nbsp;Technology after solving a combinatorial optimization
+    task called the <a href="/sgp/"><i>Social Golfer
+        Problem</i></a>.
+
+    <br><br>
+
+
+    In 2014, I received a doctoral degree from the Vienna University
+    of&nbsp;Technology in the area of Prolog and constraints. You can
+    read my&nbsp;<a href="/drt.pdf">thesis</a>. Also since 2014,
+    my <a href="http://eu.swi-prolog.org/man/clpb.html">CLP(B)&nbsp;solver</a>
+    ships with SWI-Prolog. My last major contribution to SWI-Prolog
+    is <a href="http://eu.swi-prolog.org/pldoc/man?section=crypto"><tt>library(crypto)</tt></a>.
+
+    <br><br>
+
+    Since 2016, I have moved development of my constraint libraries
+    to SICStus&nbsp;Prolog.
+    See <a href="https://github.com/triska/clpz">CLP(Z)</a> for more
+    information.
+
+    <br><br>
+
+    I am author and co-author of
+    several <a href="http://dblp.uni-trier.de/pers/hd/t/Triska:Markus">scientific&nbsp;publications</a>
+    about combinatorial optimization, Prolog and constraints. I am
+    mentioned as one of the contributors to the Prolog teaching
+    environment&nbsp;<a href="http://www.complang.tuwien.ac.at/ulrich/gupu/">GUPU</a>
+    and have contributed to the Prolog
+    ISO&nbsp;standard&nbsp;(<a href="http://www.complang.tuwien.ac.at/ulrich/iso-prolog/error_k">N226</a>).
+
+    <br><br>
+
+    I learned almost everything I know about Prolog from
+    <a href="http://www.complang.tuwien.ac.at/ulrich/">Ulrich
+      Neumerkel</a>,
+    <a href="https://www.researchgate.net/profile/Stefan_Kral">Stefan&nbsp;Kral</a>,
+    <a href="http://www.cs.otago.ac.nz/staffpriv/ok/">Richard&nbsp;O'Keefe</a>,
+    <a href="https://people.cs.kuleuven.be/~bart.demoen/">Bart&nbsp;Demoen</a>,
+    <a href="https://people.cs.kuleuven.be/~tom.schrijvers/">Tom&nbsp;Schrijvers</a>,
+    <a href="https://en.wikipedia.org/wiki/Leon_Sterling">Leon&nbsp;Sterling</a>,
+    <a href="https://en.wikipedia.org/wiki/Ehud_Shapiro">Ehud&nbsp;Shapiro</a>,
+    <a href="http://www.cs.vu.nl/~janw/">Jan&nbsp;Wielemaker</a>
+    and <a href="https://www.sics.se/~matsc/">Mats&nbsp;Carlsson</a>.
+
+    <br><br>
+
+    What does this all mean? All considered, you still have to
+    draw your own conclusions. Good&nbsp;luck!
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>
