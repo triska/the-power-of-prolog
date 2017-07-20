@@ -17,8 +17,9 @@ Prolog&nbsp;book.
 
 ## Reading this book
 
-This books is *self-hosting*: It includes an HTTP&nbsp;server that
-lets you browse most of the content locally.
+This book is *self-hosting*: It includes an HTTP&nbsp;server that lets
+you browse most of the content locally. When you access files that are
+*not* locally available, it redirects to their online&nbsp;versions.
 
 To run it, you need SWI-Prolog&ge;**7.5.10**. To spawn the server on
 port&nbsp;5053, use for example:
