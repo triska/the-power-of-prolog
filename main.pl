@@ -28,12 +28,9 @@
 :- use_module(library(http/http_files)).
 :- use_module(library(http/http_header)).
 :- use_module(library(http/http_log)).
-:- use_module(library(http/html_write)).
 :- use_module(library(http/mimetype)).
 :- use_module(library(settings)).
 :- use_module(library(http/http_unix_daemon)).
-:- use_module(library(http/http_multipart_plugin)).
-:- use_module(library(http/http_client)).
 
 :- set_prolog_flag(default_mimetype, text/plain).
 
@@ -54,7 +51,6 @@ handle_request(Request) :-
         ;   path_segments_atom(Segments, Path0),
             Segments = _/Last/'',
             atomic_list_concat([Path,Last,'.html'], File),
-            debug(myhttp, "atom: ~q\n", [File]),
             exists_file(File),
             http_reply_file(File, [unsafe(true)], Request)
         ;   atom_concat('https://www.metalevel.at', Path0, Metalevel),
