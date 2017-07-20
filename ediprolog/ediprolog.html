@@ -1,0 +1,163 @@
+<html>
+  <head>
+    <title>ediprolog &mdash; Emacs does Interactive Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prolog Development Emacs">
+    <meta name="keywords" content="Prolog,Development,Emacs">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; margin-bottom: 3cm">
+    <br><br>
+
+    <center><h1>ediprolog &mdash; Emacs does Interactive Prolog</h1></center>
+
+    <table>
+      <tr>
+        <td>
+          <i>ediprolog</i> lets you interact with SWI-Prolog in all
+          Emacs&nbsp;buffers. You can consult Prolog programs and evaluate
+          embedded queries.
+
+          <br><br>
+
+          The latest version of <i>ediprolog</i> is 1.2.
+
+          <br>
+          <blockquote>
+            <b>New</b>:
+            <ul>
+              <li>Atomic undo of the whole interaction (available in Emacs&nbsp;&ge;&nbsp;26.1)</li>
+            </ul>
+          </blockquote>
+          <br>
+
+          <br>
+
+          Download: <b><a href="ediprolog.el">ediprolog.el</a></b>
+          <br><br>
+
+          Video demonstration: <a href="ediprolog.mpg">ediprolog.mpg</a>&nbsp;(1MB)
+          <!-- A version for YAP Prolog is <a href="yap/ediprolog.el">here</a>. -->
+	  <br><br>
+
+	  For more information about Prolog development with Emacs,
+	  see <a href="/pceprolog/"><b>PceProlog</b></a>.
+
+          <br><br>
+          More about Prolog: <b><a href="/prolog">The Power of&nbsp;Prolog</a></b>
+
+
+        </td>
+        <td>
+          <img style="width: 300; border: 2px solid black; margin-left: 2cm; margin-right: 2cm; margin-top: 2cm"
+               src="factorial.png"
+               alt="Factorial using CLP(FD)">
+        </td>
+      </tr>
+    </table>
+
+
+
+    <br><br>
+
+    <center><h2>Installation</h2></center>
+
+    To install <i>ediprolog</i>,
+    copy <a href="ediprolog.el">ediprolog.el</a> to your load-path,
+    and add to your .emacs:
+
+    <pre>
+(require 'ediprolog)
+(global-set-key [f10] 'ediprolog-dwim)
+    </pre>
+
+    If F10 is not free on your platform, bind ediprolog-dwim to any
+    other key sequence, for example, use:
+    <pre>
+(global-set-key "\C-c\C-e" 'ediprolog-dwim)
+    </pre>
+    to bind it to C-c C-e. In the following, replace "F10" with your
+    custom binding.
+
+    <br><br>
+
+    Restart Emacs and use <tt>M-x customize-group RET
+      ediprolog RET</tt> to configure ediprolog.
+
+    <br><br>
+
+    <center><h2>Usage</h2></center>
+
+    Queries in Prolog source files start with&nbsp;<tt>?-</tt>
+    or&nbsp;<tt>:-</tt>, possibly preceded by&nbsp;<tt>%</tt> and
+    whitespace. An example of a query is:
+
+    <pre>
+%?- member(X, [a,b,c]).
+    </pre>
+
+    If you press F10 when point is on that query, you get:
+
+    <pre>
+%?- member(X, [a,b,c]).
+%@ X = a ;
+%@ X = b ;
+%@ X = c ;
+%@ false.
+    </pre>
+
+    <p>When waiting for output of the Prolog process, you can press C-g
+      to unblock Emacs and continue with other work. To resume
+      interaction with the Prolog process, use
+      <tt>M-x&nbsp;ediprolog-toplevel&nbsp;RET</tt>.</p>
+
+    <p>If you press F10 when point is <i>not</i> on a query, the
+      buffer content is consulted in the Prolog process, and point is
+      moved to the first error (if any). You do&nbsp;<i>not</i> need
+      to <i>save</i> the file beforehand, since the
+      <i>buffer&nbsp;content</i> (not the file) is consulted.</p>
+
+    <p>In transient mark mode, if the region is active, only the text
+      in the region is consulted.</p>
+
+    <br><br>
+
+    Other key sequences:
+
+    <br><br>
+    <center>
+      <table style="border: 1pt solid black; padding: 5pt">
+	<tr>
+	  <td><tt>C-0 F10</tt></td>
+	  <td>kill Prolog process</td>
+	</tr>
+	<tr>
+	  <td><tt>C-1 F10</tt></td>
+	  <td>always consult buffer (even if point is on a query)</td>
+	</tr>
+	<tr>
+	  <td><tt>C-2 F10</tt></td>
+	  <td>always consult buffer, using a new process</td>
+	</tr>
+        <tr>
+          <td><tt>C-7 F10</tt></td>
+          <td>equivalent to ediprolog-toplevel</td>
+        </tr>
+	<tr>
+	  <td><tt>C-u F10</tt></td>
+	  <td>first load buffer into existing process and then, if on
+            a query, evaluate it
+	  </td>
+	<tr>
+	  <td><tt>C-u C-u F10</tt>&nbsp;&nbsp;</td>
+	  <td>like C-u F10, with a new process</td>
+	</tr>
+      </table>
+    </center>
+    <br>
+
+    <br><br><br>
+    <b><a href="/">Main page</a></b>
+  </body>
+</html>
