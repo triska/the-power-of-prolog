@@ -51,3 +51,28 @@ chapter.
 
 You can run most of the examples with any popular Prolog system, such
 as GNU&nbsp;Prolog, SICStus&nbsp;Prolog, YAP and&nbsp;SWI.
+
+## On teaching Prolog
+
+Prolog is an interesting programming language: It has a *pure*
+monotonic core, and it also has features that are
+called&nbsp;*impure*. You, the programmer, must decide in which subset
+of the language you want to program.
+
+In a sense, programming in Prolog is like writing a&nbsp;poem: You can
+achieve great effects by writing under stringent constraints.
+In&nbsp;Prolog, you often get the best results by restricting
+your&nbsp;work to the pure&nbsp;core of the&nbsp;language. As long as
+you do this, you can benefit from strong logical properties which let
+you reason about your programs in systematic ways that are not
+available in most other programming&nbsp;languages.
+
+In the past decades, many pure features have become widely available
+in Prolog&nbsp;systems. This book explains many of these new features,
+and shows you how you can use them to achieve general and efficient
+Prolog&nbsp;programs.
+
+<pre>
+Le message dur:
+<b>Restez purs!</b>
+</pre>
