@@ -1,0 +1,92 @@
+
+(1) show contents of file "fac.txt":
+======================================================================
+
+$ cat fac.txt
+
+
+
+        fac(n) {
+                f = 1;
+                while (n > 1) {
+                        f = f*n;
+                        n = n - 1;
+                }
+                return(f);
+        }
+
+        print fac(4);
+
+
+(2) interpret & compile file "fac.txt"
+======================================================================
+
+$ swipl -g "run_file('fac.txt')" interp.pl
+
+        tokens:
+
+        [id(fac),(,id(n),),{,id(f),=,num(1),;,while,(,id(n),rop(>),num(1),),{,id(f),=,id(f),mop(*),id(n),;,id(n),=,id(n),aop(-),num(1),;,},return,(,id(f),),;,},print,id(fac),(,num(4),),;]
+
+        AST:
+
+        sequence(function(fac,n,sequence(assign(f,n(1)),sequence(while(bin(>,v(n),n(1)),sequence(assign(f,bin(*,v(f),v(n))),assign(n,bin(-,v(n),n(1))))),return(v(f))))),print(call(fac,n(4))))
+
+
+        VM code:
+
+            0:   jmp 33
+            2:   alloc 1
+            4:   pushc 1
+            6:   pop 1
+            8:   pushv 0
+           10:   pushc 1
+           12:   jle 30
+           14:   pushv 1
+           16:   pushv 0
+           18:   mul
+           19:   pop 1
+           21:   pushv 0
+           23:   pushc 1
+           25:   sub
+           26:   pop 0
+           28:   jmp 8
+           30:   pushv 1
+           32:   ret
+           33:   pushc 4
+           35:   call 2
+           37:   print
+           38:   halt
+
+        intcode:
+
+        [9,33,1,1,2,1,4,1,3,0,2,1,12,30,3,1,3,0,7,4,1,3,0,2,1,6,4,0,9,8,3,1,15,2,4,13,2,14,0]
+
+        program output:
+
+        24
+
+
+(3) feed generated integer code to VM implementation in Haskell
+======================================================================
+$ hugs vm.hs
+
+
+        Main> main
+        [9,33,1,1,2,1,4,1,3,0,2,1,12,30,3,1,3,0,7,4,1,3,0,2,1,6,4,0,9,8,3,1,15,2,4,13,2,14,0]
+        24
+
+
+(4) extract integers
+======================================================================
+
+$ echo "[9,33,1,1,2,1,4,1,3,0,2,1,12,30,3,1,3,0,7,4,1,3,0,2,1,6,4,0,9,8,3,1,15,2,4,13,2,14,0]" | tr -d "[]" | sed -e "s/,/ /g"
+
+        9 33 1 1 2 1 4 1 3 0 2 1 12 30 3 1 3 0 7 4 1 3 0 2 1 6 4 0 9 8 3 1 15 2 4 13 2 14 0
+
+
+(5) feed integer code to VM implementation in J
+======================================================================
+
+$ (echo "instrs =: 9 33 1 1 2 1 4 1 3 0 2 1 12 30 3 1 3 0 7 4 1 3 0 2 1 6 4 0 9 8 3 1 15 2 4 13 2 14 0"; cat vm.ijs) | ~/j601/jconsole
+
+                         24

@@ -1,0 +1,7 @@
+I(x) = 1
+I(y) = 3
+
+while x != y do begin
+     x <- x + 1;
+     y <- y - 1
+end

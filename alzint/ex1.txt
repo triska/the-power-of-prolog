@@ -1,0 +1,10 @@
+I(x) = 1
+I(y) = 3
+
+if x = 0 then
+   begin
+    x <- x + 2 ;
+    y <- 3
+   end
+else
+    x <- x * 2

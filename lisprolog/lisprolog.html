@@ -1,0 +1,196 @@
+<html>
+  <head>
+    <title>Lisprolog - Interpreter for a simple Lisp, written in Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center>
+      <h1>Lisprolog - Interpreter for a simple Lisp, written in Prolog</h1>
+    </center>
+    <br><br>
+
+    To execute simple Lisp code
+    in <a href="/prolog"><b>Prolog</b></a>, we have at least
+    2&nbsp;options:
+
+    <br>
+    <ol>
+      <li>"Lisp in Prolog in zero lines": Manually translate each Lisp
+        <i>function</i> to a Prolog <i>predicate</i>, i.e., rewrite
+        the Lisp code to Prolog code and then use a Prolog system to
+        execute the Prolog code. This is possible and easy since a
+        function is a special case of a relation, and functional
+        programming is a restricted form of logic programming. We can
+        readily translate each Lisp function
+        with <i>N</i>&nbsp;arguments to a Prolog <i>predicate</i>
+        with <i>N+1</i>&nbsp;arguments, where the additional argument
+        is used to relate the original
+        function's <i>return&nbsp;value</i> to its arguments.</li>
+      <li>Write a Prolog program that parses Lisp code <i>in its
+          natural form</i>, and then interprets the Lisp program based
+        on its abstract syntax tree or virtual machine
+        instructions.</li>
+    </ol>
+
+    A combination of these approaches is typically used in books that
+    illustrate how to implement a simple "Prolog" engine in Lisp:
+    First, these engines typically assume a representation of Prolog
+    programs that is convenient from a Lisp perspective, and can't
+    even parse a single proper Prolog term. Instead, as in
+    Option&nbsp;1, they require you to <i>manually</i> translate
+    Prolog programs to Lisp forms before the execution even starts.
+    This is not sufficient though, because Prolog supports features
+    like <i>backtracking</i> that Lisp&nbsp;doesn't. Therefore,
+    they <i>also</i> need to implement an interpreter for
+    "Prolog"&nbsp;code, as in Option&nbsp;2.
+
+    <br><br>
+
+    If you allow manual rewriting before the interpretation even
+    starts, implementing a simple "Lisp" in Prolog is even easier than
+    the converse, because functions are a special case of relations.
+    Therefore, once we have manually translated Lisp&nbsp;functions to
+    Prolog&nbsp;predicates as explained&nbsp;above, we <i>could</i>
+    delegate the execution directly to the underlying
+    Prolog&nbsp;engine. This is a very simple approach and
+    needs <i>zero</i> additional&nbsp;lines of Prolog&nbsp;code: The
+    existing Prolog engine handles everything. One downside of this
+    approach is that we give up control over the execution, and thus
+    we cannot modify any of its&nbsp;aspects if we use
+    this&nbsp;method.
+
+    <br><br>
+
+    Therefore, here is a bit <i>beyond</i> this simplistic
+    approach: <b><a href="lisprolog.pl">lisprolog.pl</a></b>
+
+    <br><br>
+
+    These <b>160 lines of Prolog code</b> implement Option&nbsp;2:
+    They give you an <i>interpreter</i> for a simple
+    Lisp, <i>including</i> a parser to let you write Lisp code in its
+    natural form.
+
+    <br><br>
+    
+    Internally, Prolog <a href="/prolog/dcg">Definite Clause
+    Grammars</a> are used for parsing Lisp&nbsp;code, and
+    <a href="/prolog/dcg#semicontext">semicontext&nbsp;notation</a> is
+    used for <i>implicitly</i> threading through certain arguments.
+    This Prolog&nbsp;feature is very similar to
+    Haskell's&nbsp;<i>monads</i>.
+
+    <br><br>
+    A few example queries and their results:
+    <br><br>
+
+    <b>Append</b>:
+
+    <pre>
+?- run("
+    (defun append (x y)
+      (if x
+          (cons (car x) (append (cdr x) y))
+        y))
+
+    (append '(a b) '(3 4 5))", Vs).
+
+<b>Vs = [append, [a, b, 3, 4, 5]].</b>
+    </pre>
+
+    <br>
+    <b>Fibonacci, naive version:</b>
+
+    <pre>
+?- time(run("
+    (defun fib (n)
+      (if (= 0 n)
+          0
+        (if (= 1 n)
+            1
+          (+ (fib (- n 1)) (fib (- n 2))))))
+    (fib 24)", Vs)).
+
+<b>% 14,255,802 inferences, 3.71 CPU in 3.87 seconds (96% CPU, 3842534 Lips)
+Vs = [fib, 46368].</b>
+    </pre>
+
+    <br>
+    <b>Fibonacci, accumulating version:</b>
+
+    <pre>
+?- time(run("
+    (defun fib (n)
+      (if (= 0 n) 0 (fib1 0 1 1 n)))
+
+    (defun fib1 (f1 f2 i to)
+      (if (= i to)
+          f2
+        (fib1 f2 (+ f1 f2) (+ i 1) to)))
+
+    (fib 250)", Vs)).
+
+<b>% 39,882 inferences, 0.010 CPU in 0.013 seconds (80% CPU, 3988200 Lips)
+Vs = [fib, fib1, 7896325826131730509282738943634332893686268675876375].</b>
+    </pre>
+
+    <br>
+    <b>Fibonacci, iterative version:</b>
+
+    <pre>
+?- time(run("
+    (defun fib (n)
+      (setq f (cons 0 1))
+      (setq i 0)
+      (while (< i n)
+        (setq f (cons (cdr f) (+ (car f) (cdr f))))
+        (setq i (+ i 1)))
+      (car f))
+
+    (fib 350)", Vs)).
+
+<b>% 34,233 inferences, 0.010 CPU in 0.010 seconds (98% CPU, 3423300 Lips)
+Vs = [fib, 6254449428820551641549772190170184190608177514674331726439961915653414425].</b>
+    </pre>
+
+    <br>
+    <b>Higher-order programming and eval:</b>
+
+    <pre>
+?- run("
+    (defun map (f xs)
+      (if xs
+          (cons (eval (list f (car xs))) (map f (cdr xs)))
+        ()))
+
+    (defun plus1 (x) (+ 1 x))
+
+    (map 'plus1 '(1 2 3))", Vs).
+
+<b>Vs = [map, plus1, [2, 3, 4]].</b>
+    </pre>
+    <br>
+    If you are interested in interpreters, check
+    out <i><a href="/acomip/">A Couple of Meta-interpreters in
+    Prolog</a></i>: You can write a meta-interpreter
+    for <a href="/prolog/purity">pure</a>&nbsp;Prolog in
+    at&nbsp;most <a href="/acomip/#mi_list3">4&nbsp;lines
+    of&nbsp;code</a>! Contrast this with the rather complex
+    meta-interpreters for&nbsp;Lisp.
+    <br><br>
+    For more interpreters written in declarative languages, check out <i><a href="/tist/">Thinking in States</a></i>.
+
+    <br><br>
+
+    If you are interested in Lisp, you may also like
+    <a href="/prolog/macros">Prolog&nbsp;macros</a>.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+    <a href="/"><b>Main page</b></a>
+  </body>
+</html>

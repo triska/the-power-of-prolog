@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Thinking in States</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="States in declarative languages">
+    <meta name="keywords" content="Prolog,Compiler,Puzzle,State,DCG">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+    <link rel="stylesheet" type="text/css" href="/prolog/toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+
+    <center>
+      <h1>Thinking in States</h1>
+    </center>
+    <br>
+
+    <center>
+      <h2>Motivation</h2>
+    </center>
+
+    If you are used to imperative programming languages and then learn
+    a functional or logic programming language, you may first work
+    successfully through a few easy exercises and then suddenly find
+    yourself unable to solve apparently simple tasks in the
+    declarative language. You may for example find yourself asking:
+    "How do I even increase the value of a variable?", or "How do I
+    even remove an element from a list?", or more generally "How do I
+    even apply a simple transformation to this data structure?" etc.
+
+    <br><br>
+
+    Invariably, the solution to such problems is to think in terms of
+    <i>relations</i> between different entities. Examples of such
+    entities are variables, lists, trees, <i>states</i> etc. 
+
+    <br><br>
+
+    For example, in an imperative language, changing the <i>state</i>
+    of a variable is easy:
+
+    <pre class="code">
+i = i + 1;
+    </pre>
+
+    After such a statement is executed, the <i>state</i> of <tt>i</tt>
+    has <i>changed</i>. The old state of <tt>i</tt> is no longer
+    accessible. Note that declaratively, the equation makes
+    no&nbsp;sense: There is no number&nbsp;<tt>i</tt> that
+    equals <tt>i+1</tt>.
+
+    <br><br>
+
+    In Prolog, the above snippet could become:
+
+    <pre class="code">
+I #= I0 + 1
+    </pre>
+
+    This means that <tt>I</tt> and <tt>I0</tt> are in a certain
+    relation. In this case, <tt>(#=)/2</tt> denotes the <i>equivalence
+      relation</i> of <a href="/prolog/clpfd">integer expressions</a>.
+
+    <br><br>
+
+    Importantly, such a relation can be used in <i>all directions</i>.
+    The way corresponding to the imperative way shown above would be
+    to have <tt>I0</tt> instantiated to a concrete integer, and
+    let <tt>I</tt> denote the next integer. Due to the generality of
+    Prolog, the <i>same</i> snippet can also be used if <tt>I</tt> is
+    instantiated and <tt>I0</tt> is not known, and even if <i>both</i>
+    of them are still variables. The mental leap you have to perform
+    to benefit from this generality is to think in terms of <i>two</i>
+    variables instead of one. This is necessary because the same
+    variable cannot reflect two different states, old <i>and</i> new,
+    at the same time.
+
+    <br><br>
+
+    As another example, when you find yourself asking "How do I even remove
+    an element&nbsp;<i>E</i> from a list?", think declaratively and
+    describe a <i>relation</i> between two lists: One list may contain
+    the element&nbsp;<i>E</i>, and the second list contains all
+    elements of the first list which are not equal to&nbsp;<i>E</i>.
+    Actually, as you already see, we are describing a relation
+    between <i>three</i>&nbsp;entities in this case: Two lists, and an
+    element. You can express this relation in Prolog by stating the
+    conditions that make the relation <i>hold</i>:
+
+    <pre class="code">
+list1_element_list2([], _, []).
+list1_element_list2([E|Ls1], E, Ls2) :-
+        list1_element_list2(Ls1, E, Ls2).
+list1_element_list2([L|Ls1], E, [L|Ls2]) :-
+        dif(L, E),
+        list1_element_list2(Ls1, E, Ls2).
+    </pre>
+
+    This relation has one argument for each of these entities, and we
+    can read each
+    clause <a href="/prolog/reading#declarative">declaratively</a>.
+    For example, the first clause means: The
+    relation <i>holds</i> <b>if</b> the first and third argument are
+    the empty list. The second clause means: <b>If</b> the relation
+    holds for <tt>Ls1</tt>, <tt>E</tt> and <tt>Ls2</tt>, <b>then</b>
+    the relation holds for <tt>[E|Ls1]</tt>, <tt>E</tt>
+    and <tt>Ls2</tt>. The third clause is read analogously, with the
+    added constraint that it only holds <b>if</b> <tt>L</tt>
+    and <tt>E</tt> are <i>different</i>&nbsp;terms.
+
+    The predicate is usable in all directions: It can answer much more
+    general questions than just "What does a list look like if we
+    remove all occurrences of the element&nbsp;<i>E</i>?". You can
+    also use it to answer for example: "Which element, if
+    any, <i>has&nbsp;been</i> removed in a given example?", or to
+    answer the most general query: "For which 3&nbsp;entities does
+    this relation even hold?". This generality is the reason why an
+    imperative name like "remove/3" would not be a good fit in this
+    case.
+
+    <br><br>
+
+    Prolog provides several language constructs to make predicates
+    general, efficient <i>and</i> concise. For example, using the
+    meta-predicate&nbsp;<tt>tfilter/3</tt>
+    from <a href="/prolog/metapredicates#if_3"><tt>library(reif)</tt></a>, we can write <tt>list1_element_list2/3</tt> equivalently as:
+
+    <pre>
+list1_element_list2(Ls1, E, Ls2) :-
+        tfilter(dif(E), Ls1, Ls2).
+    </pre>
+
+    This version is <i>deterministic</i> if all arguments are
+    sufficiently instantiated. For example:
+
+    <pre>
+?- list1_element_list2([a,b,c], b, Ls).
+Ls = [a, c].
+    </pre>
+
+    As yet another example, when you find yourself asking: "How do I
+    even apply a transformation to a tree?", again think declaratively
+    and describe a <i>relation</i> between two trees: one
+    tree <i>before</i> the transformation and one tree <i>after</i>
+    the transformation.
+
+    <br><br>
+
+    Notice that <i>functions</i> are a special kind of relations, so
+    most of the things below hold for functional as well as logic
+    programming languages. Logic programming languages typically allow
+    for more general solutions with less effort, since predicates can
+    often be used in several directions.
+
+    <br><br>
+
+    In this text, we will see several examples of relations
+    between <i>states</i>: states in puzzles, states in programs,
+    states in compilers etc., so that you see how various tasks can be
+    expressed in declarative languages. The core idea is the same in
+    all these examples: We think in terms of <i>relations between
+    states</i>. This is in contrast to imperative languages, where we
+    often think in terms of destructive <i>modifications</i> to a
+    state.
+
+    <br><br><br>
+
+    <center>
+      <h2 id="global">Global states</h2>
+    </center>
+
+    If you are used to thinking in terms of imperative programming
+    languages, you will try to find ways to manipulate <i>global
+    states</i> also in declarative languages. For example, you may try
+    to query and
+    change <a href="/prolog/global"><i>global&nbsp;variables</i></a>
+    in Prolog.
+
+    <br><br>
+
+    Prolog <i>does</i> support changing the global state by various
+    means. For example, we can destructively change the global
+    database in several ways. However, if a Prolog program changes a
+    global state by setting a global variable or modifying the global
+    database, important properties we expect from logic programs
+    may&nbsp;<i>break</i>. Such programs may no longer be usable in
+    all directions, may yield different results for identical queries,
+    and can typically no longer be tested and used in isolation from
+    other program fragments that prepare or clean up these global
+    states. For these reasons, this is <i>not</i> the kind of state we
+    discuss in this text.
+
+    <br><br>
+
+    To fully benefit from the advantages
+    of <a href="/prolog/purity"><b>pure</b></a> Prolog programs,
+    you should always aim to find <i>declarative</i> ways to express
+    changes in states. The declarative way to reason about changes is
+    to describe the <i>relations</i> between states that are induced
+    by such changes.
+
+    <br><br><br>
+
+    <center>
+      <h2 id="puzzles">States in puzzles</h2>
+    </center>
+
+    The choice of state representation can significantly influence how
+    elegantly you can describe a task. Consider a simple puzzle to see
+    this:
+
+    <br>
+    <div class="example">
+      Given <b>water jugs</b> A, B and C of respective capacities 8, 5
+      and&nbsp;3 and respective fill states <i>full</i>, <i>empty</i>
+      and <i>empty</i>, measure exactly 4&nbsp;units into both A
+      and&nbsp;B.
+    </div>
+    <br>
+
+    Clearly, an important <i>state</i> in this puzzle is the amount
+    of water in each jug. Using Haskell, let us represent this state
+    as a triple (A,B,C):
+
+    <pre class="code">
+type State = (Int,Int,Int)
+    </pre>
+
+    Now, we are to find a sequence of transfers leading from state
+    (8,0,0) to state (4,4,0). We start with a function that, given a
+    state, yields a list of all proper successor states:
+
+    <pre class="code">
+successors :: State -> [State]
+successors (a,b,c) =
+    let ab = min a (5 - b)
+        ac = min a (3 - c)
+        ba = min b (8 - a)
+        bc = min b (3 - c)
+        ca = min c (8 - a)
+        cb = min c (5 - b)
+        ss = [(ab,a-ab,b+ab,c), (ac,a-ac,b,c+ac), (ba,a+ba,b-ba,c),
+              (bc,a,b-bc,c+bc), (ca,a+ca,b,c-ca), (cb,a,b+cb,c-cb)]
+    in
+      [(a',b',c') | (transfer,a',b',c') <- ss, transfer > 0]
+    </pre>
+
+    We can test this function interactively:
+
+    <pre class="code">
+Main> successors (8,0,0)
+[(3,5,0),(5,0,3)]
+    </pre>
+
+    Let us now determine whether we can, starting from the initial
+    state, actually reach the target state. We try breadth-first
+    search, a complete and space-inefficient search strategy:
+
+    <pre class="code">
+search :: [State] -> Bool
+search (s:ss)
+    | s == (4,4,0) = True
+    | otherwise = search $ ss ++ successors s
+    </pre>
+
+    In each iteration, we consider the first state in the given list
+    of states. If it's the target state, we're done. Otherwise, its
+    successors are appended to the remaining states (to be considered
+    later), and the search continues. We can now query
+
+    <pre class="code">
+search [(8,0,0)]
+True
+    </pre>
+
+    and know that the puzzle actually has a solution. To find a
+    sequence of actions leading to the target state, we reconsider
+    the <i>state representation</i>. Instead of merely keeping track
+    of the amount of water in the jugs, we also store how we obtained
+    each configuration. We represent this new state as a
+    pair&nbsp;(J,P): J is the jug configuration&nbsp;(A,B,C) like
+    before, and&nbsp;P is a "path" that leads from the starting state
+    to configuration&nbsp;J. A path is a list
+    of&nbsp;<tt>FromTo&nbsp;Jug1&nbsp;Jug2</tt> moves, meaning that
+    we poured water from&nbsp;<tt>Jug1</tt> into&nbsp;<tt>Jug2</tt>.
+    For each successor state, we record how its configuration was
+    reached by appending the corresponding path element to (a copy of)
+    its predecessor's path. The new program
+    (<a href="jugs.hs">jugs.hs</a>) is:
+
+    <pre class="code">
+data Jug = A | B | C deriving Show
+
+data Move = FromTo Jug Jug deriving Show
+type Path = [Move]
+
+type State = ((Int,Int,Int), Path)
+
+start :: State
+start = ((8,0,0), [])
+
+successors :: State -> [State]
+
+successors ((a,b,c),path) =
+    let ab = min a (5 - b)
+        ac = min a (3 - c)
+        ba = min b (8 - a)
+        bc = min b (3 - c)
+        ca = min c (8 - a)
+        cb = min c (5 - b)
+        ss = [(ab, a-ab, b+ab,    c, path ++ [FromTo A B]),
+              (ac, a-ac,    b, c+ac, path ++ [FromTo A C]),
+              (ba, a+ba, b-ba,    c, path ++ [FromTo B A]),
+              (bc,    a, b-bc, c+bc, path ++ [FromTo B C]),
+              (ca, a+ca,    b, c-ca, path ++ [FromTo C A]),
+              (cb,    a, b+cb, c-cb, path ++ [FromTo C B])]
+    in
+      [((a',b',c'), path') | (amount,a',b',c',path') <- ss, amount > 0]
+
+search :: [State] -> Path
+
+search (s:ss)
+    | fst s == (4,4,0) = snd s
+    | otherwise = search $ ss ++ successors s
+    </pre>
+
+    A path is now readily found:
+
+    <pre class="code">
+search [start]
+[FromTo A B,FromTo B C,FromTo C A,FromTo B C,FromTo A B,FromTo B C,FromTo C A]
+    </pre>
+
+    There are various ways to make this more efficient. We could, for
+    example, <i>prepend</i> the new path elements and reverse the path
+    once at the end of the search.
+
+    <br><br>
+
+    More importantly, we can also make it more elegant: Clearly, the
+    code above contains some redundancy, which we can avoid with a
+    different state representation. The following Prolog version
+    illustrates this:
+
+    <pre class="code">
+jug_capacity(a, 8).
+jug_capacity(b, 5).
+jug_capacity(c, 3).
+
+moves(Jugs) -->
+        { memberchk(jug(a,4), Jugs),
+          memberchk(jug(b,4), Jugs) }.
+moves(Jugs0) -->
+        { select(jug(AID,AF), Jugs0, Jugs1), AF #> 0,
+          select(jug(BID,BF), Jugs1, Jugs2), jug_capacity(BID, BC), BF #< BC,
+          Move #= min(AF,BC-BF),
+          AF1 #= AF - Move,
+          BF1 #= BF + Move },
+        [from_to(AID,BID)],
+        moves([jug(AID,AF1),jug(BID,BF1)|Jugs2]).
+    </pre>
+
+    With this state representation, moves can be described uniformly
+    and need not be enumerated explicitly. We use <i>iterative
+    deepening</i> to find a shortest solution:
+
+    <pre class="code">
+?- length(Ms, _), phrase(moves([jug(a,8),jug(b,0),jug(c,0)]), Ms).
+Ms = [from_to(a,b),from_to(b,c),from_to(c,a),from_to(b,c),from_to(a,b),from_to(b,c),from_to(c,a)] .
+    </pre>
+
+    <br>
+    <b>Exercise</b>: Use this state representation in the Haskell version.
+    <br><br>
+
+    In a similar manner, you can solve other puzzles involving search
+    like "wolf and goat",
+    8-puzzles, <a href="/zurg/"><b>Escape from Zurg</b></a> and
+    "missionary and cannibal".
+
+
+    <br><br><br>
+    <center><h2>States in programs</h2></center>
+
+    Let us now build an interpreter for a simple programming language
+    over integers in Prolog.  Using Prolog terms, we represent
+    programs as abstract syntax trees (ASTs) like:
+
+    <pre class="code">
+function(Name, Parameter, Body)
+call(Name, Expression)
+return(Expression)
+assign(Variable, Expression)
+if(Condition, Then, Else)
+while(Condition, Body)
+sequence(First, Second)
+    </pre>
+
+    To symbolically distinguish variables from numerals in arithmetic
+    expressions, we use the unary functors "v" and "n", respectively.
+    Look up the definition of <b>is_program/2</b> in the source
+    code&nbsp;(<a href="interp.pl">interp.pl</a>) for a complete
+    declarative specification of the chosen representation. Also
+    included, you find a parser to automatically generate this term
+    representation from more readable syntax. For instance, the
+    following program (recursively) computing and printing the fourth
+    Catalan number
+
+    <pre class="code">
+catalan (n) {
+        if (n == 0) {
+                return 1;
+        } else {
+                c = catalan(n-1);
+                r = 2*(2*n + 1)*c / (n + 2);
+                return r;
+        }
+}
+
+print catalan(4);
+    </pre>
+
+    is converted to a syntax tree like this:
+
+    <pre class="code">
+?- string_ast("catalan (n) { if (n == 0) { return 1; } else { c = catalan(n-1);
+          r = 2*(2*n + 1)*c / (n + 2); return r; } } print catalan(4);", AST).
+
+AST = sequence(function(catalan, n,
+                         if(bin(=, v(n), n(0)),
+                            return(n(1)),
+                            sequence(assign(c, call(catalan, bin(-, v(n), n(1)))),
+                                     sequence(assign(r, bin(/,
+                                                            bin(*,
+                                                                bin(*,
+                                                                    n(2),
+                                                                    bin(+,
+                                                                        bin(*,
+                                                                            n(2),
+                                                                            v(n)),
+                                                                        n(1))),
+                                                                v(c)),
+                                                            bin(+, v(n), n(2)))),
+                                              return(v(r)))))),
+               print(call(catalan, n(4))))
+    </pre>
+
+    <br>
+
+    To interpret such programs, we have to keep track of the
+    <i>state</i> of computation. It consists of:
+
+    <ul>
+      <li>the binding environment for variables</li>
+      <li>all encountered function definitions.</li>
+    </ul>
+
+    These two, collectively referred to as <i>the environment</i>, are
+    represented as a pair of association lists, associating variable
+    names with values, and function heads with function bodies. This
+    makes defining and referring to functions as well as accessing
+    variables O(log(N)) operations in the number of encountered
+    functions and variables, respectively.
+
+    <br><br>
+
+    Clearly, the predicates responsible for interpreting syntax trees
+    define relations between such environments and thus between
+    <i>states</i>.  This is how we interpret imperative programs in a
+    purely declarative way.
+
+    <br><br>
+
+    To <i>evaluate</i> expressions with respect to the current
+    environment, we use the predicate <b>eval/3</b>:
+
+    <pre class="code">
+eval(bin(Op,A,B), Env, Value) :-
+        eval(A, Env, VA),
+        eval(B, Env, VB),
+        eval_(Op, VA, VB, Value).
+eval(v(V), Env, Value) :-
+        env_get_var(Env, V, Value).
+eval(n(N), _, N).
+eval(call(Name, Arg), Env0, Value) :-
+        eval(Arg, Env0, ArgVal),
+        env_func_body(Env0, Name, ArgName, Body),
+        env_clear_variables(Env0, Env1),
+        env_put_var(ArgName, ArgVal, Env1, Env2),
+        interpret(Body, Env2, Value).
+
+
+eval_(+, A, B, V) :- V #= A + B.
+eval_(-, A, B, V) :- V #= A - B.
+eval_(*, A, B, V) :- V #= A * B.
+eval_(/, A, B, V) :- V #= A // B.
+eval_(=, A, B, V) :- goal_truth(A #= B, V).
+eval_(>, A, B, V) :- goal_truth(A #> B, V).
+eval_(<, A, B, V) :- goal_truth(A #< B, V).
+
+goal_truth(Goal, V) :- ( Goal -> V = 1 ; V = 0).
+    </pre>
+
+    The predicates accessing the environment (<b>env_get_var/3</b>
+    etc.)  are straight-forward, and you can look up their definitions
+    in the source code.  Finally, the
+    predicate&nbsp;<b>interpret/3</b> specifies how, if at all, each
+    construct of our language changes the environment:
+
+    <pre class="code">
+interpret(print(P), Env, Env) :-
+        eval(P, Env, Value),
+        format("~w\n", [Value]).
+interpret(sequence(A,B), Env0, Env) :-
+        interpret(A, Env0, Env1),
+        (   A = return(_) ->
+            Env = Env1
+        ;   interpret(B, Env1, Env)
+        ).
+interpret(call(Name, Arg), Env0, Env0) :-
+        eval(Arg, Env0, ArgVal),
+        env_func_body(Env0, Name, ArgName, Body),
+        env_clear_variables(Env0, Env1),
+        env_put_var(ArgName, ArgVal, Env1, Env2),
+        interpret(Body, Env2, _).
+interpret(function(Name,Arg,Body), Env0, Env) :-
+        env_put_func(Name, Arg, Body, Env0, Env).
+interpret(if(Cond,Then,Else), Env0, Env) :-
+        eval(Cond, Env0, Value),
+        (   Value #\= 0 ->
+            interpret(Then, Env0, Env)
+        ;   interpret(Else, Env0, Env)
+        ).
+interpret(assign(Var, Expr), Env0, Env) :-
+        eval(Expr, Env0, Value),
+        env_put_var(Var, Value, Env0, Env).
+interpret(while(Cond, Body), Env0, Env) :-
+        eval(Cond, Env0, Value),
+        (   Value #\= 0 ->
+            interpret(Body, Env0, Env1),
+            interpret(while(Cond, Body), Env1, Env)
+        ;   Env = Env0
+        ).
+interpret(return(Expr), Env0, Value) :-
+        eval(Expr, Env0, Value).
+interpret(nop, Env, Env).
+    </pre>
+
+    Two things deserve special attention: For one, the <tt>print</tt>
+    statement produces a <i>side-effect</i>: It is meant to show
+    output on the terminal, and this cannot be expressed by
+    transforming the binding environment.  The interpreter is thus not
+    purely logical. To fix this, we could incorporate a suitable
+    representation of the state of the "world" into our environment
+    and adjust it appropriately whenever a <tt>print</tt> statement is
+    encountered. Second, <tt>return</tt> statements are special in that
+    their resulting environment consists of a single
+    value. The <b>eval/3</b> predicate makes use of this when
+    evaluating function calls.
+
+    <br><br>
+
+    To interpret a program, we start with a fresh environment and
+    discard the resulting environment:
+
+    <pre class="code">
+run(AST) :-
+        env_new(Env),
+        interpret(AST, Env, _).
+    </pre>
+
+    We can run our simple example program like this:
+
+    <pre class="code">
+
+?- string_ast("catalan (n) { if (n == 0) { return 1; } else { c = catalan(n-1);
+          r = 2*(2*n + 1)*c / (n + 2); return r; } } print catalan(4);", AST), run(AST).
+
+42
+    </pre>
+
+
+    <br>
+
+    <center><h2 id="compilers">States in compilers</h2></center>
+
+    To get rid of the interpreter's overhead incurred by looking up
+    variables and function definitions in the environment, we now
+    compile programs to <i>virtual machine code</i> in which variables
+    and functions are addressed by offsets into specific regions of
+    the virtual machine's "memory". Using a programming language
+    permitting efficient array indexing, you can thus interpret
+    variable access and function calls in&nbsp;O(1).
+
+    <br><br>
+
+    Our virtual machine (VM) shall be stack-based and have the
+    following instructions:
+
+    <br><br>
+    <center>
+      <table>
+        <tr>
+          <td><b>Instruction&nbsp;&nbsp;</b></td>
+          <td><b><center>Effect</center></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2"><hr></td>
+        </tr>
+
+        <tr>
+          <td><tt>halt</tt></td>
+          <td>stop execution</td>
+        </tr>
+
+        <tr>
+          <td><tt>alloc</tt> <i>n</i></td>
+          <td>push <i>n</i> zeros on top of stack</td>
+        </tr>
+
+        <tr>
+          <td><tt>pushc</tt> <i>c</i></td>
+          <td>push constant <i>c</i> on top of  stack</td>
+        </tr>
+
+        <tr>
+          <td><tt>pushv</tt> <i>v</i></td>
+          <td>push value of variable <i>v</i> on top of stack</td>
+        </tr>
+
+        <tr>
+          <td><tt>pop</tt> <i>v</i></td>
+          <td>remove topmost element from stack and assign its value to variable <i>v</i></td>
+        </tr>
+
+        <tr>
+          <td><tt>add</tt></td>
+          <td>replace topmost two elements of stack by their sum</td>
+        </tr>
+
+        <tr>
+          <td><tt>sub</tt></td>
+          <td>... subtract</td>
+        </tr>
+
+        <tr>
+          <td><tt>mul</tt></td>
+          <td>... multiply</td>
+        </tr>
+
+        <tr>
+          <td><tt>div</tt></td>
+          <td>... integer division</td>
+        </tr>
+
+        <tr>
+          <td><tt>jmp</tt> <i>adr</i></td>
+          <td>continue execution at instruction <i>adr</i></td>
+        </tr>
+
+        <tr>
+          <td><tt>jne</tt> <i>adr</i></td>
+          <td>remove topmost two stack elements and jump to <i>adr</i> if they are not equal</td>
+        </tr>
+
+        <tr>
+          <td><tt>jge</tt> <i>adr</i></td>
+          <td>jump if greater or equal</td>
+        </tr>
+
+        <tr>
+          <td><tt>jle</tt> <i>adr</i></td>
+          <td>jump if less or equal</td>
+        </tr>
+
+        <tr>
+          <td><tt>call</tt> <i>adr</i></td>
+          <td>call subroutine starting at <i>adr</i></td>
+        </tr>
+
+        <tr>
+          <td><tt>print</tt></td>
+          <td>remove topmost stack element and print its value</td>
+        </tr>
+
+        <tr>
+          <td><tt>ret</tt></td>
+          <td>return from subroutine</td>
+        </tr>
+
+      </table>
+    </center>
+    <br>
+
+    <i>Variables</i> are now actually integers, denoting an offset
+    into the stack frame of the function being executed. 0&nbsp;(zero)
+    corresponds to a function's sole argument and is copied on the
+    stack when encountering a <tt>call</tt>
+    instruction. Also, <tt>call</tt> saves the current frame pointer
+    and program counter on the stack.  A function can allocate
+    additional space for local variables by means of
+    the <tt>alloc</tt> instruction. The return
+    instruction&nbsp;(<tt>ret</tt>) removes all stack elements
+    allocated by the current function, restores the frame pointer and
+    program counter, and pushes the function's return value on the
+    stack.
+
+
+    <br><br>
+
+    The following example program and corresponding VM code illustrate
+    most of the instructions:
+
+    <br><br>
+
+    <center>
+      <table>
+        <tr>
+          <td valign="center" style="padding: 0 50pt 0 50pt">
+            <pre>
+fac(n) {
+        f = 1;
+        while (n > 1) {
+                f = f*n;
+                n = n - 1;
+        }
+        return(f);
+}
+
+print fac(4);
+            </pre>
+          </td>
+
+          <td valign="center" style="padding: 0 50pt 0 50pt">
+            <pre>
+ 0:     jmp 33
+ 2:     alloc 1
+ 4:     pushc 1
+ 6:     pop 1
+ 8:     pushv 0
+10:     pushc 1
+12:     jle 30
+14:     pushv 1
+16:     pushv 0
+18:     mul
+19:     pop 1
+21:     pushv 0
+23:     pushc 1
+25:     sub
+26:     pop 0
+28:     jmp 8
+30:     pushv 1
+32:     ret
+33:     pushc 4
+35:     call 2
+37:     print
+38:     halt
+            </pre>
+          </td>
+        </tr>
+      </table>
+    </center>
+
+    <br>
+
+    Generating such VM code from an abstract syntax tree is
+    straight-forward. In essence, we will write a predicate
+    <b>compilation/3</b> with clauses roughly of the form
+
+    <pre class="code">
+compilation(functor(Arg1,Arg2,...,ArgN), State0, State) :-
+        compilation(Arg1, State0, State1),
+        compilation(Arg2, State1, State2),
+           :
+           :
+        compilation(Argn, State_(N-1), State_N),
+        vminstr(instruction_depending_on_functor, State_N, State).
+    </pre>
+
+    Notice the naming
+    convention <tt>S0</tt>, <tt>S1</tt>, <tt>S2</tt>,&nbsp;...,&nbsp;<tt>S</tt>
+    for successive states.
+
+    <br><br>
+
+    As we will see in the following, only a few predicates need to
+    access and modify the state in this case. We will therefore use
+    Prolog <a href="/prolog/dcg#semicontext"><b>semicontext&nbsp;notation</b></a>
+    to implicitly thread the state through, yielding the more readable
+    nonterminal <b>compilation//1</b>:
+
+    <!-- notice the similarity with state monads -->
+
+    <pre class="code">
+compilation(functor(Arg1,Arg2,...,ArgN)) -->
+        compilation(Arg1),
+        compilation(Arg2),
+           :
+           :
+        compilation(Argn),
+        vminstr(instruction_depending_on_functor).
+    </pre>
+
+    <br><br>
+
+    When compiling to VM code, we keep track of the <i>state</i> of
+    the compilation process:
+
+    <ul>
+      <li>VM instructions emitted so far</li>
+      <li>offsets of encountered function definitions</li>
+      <li>offsets of variables encountered in the current function</li>
+      <li>offset of next instruction ("program counter").</li>
+    </ul>
+
+    We store all this in a quadruple <tt>s(Is, Fs, Vs, PC)</tt>. The
+    entry point for compilation is <b>ast_vminstrs/2</b>, which
+    relates an abstract syntax tree to a list of virtual machine
+    instructions. It starts with a fresh state, transforms it
+    via <b>compilation//1</b> and then extracts the accumulated
+    instructions, also translating names to offsets in function calls:
+
+    <pre class="code">
+ast_vminstrs(AST, VMs) :-
+        initial_state(S0),
+        phrase(compilation(AST), [S0], [S]),
+        state_vminstrs(S, VMs).
+
+initial_state(s([],[],[],0)).
+
+state_vminstrs(s(Is0,Fs,_,_), Is) :-
+        reverse([halt|Is0], Is1),
+        maplist(resolve_calls(Fs), Is1, Is).
+
+resolve_calls(Fs, I0, I) :-
+        (   I0 = call(Name) ->
+            memberchk(Name-Adr, Fs),
+            I = call(Adr)
+        ;   I = I0
+        ).
+    </pre>
+
+    To portably (i.e., without relying on a particular expansion
+    method for DCGs) access and modify the state that is implicitly
+    threaded through in DCG notation, we use the following two
+    nonterminals:
+
+    <pre class="code">
+state(S), [S] --> [S].
+
+state(S0, S), [S] --> [S0].
+    </pre>
+
+    Thus, <tt>state(S)</tt> can be read as "the current state
+    is <tt>S</tt>", and <tt>state(S0, S)</tt> can be read as "the
+    current state is <tt>S0</tt>, and henceforth it
+    is&nbsp;<tt>S</tt>".
+
+    <br><br>
+
+    Here are auxiliary predicates to access and transform parts of the
+    state:
+
+    <pre class="code">
+current_pc(PC) --> state(s(_,_,_,PC)).
+
+vminstr(I) -->
+        state(s(Is,Fs,Vs,PC0), s([I|Is],Fs,Vs,PC)),
+        { I =.. Ls,
+          length(Ls, L),   % length of instruction including arguments
+          PC #= PC0 + L }.
+
+start_function(Name, Arg) -->
+        state(s(Is,Fs,_,PC), s(Is,[Name-PC|Fs],[Arg-0],PC)).
+
+num_variables(Num) -->
+        state(s(_,_,Vs,_)),
+        { length(Vs, Num0),
+          Num #= Num0 - 1 }.      % don't count parameter
+
+variable_offset(Name, Offset) -->
+        state(s(Is,Fs,Vs0,PC), s(Is,Fs,Vs,PC)),
+        { (   memberchk(Name-Offset, Vs0) ->
+              Vs = Vs0
+          ;   Vs0 = [_-Curr|_],
+              Offset #= Curr + 1,
+              Vs = [Name-Offset|Vs0]
+          ) }.
+    </pre>
+
+    For example, <b>start_function//2</b> records the offset (=
+    current program counter) of the function to be defined and starts
+    a new list of encountered variables, originally consisting only of
+    the function's argument, whose offset in the stack frame is 0.
+    Further variables are assigned ascending offsets as they are
+    encountered. This is handled by <b>variable_offset//2</b>, which
+    either determines a variable's offset from the list of encountered
+    variables or, if it is new, registers it with a new offset
+    computed by adding one to the offset of the variable registered
+    previously.
+
+    <br><br>
+
+    We can now define <b>compilation//1</b>:
+
+    <pre class="code">
+compilation(nop) --> [].
+compilation(print(P)) -->
+        compilation(P),
+        vminstr(print).
+compilation(sequence(A,B)) -->
+        compilation(A),
+        compilation(B).
+compilation(call(Name,Arg)) -->
+        compilation(Arg),
+        vminstr(call(Name)).
+compilation(function(Name,Arg,Body)) -->
+        vminstr(jmp(Skip)),
+        start_function(Name, Arg),
+        vminstr(alloc(NumVars)),
+        compilation(Body),
+        num_variables(NumVars),
+        current_pc(Skip).
+compilation(if(Cond,Then,Else)) -->
+        { Cond = bin(Op,A,B) },
+        compilation(A),
+        compilation(B),
+        condition(Op, Adr1),
+        compilation(Then),
+        vminstr(jmp(Adr2)),
+        current_pc(Adr1),
+        compilation(Else),
+        current_pc(Adr2).
+compilation(assign(Var,Expr)) -->
+        variable_offset(Var, Offset),
+        compilation(Expr),
+        vminstr(pop(Offset)).
+compilation(while(Cond,Body)) -->
+        current_pc(Head),
+        { Cond = bin(Op,A,B) },
+        compilation(A),
+        compilation(B),
+        condition(Op, Break),
+        compilation(Body),
+        vminstr(jmp(Head)),
+        current_pc(Break).
+compilation(return(Expr)) -->
+        compilation(Expr),
+        vminstr(ret).
+compilation(bin(Op,A,B)) -->
+        compilation(A),
+        compilation(B),
+        { op_vminstr(Op, VI) },
+        vminstr(VI).
+compilation(n(N)) -->
+        vminstr(pushc(N)).
+compilation(v(V)) -->
+        variable_offset(V, Offset),
+        vminstr(pushv(Offset)).
+
+
+op_vminstr(+, add).
+op_vminstr(-, sub).
+op_vminstr(*, mul).
+op_vminstr(/, div).
+
+condition(=, Adr) --> vminstr(jne(Adr)).
+condition(<, Adr) --> vminstr(jge(Adr)).
+condition(>, Adr) --> vminstr(jle(Adr)).
+    </pre>
+
+    <br>
+
+    Notice how we benefit from logical variables in several cases: For
+    example, when <tt>alloc</tt> is emitted, we do not yet know how
+    much space must be allocated. Nevertheless, we add the instruction
+    to the sequence of virtual machine instructions, and instantiate
+    its argument later.
+
+    <br><br>
+
+
+    By introducing a&nbsp;<tt>call_n</tt> instruction that discards
+    the&nbsp;<tt>n</tt> most recently allocated local variables before
+    calling a given function, we could add <i>tail call
+    optimisation</i> and, more generally, <i>stack trimming</i> to
+    the&nbsp;VM: If a variable isn't needed after a function call, its
+    stack space can be reclaimed before the call.
+
+    <br><br><br>
+
+    To keep the generated VM code compact and easily accessible in
+    other programming languages, we relate the mnemonic virtual
+    machine instructions to lists of integers:
+
+    <pre class="code">
+vminstrs_ints([])     --> [].
+vminstrs_ints([I|Is]) -->
+        vminstr_ints(I),
+        vminstrs_ints(Is).
+
+vminstr_ints(halt)      --> [0].
+vminstr_ints(alloc(A))  --> [1,A].
+vminstr_ints(pushc(C))  --> [2,C].
+vminstr_ints(pushv(V))  --> [3,V].
+vminstr_ints(pop(V))    --> [4,V].
+vminstr_ints(add)       --> [5].
+vminstr_ints(sub)       --> [6].
+vminstr_ints(mul)       --> [7].
+vminstr_ints(div)       --> [8].
+vminstr_ints(jmp(Adr))  --> [9,Adr].
+vminstr_ints(jne(Adr))  --> [10,Adr].
+vminstr_ints(jge(Adr))  --> [11,Adr].
+vminstr_ints(jle(Adr))  --> [12,Adr].
+vminstr_ints(call(Adr)) --> [13,Adr].
+vminstr_ints(print)     --> [14].
+vminstr_ints(ret)       --> [15].
+    </pre>
+
+    <br><br>
+
+    <center><h2>States in virtual machines</h2></center>
+
+    Let us now implement the VM we devised.  Its <i>state</i> is
+    determined by:
+
+    <ul>
+      <li>values on the stack</li>
+      <li>list of instructions to execute</li>
+      <li>pc: program counter (offset into list of instructions)</li>
+      <li>fp: frame pointer (offset into stack).</li>
+    </ul>
+
+    Using Haskell, we can use a quadruple to represent this state:
+
+
+    <pre class="code">
+type State = ([Int], [Int], Int, Int)
+    </pre>
+
+
+    The function <tt>step</tt>, given the integer code of a VM
+    instruction and the VM's current state, computes and returns the
+    VM's new state:
+
+
+    <pre class="code">
+step :: Int -> State -> State
+step instr (stack,instrs,pc,fp) =
+    case instr of
+      1 -> ((replicate next 0) ++ stack, instrs, pc2, fp + next)
+      2 -> (next:stack, instrs, pc2, fp+1)
+      3 -> ((stack!!(fp - next)):stack, instrs, pc2, fp + 1)
+      4 -> (tail $ set_nth stack (fp - next) first, instrs, pc2, fp1)
+      5 -> ((second+first):drop2, instrs, pc1, fp1)
+      6 -> ((second-first):drop2, instrs, pc1, fp1)
+      7 -> ((second*first):drop2, instrs, pc1, fp1)
+      8 -> ((div second first):drop2, instrs, pc1, fp1)
+      9 -> (stack, instrs, next, fp)
+      10 -> if second /= first then (drop2, instrs, next, fp2)
+            else (drop2, instrs, pc2, fp2)
+      11 -> if second >= first then (drop2, instrs, next, fp2)
+            else (drop2, instrs, pc2, fp2)
+      12 -> if second <= first  then (drop2, instrs, next, fp2)
+            else (drop2, instrs, pc2, fp2)
+      13 -> ([first,fp,pc2] ++ tail stack, instrs, next, 0)
+      15 -> let fp' = stack !! (fp + 1)
+                pc' = stack !! (fp + 2)
+            in
+              (first : drop (fp+3) stack, instrs, pc', fp')
+    where next = instrs !! (pc+1)
+          first = head stack
+          second = stack !! 1
+          drop2 = drop 2 stack
+          fp1 = fp - 1
+          fp2 = fp - 2
+          pc1 = pc + 1
+          pc2 = pc + 2
+
+
+set_nth :: [a] -> Int -> a -> [a]
+set_nth (x:xs) n a
+    | n == 0 = a:xs
+    | otherwise = x:(set_nth xs (n - 1) a)
+    </pre>
+
+    We execute a list of integer codes by continually transforming
+    the state until a <tt>halt</tt> instruction is reached:
+
+
+    <pre class="code">
+exec :: State -> IO ()
+exec s0@(stack,instrs,pc,fp) =
+    let instr = instrs !! pc
+    in
+      case instr of
+        0 -> return ()
+        14 -> do putStr $ (show $ head stack) ++ "\n"
+                 exec (tail stack, instrs, pc + 1, fp - 1)
+        otherwise -> exec $ step instr s0
+
+
+main :: IO ()
+main =
+    do prog <- getLine
+       let ints = read prog::[Int]
+           s0 = ([],ints,0,0)
+       exec s0
+    </pre>
+    <br>
+
+    This code is available as <a href="vm.hs">vm.hs</a>. Since we used
+    lists to represent the stack and set of instructions, indexing is
+    inefficient. To remedy this, we could use an array at least for
+    the set of instructions. The stack, however, needs to grow and
+    shrink. We could artificially fix its size, or resize on demand,
+    and still use a Haskell array. Instead, let us formulate the
+    program in a language with efficient array operations at its
+    core:&nbsp;<a href="http://www.jsoftware.com">J</a>, a successor
+    of APL. In the J version (<a href="vm.ijs">vm.ijs</a>), we
+    represent the VM's state using an array of four boxed vectors.
+    Using the power conjunction&nbsp;<tt>^:</tt>, we produce the limit
+    of repeated applications of&nbsp;<tt>step</tt>:
+
+    <pre class="code">
+st =. 3 : '> 0 { y'
+is =. 3 : '> 1 { y'
+pc =. 3 : '> 2 { y'
+fp =. 3 : '> 3 { y'
+
+next =. (>:&pc { is)
+
+print =. 3 : 'y (1!:2) 2'
+
+adv =. 3 : '(2 }.st y); (is y); (2+pc y); ((fp y) - 2)'
+jmp =. 3 : '(2 }.st y); (is y); (next y); ((fp y) - 2)'
+
+i1  =: 3 : '(((next y) # 0),st y); (is; 2&+&pc; next+fp) y'
+i2  =: 3 : '((next,st); is ; 2&+&pc; >:&fp) y'
+i3  =: 3 : '((((fp-next) { st),st); is; 2&+&pc; >:&fp) y'
+i4  =: 3 : '(}.({.st y) ((fp-next)y) } st y); (is; 2&+&pc; <:&fp) y'
+i5  =: 3 : '((+/1 0 { st y),2}.st y); (is; >:&pc; <:&fp) y'
+i6  =: 3 : '((-/1 0 { st y),2}.st y); (is; >:&pc; <:&fp) y'
+i7  =: 3 : '((*/1 0 { st y),2}.st y); (is; >:& pc; <:&fp) y'
+i8  =: 3 : '((<.%/1 0 { st y),2}.st y); (is; >:&pc; <:&fp) y'
+i9  =: 3 : '(st; is; next; fp) y'
+i10 =: 3 : '(adv ` jmp @. (-.=/1 0 {st y)) y'
+i11 =: 3 : '(adv ` jmp @. (>:/1 0 {st y)) y'
+i12 =: 3 : '(adv ` jmp @. (<:/1 0 {st y)) y'
+i13 =: 3 : '(((({.&st), fp, 2&+&pc),}.& st) y); (is y); (next y);0'
+i14 =: 3 : '(print {. st y)]((}.&st); is; (>:&pc); (<:&fp)) y'
+i15 =: 3 : 0
+   fp1 =. (>:&fp { st) y
+   pc1 =. (2&+&fp { st) y
+   (({. st y),(3+fp y)}. st y) ; (is y); pc1 ; fp1
+)
+
+step =: 3 : 0
+   instr =. (pc { is) y
+   (]`i1`i2`i3`i4`i5`i6`i7`i8`i9`i10`i11`i12`i13`i14`i15  @. instr) y
+)
+
+state0 =:  ($0); instrs; 0; 0
+
+step ^: _ state0
+    </pre>
+
+    <br>
+    <center><h2>Source files</h2></center>
+
+    The source files are:
+
+    <ul>
+
+      <li><a href="jugs.hs">jugs.hs</a>: Water jugs puzzle in Haskell.</li>
+      <li><a href="jugs2.hs">jugs2.hs</a>: Water jugs puzzle in Haskell, different state representation.</li>
+      <li><a href="jugs.pl">jugs.pl</a>: Water jugs puzzle in Prolog.</li>
+      <li><a href="interp.pl">interp.pl</a>: Interpreter and compiler
+        for a simple programming language, written in Prolog.</li>
+      <li><a href="vm.hs">vm.hs</a>: Interpreter for the abstract
+        machine code generated by the compiler, written in Haskell.</li>
+      <li><a href="vm.ijs">vm.ijs</a>: Interpreter for the abstract
+        machine code, written in J.</li>
+    </ul>
+
+    <br>
+
+    A transcript showing how to invoke these programs:
+    <a href="log.txt">log.txt</a>
+
+    <br><br>
+
+    You can use <a href="http://eu.swi-prolog.org">SWI Prolog</a> to
+    try the Prolog code.
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <a href="/"><b>Main page</b></a>
+  </body>
+  <script src="/prolog/jquery.js"></script>
+  <script src="/prolog/toc.js"></script>
+</html>

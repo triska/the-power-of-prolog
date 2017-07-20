@@ -1,0 +1,13 @@
+begin
+    begin
+       x <- 3
+    ;
+       y <- 4
+    end
+ ;
+    if x + y < 19 then
+       x <- x + 19
+    else
+       x <- y + y
+end
+       

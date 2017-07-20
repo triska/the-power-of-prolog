@@ -1,0 +1,9 @@
+I(x) = 10
+I(f) = 1
+
+while (x >= 2) do
+  begin
+   f <- f * x
+  ;
+   x <- x - 1
+  end

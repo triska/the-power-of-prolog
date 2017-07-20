@@ -1,0 +1,87 @@
+<html>
+  <head>
+    <title>Alzint</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+  <style type="text/css">
+<!--
+ .box { border: 1px dotted; padding: 1em;  width: 80%; margin-left: 5%; }
+-->
+  </style>
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center><h1>Alzint &mdash; An interpreter for AL(Z) programs</h1></center>
+    <br><br>
+
+    Source code: <a href="alzint.pl"><b>alzint.pl</b></a>
+
+    <br><br>
+
+    You need <a href="http://eu.swi-prolog.org">SWI Prolog</a> to run
+    it.
+
+    <br><br>
+
+    AL(Z) stands for <i>Assignment Language over Integers</i>. It is a
+    <a href="https://en.wikipedia.org/wiki/Turing_completeness">Turing
+      complete</a> programming language supporting variable
+      assignments, loops and conditions.
+
+    <br><br>
+
+    <i>Alzint</i> is an interpreter for AL(Z) programs, written in
+    Prolog. Alzint lets you run AL(Z) programs. It also supports
+    single-stepping and <i>reverse execution</i> of AL(Z) programs.
+    This means that previous steps of the execution can
+    be <i>undone</i> and later repeated.
+
+    <br><br>
+
+    To run an AL(Z) program with Alzint, use <tt>run(+File)</tt>:
+
+    <pre>
+      swipl -g "run('ex1.txt')" alzint.pl
+    </pre>
+
+    For single-stepping, use <tt>step(+File)</tt>:
+
+    <pre>
+      swipl -g "step('ex1.txt')" alzint.pl
+    </pre>
+
+    When single-stepping through an AL(Z) program, you press:
+
+    <ul>
+      <li><b>c</b> to continue</li>
+      <li><b>r</b> to run</li>
+      <li><b>u</b> to undo the preceding step (reverse execution)</li>
+      <li><b>q</b> to quit</li>
+    </ul>
+
+    <br>
+
+    Example files
+    are <a href="ex1.txt">ex1.txt</a>, <a href="ex2.txt">ex2.txt</a> and
+    <a href="ex3.txt">ex3.txt</a>.
+
+    <br><br>
+    A transcript of running <tt>ex3.txt</tt>: <a href="ex3log.txt">ex3log.txt</a>
+    <br><br>
+
+    If you are interested in more interpreters and compilers in
+    Prolog, also check out <a href="/tist/"><i>Thinking in
+    States</i></a> and <a href="/lisprolog/">Lisprolog</a>.
+
+    <br><br><br>
+
+    <p class="box">
+      <b>Acknowledgments:</b> Many thanks
+      to <a href="https://www.logic.at/staff/chrisf">Christian
+        Ferm&uuml;ller</a> for spawning my interest in AL(Z) and countless
+      other topics in theoretical computer science.
+    </p>
+    <br><br>
+
+    <a href="/"><b>Main page</b></a>
+  </body>
+</html>

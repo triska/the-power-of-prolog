@@ -1,0 +1,210 @@
+<html>
+  <head>
+    <title>Escape from Zurg in Prolog</title>
+    <style type="text/css">
+<!--
+        .box { border: 1px dotted; padding: 1em; }
+        pre { padding-left: 5em; }
+-->
+    </style>
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+
+    <center>
+      <h1>Escape from Zurg in Prolog</h1>
+    </center>
+    <br>
+
+    <center>
+      <h2>Motivation</h2>
+    </center>
+
+    There is a <a href="http://web.engr.oregonstate.edu/~erwig/papers/Zurg_JFP04.pdf">paper</a> that asks for a solution to the following problem:
+
+    <blockquote class="box">
+
+       Buzz, Woody, Rex, and Hamm have to escape from Zurg. They
+       merely have to cross one last bridge before they are free.
+       However, the bridge is fragile and can hold at most two of them
+       at the same time. Moreover, to cross the bridge a flashlight is
+       needed to avoid traps and broken parts. The problem is that our
+       friends have only one flashlight with one battery that lasts
+       for only 60 minutes. The toys need different times to cross the
+       bridge (in either direction):
+       <br><br>
+
+       <center>
+         <table>
+        <tr>
+          <td><b>Toy</b></td>
+          <td><b><center>Time</center></b></td>
+        </tr>
+
+        <tr>
+          <td colspan="2"><hr></td>
+        </tr>
+
+        <tr>
+          <td>Buzz</td>
+          <td style="text-align:right">5</td>
+        </tr>
+
+        <tr>
+          <td>Woody&nbsp;&nbsp;&nbsp;</td>
+          <td style="text-align:right">10</td>
+        </tr>
+
+        <tr>
+          <td>Rex</td>
+          <td style="text-align:right">20</td>
+        </tr>
+
+        <tr>
+          <td>Hamm</td>
+          <td style="text-align:right">25</td>
+        </tr>
+       </table>
+       </center>
+       <br><br>
+
+       Since there can be only two toys on the bridge at the same
+       time, they cannot cross the bridge all at once. Since they need
+       the flashlight to cross the bridge, whenever two have crossed
+       the bridge, somebody has to go back and bring the flashlight to
+       those toys on the other side that still have to cross the
+       bridge. The problem now is: In which order can the four toys
+       cross the bridge in time (that is, within 60 minutes) to be
+       saved from Zurg?
+
+    </blockquote>
+    <br><br>
+
+    The approach taken by the paper follows a long tradition: First, a
+    convoluted Prolog solution is presented, and this is then compared
+    with a more elegant solution in a different language. The point of
+    this page is to show you that there is also an
+    elegant <i>Prolog&nbsp;solution</i> for this task.
+    <br><br>
+
+    <center>
+      <h2>Prolog solution</h2>
+    </center>
+
+    To represent the <i>state</i> of the world in this problem, we will
+    use a term of the form <tt>state(T,Ls,Rs)</tt>, where:
+
+    <ul>
+      <li><tt>T</tt> is an integer that denotes the time taken so far</li>
+
+      <li><tt>Ls</tt> is a list of toys that are on the left side</li>
+
+      <li><tt>Rs</tt> is a list of toys that are on the right side</li>
+    </ul>
+    <br>
+
+    Without loss of generality, let us suppose that all toys are
+    initially on the <i>left</i> side, and need to cross the bridge to
+    get to the <i>right</i> side. Clearly, two important states are
+    hence:
+
+    <ul>
+
+      <li>the <i>initial state</i>, which we can represent
+        as <tt>state(0,[buzz,woody,rex,hamm],[])</tt> in our representation</li>
+
+
+      <li>the desired <i>final state</i>, where all toys are on the
+      right side, or equivalently, none of the toys are on the left
+      side, and which we can hence represent
+        as&nbsp;<tt>state(_,[],_)</tt>
+      </li>
+    </ul>
+
+    <br>
+
+    We are looking for a sequence of <i>state transitions</i>
+    or <i>moves</i> that take us from the initial state to the desired
+    final state. For convenience, we are using a
+    Prolog <a href="/prolog/dcg"><b>Definite Clause
+    Grammar&nbsp;(DCG)</b></a> to describe such sequences
+    of&nbsp;moves.
+
+    <br><br>
+
+    We distinguish between two <i>kinds</i> of moves:
+
+    <ul>
+      <li><tt>left_to_right(Toy1,Toy2)</tt> means that <tt>Toy1</tt> and <tt>Toy2</tt> move from left to right</li>
+
+      <li><tt>right_to_left(Toy)</tt> means that <tt>Toy</tt> moves
+      from right to left</li>
+    </ul>
+
+    It follows from the from task description that no other kinds of
+    moves are necessary.<br><br>
+
+    An important precondition for each such move is that we stay
+    within the time limit of 60&nbsp;minutes.
+
+    <br><br>
+
+    Using these features, here is a Prolog solution for this puzzle:
+    <br><br>
+
+    <pre>
+toy_time(buzz,   5).
+toy_time(woody, 10).
+toy_time(rex,   20).
+toy_time(hamm,  25).
+
+moves(Ms) :- phrase(moves(state(0,[buzz,woody,rex,hamm],[])), Ms).
+
+moves(state(T0,Ls0,Rs0)) --&gt;
+        { select(Toy1, Ls0, Ls1), select(Toy2, Ls1, Ls2),
+          Toy1 @< Toy2,
+          toy_time(Toy1, Time1), toy_time(Toy2, Time2),
+          T1 #= T0 + max(Time1,Time2), T1 #=< 60 },
+        [left_to_right(Toy1,Toy2)],
+        moves_(state(T1,Ls2,[Toy1,Toy2|Rs0])).
+
+moves_(state(_,[],_))     --&gt; [].
+moves_(state(T0,Ls0,Rs0)) --&gt;
+        { select(Toy, Rs0, Rs1),
+          toy_time(Toy, Time),
+          T1 #= T0 + Time, T1 #=< 60 },
+        [right_to_left(Toy)],
+        moves(state(T1,[Toy|Ls0],Rs1)).
+    </pre>
+
+    Note that only 4 predicates (instead of 8) are necessary.
+    <br>
+    <br>
+    Example interaction, using GNU Prolog 1.3.0:
+
+    <pre>
+| ?- moves(Ms).
+
+Ms = [left_to_right(buzz,woody),right_to_left(buzz),left_to_right(hamm,rex),right_to_left(woody),left_to_right(buzz,woody)] ? ;
+
+Ms = [left_to_right(buzz,woody),right_to_left(woody),left_to_right(hamm,rex),right_to_left(buzz),left_to_right(buzz,woody)] ? ;
+
+no
+    </pre>
+
+
+    <br>
+    Source file: <a href="zurg.pl">zurg.pl</a>
+
+    <br><br>
+
+    Related: <a href="/tist/"><b>Thinking in States</b></a>
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+    
+    <br><br><br>
+    <a href="/"><b>Main page</b></a>
+  </body>
+</html>

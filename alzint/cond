@@ -1,0 +1,11 @@
+I(x) = 5
+I(y) = 3
+
+if (x = 3) || (y = 3) then
+   begin
+      y <- 3
+   ;
+      y <- 4
+   end
+else
+   x <- 2

@@ -1,0 +1,66 @@
+<html>
+  <head>
+    <title>Presprover</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br>
+    <h1><center>Presprover &mdash; Prove formulas of Presburger
+    arithmetic</center></h1>
+
+    <br><br><br>
+
+    <b>Presprover</b> lets you reason about formulas of
+    <a href="https://en.wikipedia.org/wiki/Presburger_arithmetic"><b>Presburger
+        arithmetic</b></a>, which is the first-order theory of the
+    natural numbers with addition.
+
+    <br><br>
+
+    In contrast to Peano arithmetic, Presburger arithmetic <i>omits
+      the multiplication operation</i>.
+
+    <br><br>
+
+
+    Source code: <a href="presprover.pl"><b>presprover.pl</b></a>
+
+    <br><br>
+
+    To try it,
+    download <a href="http://eu.swi-prolog.org">SWI-Prolog</a> &gt;=
+    6.0 and execute:
+    <br><br>
+
+    <pre>
+      $ swipl presprover.pl
+    </pre>
+
+
+
+    A few example queries and their results:
+    <br><br>
+
+    <pre>
+      ?- valid(exists(x, x > 0)).
+      true.
+
+      ?- valid(forall(x, exists(y, 3*x + y > 2))).
+      true.
+
+      ?- valid(2*y + 3*x = 30 /\ x = 0 ==> y = 15).
+      true.
+    </pre>
+
+    Please see the source file for more information.
+
+
+    <br><br><br>
+
+    <b><a href="/prolog">More about Prolog</a></b>
+    <br><br><br>
+
+    <a href="/"><b>Main page</b></a>
+  </body>
+</html>
