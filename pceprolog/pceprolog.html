@@ -1,0 +1,162 @@
+<html>
+  <head>
+    <title>
+      PceProlog - Emacs definitions for Prolog development
+    </title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prolog Development Emacs">
+    <meta name="keywords" content="Prolog,Development,Emacs">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+  </head>
+  <body style="padding-right: 5%; padding-left: 5%; padding-bottom: 3cm">
+    <br><br>
+
+    <center><h1>Prolog development with Emacs</h1></center>
+    <br>
+
+    This page shows you how to configure GNU Emacs and XEmacs for
+    effective Prolog development.
+
+    <blockquote style="border: 1px dotted; padding: 5pt">
+      <b>Note:</b> For smaller editing tasks, SWI-Prolog ships with
+      its own editor, an Emacs clone called PceEmacs. You can try it
+      with:
+
+    <pre>
+?- emacs.
+    </pre>
+
+    This built-in editor provides a limited subset of Emacs features.
+    Since some of the features shown on this page are
+    inspired by PceEmacs, I call this collection <i>PceProlog</i>.
+    </blockquote>
+    
+    <center><h2>Editing Prolog code</h2></center>
+
+    There is an
+    excellent <a href="https://bruda.ca/emacs/prolog_mode_for_emacs"><b>Prolog
+    mode for Emacs</b></a>, maintained by Stefan Bruda.
+
+    <br><br>
+
+    Recent GNU Emacs versions also ship with a variant of this mode.
+    Unfortunately though, the variant that ships with GNU Emacs
+    contains modifications that cause <i>severe regressions</i> with
+    indenting and navigation. Therefore, I recommend you use the
+    version that is directly supplied by Stefan until these mistakes
+    are corrected.
+
+    <br><br>
+
+    To obtain PceEmacs-style behaviour and use the mode with
+    SWI-Prolog, add to your&nbsp;.emacs:
+
+    <pre>
+(setq prolog-system 'swi
+      prolog-program-switches '((swi ("-G128M" "-T128M" "-L128M" "-O"))
+                                (t nil))
+      prolog-electric-if-then-else-flag t)
+    </pre>
+
+    Note in particular the use
+    of <tt>prolog-electric-if-then-else-flag</tt>:
+
+    <div>
+      <blockquote class="box">
+        <b>prolog-electric-if-then-else-flag</b>: Non-nil makes `(', `&gt;'
+        and `;' electric to automatically indent if-then-else constructs.
+      </blockquote>
+    </div>
+
+    <br>
+
+    For nice comment blocks as in PceEmacs, add the following to your
+    .emacs to insert a comment block with&nbsp;C-c&nbsp;q:
+
+    <pre>
+(defun prolog-insert-comment-block ()
+  "Insert a PceEmacs-style comment block like /* - - ... - - */ "
+  (interactive)
+  (let ((dashes "-"))
+    (dotimes (_ 36) (setq dashes (concat "- " dashes)))
+    (insert (format "/* %s\n\n%s */" dashes dashes))
+    (forward-line -1)
+    (indent-for-tab-command)))
+
+(global-set-key "\C-cq" 'prolog-insert-comment-block)
+    </pre>
+
+    <center><h2>Prolog interaction</h2></center>
+
+    Use <a href="/ediprolog/"><b>ediprolog</b></a> to
+    evaluate <i>embedded&nbsp;queries</i> in Emacs buffers:
+
+    <br><br>
+
+    <a href="/ediprolog/">
+    <img style="width: 300; border: 2px solid black; margin-left: 10%;"
+         src="/ediprolog/factorial.png"
+         alt="Factorial using CLP(FD)"></a>
+
+    <br><br>
+
+    As of GNU Emacs 24.3, you can install <i>ediprolog</i> from the
+    Emacs Lisp Package Archive (ELPA) with:
+
+    <br><br>
+
+    <tt>M-x&nbsp;package-install&nbsp;RET&nbsp;ediprolog&nbsp;RET</tt>
+
+    <center><h2>Syntax checking</h2></center>
+
+    As of GNU Emacs version 22.1, flymake ships with Emacs. This
+    enables on-the-fly syntax checking, using the Prolog compiler as
+    checker. To use it with SWI-Prolog, add the following to your
+    .emacs:
+
+    <pre>
+(add-hook 'prolog-mode-hook
+          (lambda ()
+            (require 'flymake)
+            (make-local-variable 'flymake-allowed-file-name-masks)
+            (make-local-variable 'flymake-err-line-patterns)
+            (setq flymake-err-line-patterns
+                  '(("ERROR: (?\\(.*?\\):\\([0-9]+\\)" 1 2)
+                    ("Warning: (\\(.*\\):\\([0-9]+\\)" 1 2)))
+            (setq flymake-allowed-file-name-masks
+                  '(("\\.pl\\'" flymake-prolog-init)))
+            (flymake-mode 1)))
+
+(defun flymake-prolog-init ()
+  (let* ((temp-file   (flymake-init-create-temp-buffer-copy
+                       'flymake-create-temp-inplace))
+         (local-file  (file-relative-name
+                       temp-file
+                       (file-name-directory buffer-file-name))))
+    (list "swipl" (list "-q" "-t" "halt" "-s " local-file))))
+    </pre>
+
+    <center><h2>Tracing Prolog execution</h2></center>
+
+    There are Emacs definitions that mimic a limited subset of
+    SWI-Prolog's graphical tracer within the Emacs buffer. They are
+    available as&nbsp;<a href="/etrace/">etrace</a>.
+    <br><br>
+
+    <i>etrace</i> is mostly a proof of concept at this point and may
+    be useful for you if you do not have&nbsp;X11 installed.
+
+    <br><br>
+
+    Instead of tracing, consider
+    using <a href="/prolog/debugging"><b>declarative
+    debugging</b></a> to locate mistakes in Prolog&nbsp;programs.
+
+    <br><br><br>
+    More about Prolog: <b><a href="/prolog">The Power of Prolog</a></b>
+    <br><br><br>
+    <b><a href="/">Main page</a></b>
+
+  </body>
+</html>
