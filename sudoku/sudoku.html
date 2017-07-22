@@ -1,0 +1,198 @@
+<html>
+  <head>
+    <title>Sudoku with Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Sudoku,Prolog,Constraints">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center>
+      <h1>Solving Sudoku with Prolog</h1>
+    </center>
+
+    <h2><center>Prolog solution</center></h2>
+
+    <a href="/prolog">Prolog</a> is extremely well suited for
+    solving <a href="/prolog/optimization">combinatorial</a>
+    tasks like&nbsp;<i>Sudoku</i>.
+
+    <br><br>
+
+    For example, using <a href="/prolog/clpfd">constraints</a>, a
+    valid Sudoku board can be concisely expressed like this:
+
+    <div>
+      <pre class="box">
+sudoku(Rows) :-
+        length(Rows, 9),
+        maplist(same_length(Rows), Rows),
+        append(Rows, Vs), Vs ins 1..9,
+        maplist(all_distinct, Rows),
+        transpose(Rows, Columns),
+        maplist(all_distinct, Columns),
+        Rows = [As,Bs,Cs,Ds,Es,Fs,Gs,Hs,Is],
+        blocks(As, Bs, Cs),
+        blocks(Ds, Es, Fs),
+        blocks(Gs, Hs, Is).
+
+blocks([], [], []).
+blocks([N1,N2,N3|Ns1], [N4,N5,N6|Ns2], [N7,N8,N9|Ns3]) :-
+        all_distinct([N1,N2,N3,N4,N5,N6,N7,N8,N9]),
+        blocks(Ns1, Ns2, Ns3).</pre>
+    </div>
+
+    Like all <a href="/prolog/purity">pure</a> Prolog programs,
+    this predicate can be used in <i>all&nbsp;directions</i>. You can
+    use it&nbsp;to:
+
+    <ul>
+      <li><i>complete</i> partial squares</li>
+      
+      <li><i>test</i> complete squares</li>
+      <li><i>generate</i> all Sudoku Latin squares.</li>
+    </ul>
+
+    For example, we can use the code to <i>generate</i> valid
+    Sudoku&nbsp;boards:
+
+    <pre>
+?- sudoku(Rows), maplist(label, Rows), maplist(portray_clause, Rows).
+<b>[1, 2, 3, 4, 5, 6, 7, 8, 9].
+[4, 5, 6, 7, 8, 9, 1, 2, 3].
+[7, 8, 9, 1, 2, 3, 4, 5, 6].
+[2, 1, 4, 3, 6, 5, 8, 9, 7].
+[3, 6, 5, 8, 9, 7, 2, 1, 4].
+[8, 9, 7, 2, 1, 4, 3, 6, 5].
+[5, 3, 1, 6, 4, 2, 9, 7, 8].
+[6, 4, 2, 9, 7, 8, 5, 3, 1].
+[9, 7, 8, 5, 3, 1, 6, 4, 2].</b>
+Rows = [[1, 2, 3, 4, 5, 6, 7, 8|...], [4, 5, 6, 7, 8, 9, 1|...] | ... ] .
+    </pre>
+
+    A <i>partial</i> instantiation of the rows turns this into
+    a <i>completion</i>&nbsp;task, which is what we commonly
+    understand as a Sudoku&nbsp;puzzle.
+
+    <br><br>
+
+    <h2><center>Source file</center></h2>
+
+
+    Prolog source file: <b><a href="sudoku.pl">sudoku.pl</a></b>
+
+    <br><br>
+
+    The source file contains:
+
+    <ul>
+      <li>the Prolog formulation of Sudoku puzzles which is shown above</li>
+      <li><b>PostScript</b> instructions for
+      showing <a href="/postscript/animations">animations</a> of
+      the search process</li>
+      <li>sample Sudoku instances, available is <tt>problem/2</tt>.</li>
+    </ul>
+
+    You can try it with SWI-Prolog:
+
+    
+    <pre>
+      $ swipl sudoku.pl
+    </pre>
+
+    Sample query and answer:
+
+    <pre>
+      ?- problem(1, Rows),
+         sudoku(Rows),
+         maplist(labeling([ff]), Rows),
+         maplist(portray_clause, Rows).
+      <b>[1, 5, 6, 8, 9, 4, 3, 2, 7].
+      [9, 2, 8, 7, 3, 1, 4, 5, 6].
+      [4, 7, 3, 2, 6, 5, 9, 1, 8].
+      [3, 6, 2, 4, 1, 7, 8, 9, 5].
+      [7, 8, 9, 3, 5, 2, 6, 4, 1].
+      [5, 1, 4, 9, 8, 6, 2, 7, 3].
+      [8, 3, 1, 5, 4, 9, 7, 6, 2].
+      [6, 9, 7, 1, 2, 3, 5, 8, 4].
+      [2, 4, 5, 6, 7, 8, 1, 3, 9].</b>
+      Rows = [[1, 5, 6, 8, 9, 4, 3, 2|...], ...]
+    </pre>
+
+    <br>
+    <br>
+
+    <h2><center>Animations</center></h2>
+
+    If you have the PostScript viewer "gs" installed, you can view an
+    <b>animation</b> of the constraint solving process.
+
+    <br><br> Sample PostScript file, a self-contained saved animation
+    for a Sudoku puzzle (open it with "gv" or "gs" to view
+    it): <a href="solved.ps.gz">solved.ps.gz</a>
+
+    <br><br>
+
+    Here are a few example queries that you can try,
+    using <tt>show/2</tt> to animate the search:
+
+    <pre>
+      ?- problem(1, Rows), show([], Rows).
+
+      ?- problem(3, Rows), show([ff], Rows).
+
+      ?- show([], Rows).
+    </pre>
+
+    The arguments of <tt>show/2</tt> are:
+
+    <ol>
+      
+      <li>a list of <i>labeling options</i> as described in the
+        <a href="http://eu.swi-prolog.org/man/clpfd.html">CLP(FD)&nbsp;documentation</a>.
+      </li>
+      <li>a list of 9&nbsp;rows that are to be
+        completed to a Sudoku Latin square. Each row is a list of 9
+        variables, which can also be already instantiated to integers to
+        fill in initial elements.</li>
+    </ol>
+
+    As a side-effect, you see an animation of the constraint solving
+    process. To make the search more interesting, you can
+    replace <tt>all_distinct/1</tt> with the weaker
+    constraint&nbsp;<tt>all_different/1</tt> in the source&nbsp;file.
+
+    <br><br>
+    
+    Here's an intermediate state:
+
+    <br><br>
+    <center>
+      <img src="intermediate.png">
+    </center>
+    <br><br>
+
+    And here is a picture of a finished animation:
+
+    <br><br>
+    <center>
+      <img src="solved.png">
+    </center>
+    <br>
+    <br><br>
+
+    Further reading:
+
+    <a href="http://www.complang.tuwien.ac.at/ulrich/">Neumerkel</a>
+    at
+    al., <a href="http://www.complang.tuwien.ac.at/ulrich/papers/PDF/wlpe97.pdf"><i>Visualizing
+        Solutions with Viewers</i></a>.
+
+    <br><br>
+    More CLP(FD) examples: <a href="https://github.com/triska/clpfd"><b>https://github.com/triska/clpfd</b></a>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+  </body>
+</html>
