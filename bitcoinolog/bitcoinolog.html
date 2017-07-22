@@ -1,0 +1,183 @@
+<html>
+  <head>
+    <title>Bitcoinolog - Reason about Bitcoin addresses with Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center>
+      <h1>Bitcoinolog - Reason about Bitcoin addresses with Prolog</h1>
+    </center>
+    <br><br>
+
+    <center><h2>Elliptic Curves</h2></center>
+    <br>
+
+    An <a href="https://en.wikipedia.org/wiki/Elliptic_curve">elliptic
+        curve</a> over the finite field&nbsp;F<sub><i>p</i></sub> is a set
+    of <i>points</i>&nbsp;(<i>x</i>,<i>y</i>) that satisfy the equation:
+
+    <center style="padding: 6pt">
+      <i>y</i><sup>2</sup> = <i>x</i><sup>3</sup> + <i>a</i><i>x</i> + <i>b</i>  &nbsp;&nbsp;&nbsp;mod <i>p</i>
+    </center>
+
+    Such a curve is defined by the
+    parameters <i>a</i>, <i>b</i>, <i>p</i>. In addition,
+    a <i>generator&nbsp;point</i>&nbsp;G is given.
+
+    <br><br>
+
+    An elliptic curve is
+    an <a href="https://en.wikipedia.org/wiki/Abelian_variety">Abelian&nbsp;variety</a>:
+    There is an operation called <i>addition</i> of points, which
+    forms
+    a&nbsp;<a href="https://en.wikipedia.org/wiki/Group_(mathematics)"><i>group</i></a>,
+    and <i>multiplication</i> of points by a&nbsp;scalar. The maximum
+    number of different points that can be obtained by multiplying the
+    generator by a scalar is called the <i>order</i> of
+    the&nbsp;curve.
+
+    <br><br>
+
+    Elliptic curves can be used for <i>encryption</i>
+    and&nbsp;<i>signing</i>. The signature algorithm based on elliptic
+    curves is called&nbsp;ECDSA.
+
+    <br><br>
+
+    A Prolog library for rudimentary reasoning about elliptic curves
+    is available: <a href="ecclog.pl"><b><tt>ecclog.pl</tt></b></a>
+    <br><br>
+
+    Note the use of <a href="/prolog/clpfd">declarative integer
+      arithmetic</a> to
+      allow <a href="/prolog/debugging">declarative&nbsp;debugging</a>.
+
+
+    <center><h2>Bitcoin</h2></center>
+
+    <a href="https://en.wikipedia.org/wiki/Bitcoin">Bitcoin</a> is
+    a <i>cryptocurrency</i>. It uses&nbsp;ECDSA for <i>signing</i>
+    transactions.
+
+    <br><br>
+    A <a href="/prolog">Prolog</a> library for reasoning about
+    Bitcoin <i>addresses</i> is available:&nbsp;<a href="bitcoinolog.pl"><b><tt>bitcoinolog.pl</tt></b></a>
+
+    <br><br>
+
+    You need SWI-Prolog <b>7.5.10</b> or&nbsp;later to run it.
+
+    <br><br>
+
+    Bitcoinolog
+    uses <a href="http://eu.swi-prolog.org/pldoc/man?section=crypto"><b><tt>library(crypto)</tt></b></a>
+    to compute various hashes, and to reason about
+    the <i>named</i>&nbsp;curve&nbsp;<a href="https://en.bitcoin.it/wiki/Secp256k1"><tt>secp256k1</tt></a>,
+    which is used by Bitcoin.
+
+    <br><br>
+
+    Alternatively, you can also
+    use <a href="ecclog.pl"><tt>ecclog.pl</tt></a> for the required
+    operations over elliptic&nbsp;curves.
+
+    <center><h2>Use cases of Bitcoinolog</h2></center>
+
+    Here are a few use cases
+    of <a href="bitcoinolog.pl"><tt>bitcoinolog.pl</tt></a>:
+
+    <ol>
+      <li><b>Offline Bitcoin wallet creation</b>
+        <br>
+        To generate a public/private <i>key&nbsp;pair</i>, you can use
+        the Prolog&nbsp;predicates <tt>new_private_key/1</tt>
+        and <tt>private_key_to_public_key/2</tt>:
+
+        <pre>
+?- new_private_key(PrivateKey),
+   private_key_to_public_key(PrivateKey, PublicKey).
+<b>PrivateKey = 87443244391001342896527975361878627920717378785443876955045552084285386647786,
+PublicKey = '020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405'.</b>
+        </pre>
+
+        Note that in ECDSA, a private key is an <i>integer</i>, and
+        the corresponding public key is a <i>point</i> on the curve.
+        In the above, the so-called <i>compressed</i> encoding of the
+        public&nbsp;key is used, which is recommended for Bitcoin as
+        of version&nbsp;0.6.
+      </li>
+
+      <li><b>Convert public keys to Bitcoin addresses</b>
+        <br>
+        As transaction&nbsp;targets, Bitcoin uses <i>addresses</i>
+        that are derived from public&nbsp;keys. You can use the
+        Prolog&nbsp;predicate <tt>public_key_to_address/2</tt> to
+        convert a public&nbsp;key as shown above to its
+        corresponding <i>address</i>:
+
+        <pre>
+?- public_key_to_address('020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405', Address).
+<b>Address = '1FVRX63gUDxkQ25C7ivMa27C9nT1DUafmD'.</b>
+        </pre>
+      </li>
+
+      <li><b>Export private keys to Wallet Import Format&nbsp;(WIF)</b>
+        <br>
+        To use those keys that you generate with <i>Bitcoinolog</i>
+        also with other programs, you can <i>export</i>
+        private&nbsp;keys to <i>Wallet Import Format</i>&nbsp;(WIF)
+        via the Prolog&nbsp;predicate <tt>private_key_to_wif/2</tt>.
+        For example:
+
+        <pre>
+?- private_key_to_wif(87443244391001342896527975361878627920717378785443876955045552084285386647786, WIF).
+<b>WIF = 'L3hWTxRVjB9qzgdWQwcgWtSJZMzNnNvnWvajHstPuSPwzx2H4sbp'.</b>
+        </pre>
+      </li>
+
+    </ol>
+
+    Here is a Prolog query that indefinitely <i>generates</i>
+    private&nbsp;keys and corresponding Bitcoin&nbsp;addresses:
+
+    <pre>
+?- repeat,
+    new_private_key(PrivateKey),
+    private_key_to_wif(PrivateKey, WIF),
+    private_key_to_public_key(PrivateKey, PublicKey),
+    public_key_to_address(PublicKey, Address),
+    portray_clause((address_key(A, K) :- A=Address, K=WIF)),
+    false.
+    </pre>
+
+It yields output like:
+
+    <pre>
+<b>address_key(A, B) :-
+        A='1Fo9WojzYwhfjqQKQDWQyehxWyMJVhySBA',
+        B='Ky91qbBbHnrozFkJRFBA6KQG8hzctWPRKGWd3kRxX1ajVKEzmrSp'.
+address_key(A, B) :-
+        A='1HQXkmyUPnhXdzk1gacXzCLx3mV6843ncN',
+        B='L3yC2Bf2Ko3nLW61vkhqJia18QkTJb3KGxQJ6fWSNa4o7x71JNXU'.
+address_key(A, B) :-
+        A='1FMuyjrVi7DUDFrThZNcNkBG8bq1YNfqiG',
+        B='Kxmburb4FiNQHnaWf6e8mTDJUnCaUzuXaHM5TeeKiTjpT2bPCNBR'.
+address_key(A, B) :-
+        A='1FeQG4oBfWA3HCaiEKyeaGWQRLazwzmaUy',
+        B='L4EresJ9xiC7JzbXV3gU7SpUsenqq12ZxonYFYHr6c9GSt3RKyVA'.</b>
+etc.
+    </pre>
+
+    The source code of Bitcoinolog is also available from a public git
+    repository: <a href="https://github.com/triska/bitcoinolog"><b>github.com/triska/bitcoinolog</b></a>
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+    <a href="/"><b>Main page</b></a>
+  </body>
+</html>
