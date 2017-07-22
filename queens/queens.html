@@ -1,0 +1,866 @@
+<html>
+  <head>
+    <title>Solving N-queens with Prolog</title>
+    <style>
+li { padding: 4pt; }
+a:link { text-decoration: none; }
+a:hover { text-decoration: underline; }
+h2 { padding-top: 30pt; }
+h1 { font-size: 300%; }
+td { padding: 0.3cm }
+.box { padding-top: 10pt;
+       padding-left: 5%;
+       padding-bottom: 10pt;
+       background-color: #eeeeee;
+       margin-left: 5%;
+       padding-right: 5%;
+       display: inline-block;
+     }
+    </style>
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center>
+      <h1>Solving N-queens with Prolog</h1>
+    </center>
+
+    <br><br>
+
+    The task is to place N queens on an N&times;N chessboard in such a
+    way that none of the queens is under attack.
+    <br><br>
+
+    <h2><center>Prolog Solution</center></h2>
+
+    In <a href="/prolog"><b>Prolog</b></a>, it is easy to
+    describe <b>solutions</b> of this task,
+    using <a href="/prolog/clpfd">CLP(FD) constraints</a> which
+    are commonly used
+    for <a href="/prolog/optimization">combinatorial&nbsp;tasks</a>:
+
+    <br><br>
+    <center>
+    <table width="80%">
+      <tr>
+        <td>
+    <pre class="box">
+n_queens(N, Qs) :-
+        length(Qs, N),
+        Qs ins 1..N,
+        safe_queens(Qs).
+
+safe_queens([]).
+safe_queens([Q|Qs]) :-
+        safe_queens(Qs, Q, 1),
+        safe_queens(Qs).
+
+safe_queens([], _, _).
+safe_queens([Q|Qs], Q0, D0) :-
+        Q0 #\= Q,
+        abs(Q0 - Q) #\= D0,
+        D1 #= D0 + 1,
+        safe_queens(Qs, Q0, D1).
+      </pre>
+
+        </td>
+        <td>
+      <canvas width="300" height="300" style="border-style: solid; float: right; margin-right: 2cm">
+      </canvas>
+        </td>
+      </tr>
+    </table>
+    </center>
+
+    <br>
+
+    Full code: <b><a href="queens.pl">queens.pl</a></b>
+
+    <br><br>
+
+    <br>
+
+    You can use <a href="http://eu.swi-prolog.org">SWI-Prolog</a> &gt;
+    5.6.50 to try&nbsp;it. Start it with:
+
+    <pre>
+      $ swipl queens.pl
+    </pre>
+
+    You can then run queries like:
+
+    <pre>
+      <b>?- N = 8, n_queens(N, Qs), labeling([ff], Qs).</b>
+      Qs = [1, 5, 8, 6, 3, 7, 2, 4] .
+
+      <b>?- N = 20, n_queens(N, Qs), labeling([ff], Qs).</b>
+      Qs = [1, 3, 5, 14, 17, 4, 16, 7, 12, 18, 15, 19, 6, 10, 20, 11, 8, 2, 13, 9] .
+
+      <b>?- N = 100, time((n_queens(N,Qs),labeling([ff],Qs))).</b>
+      % 2,304,144 inferences, 0.553 CPU in 0.555 seconds (100% CPU, 4168963 Lips)
+      Qs = [1, 3, 5, 57, 59, 4, 64, 7, 58|...] .
+    </pre>
+
+    The <i>n</i>-th integer in the list denotes the row of the queen
+    that is placed in column&nbsp;<i>n</i>.
+
+    <br><br>
+
+    <h2><center>Animation</center></h2>
+
+    If you have the PostScript viewer "gs" installed, you can view an
+    <a href="/postscript/animations"><b>animation</b></a> of the
+    constraint solving process.
+
+    <br><br>
+
+    Here are a few example queries that you can try:
+
+    <pre>
+      <b>?- show(4, [], Qs).</b>
+
+      <b>?- show(N, [], Qs).</b>
+
+      <b>?- show(50, [ff], Qs).</b>
+    </pre>
+
+    The arguments of the predicate <tt>show/3</tt> are:
+
+    <ol>
+      <li>the number of queens</li>
+      <li>a list of labeling options as described in the
+        <a href="http://eu.swi-prolog.org/man/clpfd.html">CLP(FD) documentation</a></li>
+      <li>a list of row numbers, one for
+        each column, such that the queens in these positions do not attack
+        each other.
+      </li>
+    </ol>
+
+    As a side-effect, you see an animation of the
+    constraint solving process.
+
+    <br><br> Sample PostScript file, a self-contained saved animation
+    for 50 queens (open it with "gv" or "gs" to view
+    it): <a href="queens50.ps">queens50.ps</a>
+
+    <br><br>
+
+
+    Sample animation (requires JavaScript), showing 80 queens with labeling strategy <tt>ff</tt>: <b><a href="queens80">queens80</a></b>.
+
+    <br><br>
+
+    Here is a picture of a finished animation:
+
+    <pre>
+      <b>?- show(8, [ff], Qs).</b>
+      Qs = [1, 5, 8, 6, 3, 7, 2, 4] ;
+      Qs = [1, 6, 8, 3, 7, 4, 2, 5] ;
+      ...
+      Qs = [3, 5, 2, 8, 1, 7, 4, 6] .
+    </pre>
+
+    <br><br>
+    <center>
+      <img src="q8.png" alt="placed 8 queens">
+    </center>
+    <br>
+    <br><br>
+
+
+    Example with 100 queens:
+    <pre>
+      <b>?- show(100, [ff], Qs).</b>
+      Qs = [1, 3, 5, 57, 59, 4, 64, 7, 58|...] .
+    </pre>
+
+    <br><br>
+    <center>
+      <table>
+        <tr>
+          <td><img src="qs100_33.png" alt="placed 33 queens"></td>
+          <td><img src="qs100_66.png" alt="placed 66 queens"></td>
+          <td><img src="qs100_100.png" alt="placed 100 queens"></td>
+        </tr>
+      </table>
+    </center>
+    <br>
+    <br><br>
+
+    Challenges: Find solutions for many queens. Find good labeling and
+    allocation strategies. ...
+
+    <br><br>
+
+
+
+    Further reading:
+
+    <a href="http://www.complang.tuwien.ac.at/ulrich/">Neumerkel</a>
+    at
+    al., <a href="http://www.complang.tuwien.ac.at/ulrich/papers/PDF/wlpe97.pdf"><i>Visualizing
+    Solutions with Viewers</i></a>.
+
+    <br><br>
+    More CLP(FD) examples: <a href="https://github.com/triska/clpfd"><b>https://github.com/triska/clpfd</b></a>
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+    <b><a href="/">Main page</a></b>
+
+
+  <script>
+    var instrs = [
+  {x:1, y:8, i:"i"},
+  {x:1, y:7, i:"i"},
+  {x:1, y:6, i:"i"},
+  {x:1, y:5, i:"i"},
+  {x:1, y:4, i:"i"},
+  {x:1, y:3, i:"i"},
+  {x:1, y:2, i:"i"},
+  {x:1, y:1, i:"q"},
+  {x:8, y:8, i:"i"},
+  {x:8, y:1, i:"i"},
+  {x:7, y:7, i:"i"},
+  {x:7, y:1, i:"i"},
+  {x:6, y:6, i:"i"},
+  {x:6, y:1, i:"i"},
+  {x:5, y:5, i:"i"},
+  {x:5, y:1, i:"i"},
+  {x:4, y:4, i:"i"},
+  {x:4, y:1, i:"i"},
+  {x:3, y:3, i:"i"},
+  {x:3, y:1, i:"i"},
+  {x:2, y:2, i:"i"},
+  {x:2, y:1, i:"i"},
+  {x:2, y:8, i:"i"},
+  {x:2, y:7, i:"i"},
+  {x:2, y:6, i:"i"},
+  {x:2, y:5, i:"i"},
+  {x:2, y:4, i:"i"},
+  {x:2, y:3, i:"q"},
+  {x:8, y:3, i:"i"},
+  {x:7, y:8, i:"i"},
+  {x:7, y:3, i:"i"},
+  {x:6, y:7, i:"i"},
+  {x:6, y:3, i:"i"},
+  {x:5, y:6, i:"i"},
+  {x:5, y:3, i:"i"},
+  {x:4, y:5, i:"i"},
+  {x:4, y:3, i:"i"},
+  {x:3, y:4, i:"i"},
+  {x:3, y:2, i:"i"},
+  {x:3, y:8, i:"i"},
+  {x:3, y:7, i:"i"},
+  {x:3, y:6, i:"i"},
+  {x:3, y:5, i:"q"},
+  {x:8, y:5, i:"i"},
+  {x:7, y:5, i:"i"},
+  {x:6, y:8, i:"i"},
+  {x:6, y:5, i:"i"},
+  {x:6, y:4, i:"q"},
+  {x:6, y:2, i:"i"},
+  {x:5, y:7, i:"i"},
+  {x:5, y:4, i:"i"},
+  {x:4, y:6, i:"i"},
+  {x:4, y:2, i:"i"},
+  {x:8, y:7, i:"q"},
+  {x:8, y:6, i:"i"},
+  {x:8, y:4, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:7, y:6, i:"i"},
+  {x:7, y:4, i:"i"},
+  {x:7, y:2, i:"q"},
+  {x:7, y:2, i:"c"},
+  {x:7, y:4, i:"c"},
+  {x:7, y:6, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:8, y:4, i:"c"},
+  {x:8, y:6, i:"c"},
+  {x:8, y:7, i:"c"},
+  {x:4, y:2, i:"c"},
+  {x:4, y:6, i:"c"},
+  {x:5, y:4, i:"c"},
+  {x:5, y:7, i:"c"},
+  {x:6, y:2, i:"c"},
+  {x:6, y:4, i:"c"},
+  {x:6, y:5, i:"c"},
+  {x:6, y:8, i:"c"},
+  {x:7, y:5, i:"c"},
+  {x:8, y:5, i:"c"},
+  {x:3, y:5, i:"c"},
+  {x:3, y:6, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:5, i:"i"},
+  {x:3, y:8, i:"i"},
+  {x:3, y:7, i:"i"},
+  {x:3, y:6, i:"q"},
+  {x:8, y:6, i:"i"},
+  {x:7, y:6, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:5, y:8, i:"i"},
+  {x:5, y:4, i:"i"},
+  {x:4, y:7, i:"i"},
+  {x:4, y:6, i:"i"},
+  {x:4, y:8, i:"i"},
+  {x:4, y:2, i:"q"},
+  {x:8, y:2, i:"i"},
+  {x:7, y:5, i:"i"},
+  {x:7, y:4, i:"q"},
+  {x:6, y:8, i:"q"},
+  {x:6, y:5, i:"i"},
+  {x:6, y:4, i:"i"},
+  {x:6, y:2, i:"i"},
+  {x:6, y:2, i:"c"},
+  {x:6, y:4, i:"c"},
+  {x:6, y:5, i:"c"},
+  {x:6, y:8, i:"c"},
+  {x:7, y:4, i:"c"},
+  {x:7, y:5, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:4, y:2, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:4, y:8, i:"q"},
+  {x:4, y:2, i:"i"},
+  {x:8, y:4, i:"i"},
+  {x:8, y:4, i:"c"},
+  {x:4, y:2, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:4, y:6, i:"c"},
+  {x:4, y:7, i:"c"},
+  {x:5, y:4, i:"c"},
+  {x:5, y:8, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:7, y:6, i:"c"},
+  {x:8, y:6, i:"c"},
+  {x:3, y:6, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:6, i:"i"},
+  {x:3, y:8, i:"i"},
+  {x:3, y:7, i:"q"},
+  {x:8, y:7, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:6, y:4, i:"i"},
+  {x:5, y:7, i:"i"},
+  {x:4, y:8, i:"i"},
+  {x:4, y:7, i:"i"},
+  {x:4, y:6, i:"i"},
+  {x:4, y:2, i:"q"},
+  {x:8, y:6, i:"i"},
+  {x:7, y:5, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:6, y:2, i:"i"},
+  {x:5, y:2, i:"i"},
+  {x:5, y:8, i:"q"},
+  {x:5, y:4, i:"i"},
+  {x:5, y:4, i:"c"},
+  {x:5, y:8, i:"c"},
+  {x:5, y:2, i:"c"},
+  {x:6, y:2, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:7, y:5, i:"c"},
+  {x:8, y:6, i:"c"},
+  {x:4, y:2, i:"c"},
+  {x:4, y:6, i:"c"},
+  {x:4, y:7, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:5, y:7, i:"c"},
+  {x:6, y:4, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:8, y:7, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:8, i:"q"},
+  {x:3, y:7, i:"i"},
+  {x:7, y:4, i:"i"},
+  {x:6, y:8, i:"i"},
+  {x:6, y:5, i:"i"},
+  {x:5, y:8, i:"i"},
+  {x:4, y:8, i:"i"},
+  {x:4, y:7, i:"i"},
+  {x:4, y:6, i:"q"},
+  {x:4, y:2, i:"i"},
+  {x:8, y:6, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:7, y:6, i:"i"},
+  {x:6, y:4, i:"i"},
+  {x:6, y:2, i:"q"},
+  {x:5, y:7, i:"i"},
+  {x:5, y:4, i:"q"},
+  {x:5, y:2, i:"i"},
+  {x:8, y:4, i:"i"},
+  {x:7, y:5, i:"q"},
+  {x:7, y:2, i:"i"},
+  {x:7, y:2, i:"c"},
+  {x:7, y:5, i:"c"},
+  {x:8, y:4, i:"c"},
+  {x:5, y:2, i:"c"},
+  {x:5, y:4, i:"c"},
+  {x:5, y:7, i:"c"},
+  {x:6, y:2, i:"c"},
+  {x:6, y:4, i:"c"},
+  {x:7, y:6, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:8, y:6, i:"c"},
+  {x:4, y:2, i:"c"},
+  {x:4, y:6, i:"c"},
+  {x:4, y:7, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:5, y:8, i:"c"},
+  {x:6, y:5, i:"c"},
+  {x:6, y:8, i:"c"},
+  {x:7, y:4, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:6, i:"c"},
+  {x:3, y:5, i:"c"},
+  {x:3, y:2, i:"c"},
+  {x:3, y:4, i:"c"},
+  {x:4, y:3, i:"c"},
+  {x:4, y:5, i:"c"},
+  {x:5, y:3, i:"c"},
+  {x:5, y:6, i:"c"},
+  {x:6, y:3, i:"c"},
+  {x:6, y:7, i:"c"},
+  {x:7, y:3, i:"c"},
+  {x:7, y:8, i:"c"},
+  {x:8, y:3, i:"c"},
+  {x:2, y:3, i:"c"},
+  {x:2, y:4, i:"c"},
+  {x:2, y:5, i:"c"},
+  {x:2, y:6, i:"c"},
+  {x:2, y:7, i:"c"},
+  {x:2, y:8, i:"c"},
+  {x:2, y:3, i:"i"},
+  {x:2, y:8, i:"i"},
+  {x:2, y:7, i:"i"},
+  {x:2, y:6, i:"i"},
+  {x:2, y:5, i:"i"},
+  {x:2, y:4, i:"q"},
+  {x:8, y:4, i:"i"},
+  {x:7, y:4, i:"i"},
+  {x:6, y:8, i:"i"},
+  {x:6, y:4, i:"i"},
+  {x:5, y:7, i:"i"},
+  {x:5, y:4, i:"i"},
+  {x:4, y:6, i:"i"},
+  {x:4, y:2, i:"i"},
+  {x:3, y:5, i:"i"},
+  {x:3, y:4, i:"i"},
+  {x:3, y:8, i:"i"},
+  {x:3, y:7, i:"i"},
+  {x:3, y:6, i:"i"},
+  {x:3, y:2, i:"q"},
+  {x:8, y:7, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:7, y:6, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:6, y:5, i:"i"},
+  {x:6, y:2, i:"i"},
+  {x:5, y:2, i:"i"},
+  {x:4, y:3, i:"i"},
+  {x:6, y:7, i:"i"},
+  {x:6, y:3, i:"q"},
+  {x:8, y:6, i:"q"},
+  {x:8, y:5, i:"i"},
+  {x:8, y:3, i:"i"},
+  {x:7, y:8, i:"q"},
+  {x:7, y:5, i:"i"},
+  {x:7, y:3, i:"i"},
+  {x:5, y:8, i:"q"},
+  {x:5, y:6, i:"i"},
+  {x:5, y:3, i:"i"},
+  {x:4, y:5, i:"i"},
+  {x:4, y:5, i:"c"},
+  {x:5, y:3, i:"c"},
+  {x:5, y:6, i:"c"},
+  {x:5, y:8, i:"c"},
+  {x:7, y:3, i:"c"},
+  {x:7, y:5, i:"c"},
+  {x:7, y:8, i:"c"},
+  {x:8, y:3, i:"c"},
+  {x:8, y:5, i:"c"},
+  {x:8, y:6, i:"c"},
+  {x:6, y:3, i:"c"},
+  {x:6, y:7, i:"c"},
+  {x:6, y:7, i:"q"},
+  {x:6, y:3, i:"i"},
+  {x:8, y:5, i:"i"},
+  {x:7, y:8, i:"i"},
+  {x:5, y:8, i:"i"},
+  {x:5, y:6, i:"i"},
+  {x:5, y:3, i:"q"},
+  {x:5, y:3, i:"c"},
+  {x:5, y:6, i:"c"},
+  {x:5, y:8, i:"c"},
+  {x:7, y:8, i:"c"},
+  {x:8, y:5, i:"c"},
+  {x:6, y:3, i:"c"},
+  {x:6, y:7, i:"c"},
+  {x:4, y:3, i:"c"},
+  {x:5, y:2, i:"c"},
+  {x:6, y:2, i:"c"},
+  {x:6, y:5, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:7, y:6, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:8, y:7, i:"c"},
+  {x:3, y:2, i:"c"},
+  {x:3, y:6, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:2, i:"i"},
+  {x:3, y:8, i:"i"},
+  {x:3, y:7, i:"i"},
+  {x:3, y:6, i:"q"},
+  {x:8, y:6, i:"i"},
+  {x:7, y:6, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:6, y:3, i:"i"},
+  {x:5, y:8, i:"i"},
+  {x:5, y:6, i:"i"},
+  {x:4, y:7, i:"i"},
+  {x:4, y:5, i:"i"},
+  {x:4, y:8, i:"q"},
+  {x:4, y:3, i:"i"},
+  {x:7, y:8, i:"i"},
+  {x:7, y:5, i:"i"},
+  {x:7, y:3, i:"q"},
+  {x:8, y:3, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:6, y:2, i:"i"},
+  {x:5, y:3, i:"i"},
+  {x:5, y:2, i:"q"},
+  {x:5, y:2, i:"c"},
+  {x:5, y:3, i:"c"},
+  {x:6, y:2, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:8, y:3, i:"c"},
+  {x:7, y:3, i:"c"},
+  {x:7, y:5, i:"c"},
+  {x:7, y:8, i:"c"},
+  {x:4, y:3, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:4, y:5, i:"c"},
+  {x:4, y:7, i:"c"},
+  {x:5, y:6, i:"c"},
+  {x:5, y:8, i:"c"},
+  {x:6, y:3, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:7, y:6, i:"c"},
+  {x:8, y:6, i:"c"},
+  {x:3, y:6, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:6, i:"i"},
+  {x:3, y:8, i:"i"},
+  {x:3, y:7, i:"q"},
+  {x:8, y:7, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:7, y:3, i:"i"},
+  {x:6, y:7, i:"i"},
+  {x:4, y:8, i:"i"},
+  {x:4, y:7, i:"i"},
+  {x:4, y:5, i:"i"},
+  {x:4, y:3, i:"q"},
+  {x:8, y:3, i:"i"},
+  {x:7, y:6, i:"i"},
+  {x:6, y:5, i:"i"},
+  {x:6, y:3, i:"i"},
+  {x:6, y:2, i:"q"},
+  {x:5, y:3, i:"i"},
+  {x:5, y:2, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:5, y:8, i:"i"},
+  {x:5, y:6, i:"q"},
+  {x:5, y:6, i:"c"},
+  {x:5, y:8, i:"c"},
+  {x:5, y:8, i:"q"},
+  {x:5, y:6, i:"i"},
+  {x:5, y:6, i:"c"},
+  {x:5, y:8, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:5, y:2, i:"c"},
+  {x:5, y:3, i:"c"},
+  {x:6, y:2, i:"c"},
+  {x:6, y:3, i:"c"},
+  {x:6, y:5, i:"c"},
+  {x:7, y:6, i:"c"},
+  {x:8, y:3, i:"c"},
+  {x:4, y:3, i:"c"},
+  {x:4, y:5, i:"c"},
+  {x:4, y:5, i:"q"},
+  {x:4, y:3, i:"i"},
+  {x:8, y:5, i:"i"},
+  {x:7, y:8, i:"i"},
+  {x:7, y:6, i:"q"},
+  {x:7, y:5, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:6, y:5, i:"i"},
+  {x:6, y:3, i:"i"},
+  {x:6, y:2, i:"q"},
+  {x:6, y:2, i:"c"},
+  {x:6, y:3, i:"c"},
+  {x:6, y:5, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:7, y:5, i:"c"},
+  {x:7, y:6, i:"c"},
+  {x:7, y:8, i:"c"},
+  {x:8, y:5, i:"c"},
+  {x:4, y:3, i:"c"},
+  {x:4, y:5, i:"c"},
+  {x:4, y:7, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:6, y:7, i:"c"},
+  {x:7, y:3, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:8, y:7, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:8, i:"q"},
+  {x:3, y:7, i:"i"},
+  {x:8, y:3, i:"i"},
+  {x:7, y:8, i:"i"},
+  {x:6, y:5, i:"i"},
+  {x:5, y:8, i:"i"},
+  {x:5, y:6, i:"i"},
+  {x:4, y:8, i:"i"},
+  {x:4, y:7, i:"i"},
+  {x:4, y:5, i:"q"},
+  {x:4, y:3, i:"i"},
+  {x:8, y:5, i:"i"},
+  {x:7, y:5, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:6, y:7, i:"i"},
+  {x:6, y:3, i:"i"},
+  {x:6, y:2, i:"q"},
+  {x:6, y:2, i:"c"},
+  {x:6, y:3, i:"c"},
+  {x:6, y:7, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:7, y:5, i:"c"},
+  {x:8, y:5, i:"c"},
+  {x:4, y:3, i:"c"},
+  {x:4, y:5, i:"c"},
+  {x:4, y:7, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:5, y:6, i:"c"},
+  {x:5, y:8, i:"c"},
+  {x:6, y:5, i:"c"},
+  {x:7, y:8, i:"c"},
+  {x:8, y:3, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:6, i:"c"},
+  {x:3, y:2, i:"c"},
+  {x:3, y:4, i:"c"},
+  {x:3, y:5, i:"c"},
+  {x:4, y:2, i:"c"},
+  {x:4, y:6, i:"c"},
+  {x:5, y:4, i:"c"},
+  {x:5, y:7, i:"c"},
+  {x:6, y:4, i:"c"},
+  {x:6, y:8, i:"c"},
+  {x:7, y:4, i:"c"},
+  {x:8, y:4, i:"c"},
+  {x:2, y:4, i:"c"},
+  {x:2, y:5, i:"c"},
+  {x:2, y:6, i:"c"},
+  {x:2, y:7, i:"c"},
+  {x:2, y:8, i:"c"},
+  {x:2, y:4, i:"i"},
+  {x:2, y:8, i:"i"},
+  {x:2, y:7, i:"i"},
+  {x:2, y:6, i:"i"},
+  {x:2, y:5, i:"q"},
+  {x:8, y:5, i:"i"},
+  {x:7, y:5, i:"i"},
+  {x:6, y:5, i:"i"},
+  {x:5, y:8, i:"i"},
+  {x:5, y:2, i:"i"},
+  {x:4, y:7, i:"i"},
+  {x:4, y:5, i:"i"},
+  {x:4, y:3, i:"i"},
+  {x:3, y:6, i:"i"},
+  {x:3, y:5, i:"i"},
+  {x:3, y:4, i:"i"},
+  {x:3, y:8, i:"i"},
+  {x:3, y:7, i:"i"},
+  {x:3, y:2, i:"q"},
+  {x:8, y:7, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:7, y:6, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:6, y:2, i:"i"},
+  {x:5, y:4, i:"i"},
+  {x:4, y:2, i:"i"},
+  {x:4, y:8, i:"i"},
+  {x:4, y:6, i:"q"},
+  {x:8, y:6, i:"i"},
+  {x:7, y:3, i:"i"},
+  {x:6, y:8, i:"i"},
+  {x:6, y:4, i:"i"},
+  {x:5, y:7, i:"i"},
+  {x:5, y:6, i:"i"},
+  {x:5, y:3, i:"q"},
+  {x:8, y:4, i:"q"},
+  {x:8, y:3, i:"i"},
+  {x:8, y:3, i:"c"},
+  {x:8, y:4, i:"c"},
+  {x:5, y:3, i:"c"},
+  {x:5, y:6, i:"c"},
+  {x:5, y:7, i:"c"},
+  {x:6, y:4, i:"c"},
+  {x:6, y:8, i:"c"},
+  {x:7, y:3, i:"c"},
+  {x:8, y:6, i:"c"},
+  {x:4, y:6, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:4, y:8, i:"q"},
+  {x:4, y:6, i:"i"},
+  {x:8, y:4, i:"i"},
+  {x:7, y:8, i:"i"},
+  {x:6, y:8, i:"i"},
+  {x:5, y:7, i:"i"},
+  {x:5, y:7, i:"c"},
+  {x:6, y:8, i:"c"},
+  {x:7, y:8, i:"c"},
+  {x:8, y:4, i:"c"},
+  {x:4, y:6, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:4, y:2, i:"c"},
+  {x:5, y:4, i:"c"},
+  {x:6, y:2, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:7, y:6, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:8, y:7, i:"c"},
+  {x:3, y:2, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:2, i:"i"},
+  {x:3, y:8, i:"i"},
+  {x:3, y:7, i:"q"},
+  {x:8, y:7, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:7, y:3, i:"i"},
+  {x:6, y:7, i:"i"},
+  {x:6, y:4, i:"i"},
+  {x:5, y:7, i:"i"},
+  {x:4, y:8, i:"i"},
+  {x:4, y:6, i:"i"},
+  {x:4, y:2, i:"q"},
+  {x:8, y:6, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:6, y:2, i:"i"},
+  {x:5, y:3, i:"i"},
+  {x:5, y:6, i:"i"},
+  {x:5, y:4, i:"q"},
+  {x:8, y:4, i:"i"},
+  {x:8, y:3, i:"q"},
+  {x:7, y:8, i:"q"},
+  {x:7, y:6, i:"i"},
+  {x:7, y:4, i:"i"},
+  {x:7, y:4, i:"c"},
+  {x:7, y:6, i:"c"},
+  {x:7, y:8, i:"c"},
+  {x:8, y:3, i:"c"},
+  {x:8, y:4, i:"c"},
+  {x:5, y:4, i:"c"},
+  {x:5, y:6, i:"c"},
+  {x:5, y:3, i:"c"},
+  {x:6, y:2, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:8, y:6, i:"c"},
+  {x:4, y:2, i:"c"},
+  {x:4, y:6, i:"c"},
+  {x:4, y:8, i:"c"},
+  {x:5, y:7, i:"c"},
+  {x:6, y:4, i:"c"},
+  {x:6, y:7, i:"c"},
+  {x:7, y:3, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:8, y:7, i:"c"},
+  {x:3, y:7, i:"c"},
+  {x:3, y:8, i:"c"},
+  {x:3, y:8, i:"q"},
+  {x:3, y:7, i:"i"},
+  {x:8, y:3, i:"i"},
+  {x:7, y:8, i:"i"},
+  {x:7, y:4, i:"i"},
+  {x:6, y:8, i:"i"},
+  {x:5, y:6, i:"i"},
+  {x:4, y:8, i:"i"},
+  {x:4, y:6, i:"i"},
+  {x:4, y:2, i:"q"},
+  {x:8, y:6, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:7, y:2, i:"i"},
+  {x:6, y:4, i:"i"},
+  {x:6, y:2, i:"i"},
+  {x:5, y:3, i:"i"},
+  {x:5, y:3, i:"c"},
+  {x:6, y:2, i:"c"},
+  {x:6, y:4, i:"c"},
+  {x:7, y:2, i:"c"},
+  {x:8, y:2, i:"c"},
+  {x:8, y:6, i:"c"},
+  {x:4, y:2, i:"c"},
+  {x:4, y:6, i:"c"},
+  {x:4, y:6, i:"q"},
+  {x:4, y:2, i:"i"},
+  {x:8, y:6, i:"i"},
+  {x:8, y:2, i:"i"},
+  {x:7, y:6, i:"i"},
+  {x:7, y:3, i:"i"},
+  {x:7, y:2, i:"q"},
+  {x:6, y:7, i:"q"},
+  {x:6, y:4, i:"i"},
+  {x:6, y:3, i:"i"},
+  {x:6, y:2, i:"i"},
+  {x:5, y:7, i:"i"},
+  {x:5, y:4, i:"i"},
+  {x:5, y:3, i:"q"},
+  {x:8, y:7, i:"i"},
+  {x:8, y:4, i:"q"}
+];
+var canvas = document.getElementsByTagName('canvas')[0];
+var N = 8;
+var ctx = canvas.getContext('2d');
+var i = 0;
+
+function animate() {
+    if (i < instrs.length) {
+        var instr = instrs[i];
+
+        i = i + 1;
+        var r, g, b;
+
+        switch(instr.i) {
+        case "i": r = g = b = 170; break;
+        case "q": r = g = b = 0; break;
+        case "c": r = g = b = 255; break;
+        }
+        ctx.fillStyle = 'rgb('+r+','+g+','+b+')';
+        var w=canvas.width/N,     h=canvas.height/N;
+        var x=(instr.x-1)*(canvas.width/N),
+            y=(N-instr.y)*(canvas.height/N);
+        ctx.fillRect(x,y,w,h);
+    } else {
+        clearInterval(aint);
+        setTimeout(function() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            i = 0;
+            aint = setInterval(animate, 1);
+        }, 4000);
+    }
+};
+
+var aint = setInterval(animate, 1);
+    </script>
+
+  </body>
+</html>
