@@ -47,8 +47,9 @@ I will periodically synch this repository with new material as it
 becomes available.
 
 I started writing this book in 2005, when I was a student of
-Ulrich&nbsp;Neumerkel in Vienna. Meta-interpreters formed the first
-chapter.
+Ulrich&nbsp;Neumerkel in Vienna. A collection of
+[Prolog&nbsp;meta-interpreters](https://www.metalevel.at/acomip/)
+formed the first chapter.
 
 You can run most of the examples with any popular Prolog system, such
 as GNU&nbsp;Prolog, SICStus&nbsp;Prolog, YAP and&nbsp;SWI. In some
