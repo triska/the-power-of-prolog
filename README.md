@@ -34,8 +34,8 @@ If you are new to Prolog, read the chapters in&nbsp;order for a
 self-contained exposition of many important language features. If you
 already have some experience with Prolog and would like to learn more
 about more recent aspects, I recommend you start with the chapter on
-integer&nbsp;arithmetic and proceed with the chapters it
-links&nbsp;to.
+[integer&nbsp;arithmetic](https://www.metalevel.at/prolog/clpfd) and
+proceed with the chapters it links&nbsp;to.
 
 ## About this book
 
