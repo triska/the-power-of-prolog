@@ -43,16 +43,15 @@ handle_request(Request) :-
         atom_concat(., Path0, Path1),
         http_safe_file(Path1, []),
         absolute_file_name(Path1, Path),
-        (   path_path0_file(Path, Path0, File),
+        (   path_file(Path, File),
             exists_file(File),
             http_reply_file(File, [unsafe(true)], Request)
         ;   atom_concat('https://www.metalevel.at', Path0, Metalevel),
             http_redirect(see_other, Metalevel, Request)
         ).
 
-path_path0_file(Path, _, Path).
-path_path0_file(Path, _, HTML) :- atom_concat(Path, '.html', HTML).
-path_path0_file(Path, Path0, File) :-
-        path_segments_atom(Segments, Path0),
-        Segments = _/Last/'',
+path_file(Path, Path).
+path_file(Path, HTML) :- atom_concat(Path, '.html', HTML).
+path_file(Path, File) :-
+        path_segments_atom(_/Last/'', Path),
         atomic_list_concat([Path,Last,'.html'], File).
