@@ -12,6 +12,7 @@
 
     <center><h1>ediprolog &mdash; Emacs does Interactive Prolog</h1></center>
 
+    <br><br>
     <table>
       <tr>
         <td>
@@ -34,23 +35,20 @@
 
           <br>
 
-          Download: <b><a href="ediprolog.el">ediprolog.el</a></b>
+          Download: <a href="ediprolog.el"><b><tt>ediprolog.el</tt></b></a>
+
           <br><br>
 
-          Video demonstration: <a href="ediprolog.mpg">ediprolog.mpg</a>&nbsp;(1MB)
+          Video demonstration: <a href="ediprolog.mpg"><tt>ediprolog.mpg</tt></a>&nbsp;(1MB)
           <!-- A version for YAP Prolog is <a href="yap/ediprolog.el">here</a>. -->
 	  <br><br>
 
 	  For more information about Prolog development with Emacs,
 	  see <a href="/pceprolog/"><b>PceProlog</b></a>.
 
-          <br><br>
-          More about Prolog: <b><a href="/prolog">The Power of&nbsp;Prolog</a></b>
-
-
         </td>
-        <td>
-          <img style="width: 300; border: 2px solid black; margin-left: 2cm; margin-right: 2cm; margin-top: 2cm"
+        <td style="vertical-align: top">
+          <img style="width: 300; border: 2px solid black; margin-left: 2cm; margin-right: 2cm;"
                src="factorial.png"
                alt="Factorial using CLP(FD)">
         </td>
@@ -64,7 +62,7 @@
     <center><h2>Installation</h2></center>
 
     To install <i>ediprolog</i>,
-    copy <a href="ediprolog.el">ediprolog.el</a> to your load-path,
+    copy <a href="ediprolog.el"><tt>ediprolog.el</tt></a> to your load-path,
     and add to your .emacs:
 
     <pre>
@@ -72,13 +70,13 @@
 (global-set-key [f10] 'ediprolog-dwim)
     </pre>
 
-    If F10 is not free on your platform, bind ediprolog-dwim to any
-    other key sequence, for example, use:
+    If <tt>F10</tt> is not free on your platform, bind ediprolog-dwim
+    to any other key sequence, for example, use:
     <pre>
 (global-set-key "\C-c\C-e" 'ediprolog-dwim)
     </pre>
-    to bind it to C-c C-e. In the following, replace "F10" with your
-    custom binding.
+    to bind it to <tt>C-c&nbsp;C-e</tt>. In the following,
+    replace&nbsp;<tt>F10</tt> with your custom binding.
 
     <br><br>
 
@@ -91,13 +89,17 @@
 
     Queries in Prolog source files start with&nbsp;<tt>?-</tt>
     or&nbsp;<tt>:-</tt>, possibly preceded by&nbsp;<tt>%</tt> and
-    whitespace. An example of a query is:
+    whitespace.
+
+    <br><br>
+
+    An example of a query is:
 
     <pre>
 %?- member(X, [a,b,c]).
     </pre>
 
-    If you press F10 when point is on that query, you get:
+    If you press <tt>F10</tt> when point is on that query, you get:
 
     <pre>
 %?- member(X, [a,b,c]).
@@ -107,15 +109,15 @@
 %@ false.
     </pre>
 
-    <p>When waiting for output of the Prolog process, you can press C-g
-      to unblock Emacs and continue with other work. To resume
-      interaction with the Prolog process, use
+    <p>When waiting for output of the Prolog process, you can
+      press&nbsp;<tt>C-g</tt> to unblock Emacs and continue with other
+      work. To resume interaction with the Prolog process, use
       <tt>M-x&nbsp;ediprolog-toplevel&nbsp;RET</tt>.</p>
 
-    <p>If you press F10 when point is <i>not</i> on a query, the
-      buffer content is consulted in the Prolog process, and point is
-      moved to the first error (if any). You do&nbsp;<i>not</i> need
-      to <i>save</i> the file beforehand, since the
+    <p>If you press <tt>F10</tt> when point is <i>not</i> on a query,
+      the buffer content is consulted in the Prolog process, and point
+      is moved to the first error (if any). You do&nbsp;<i>not</i>
+      need to <i>save</i> the file beforehand, since the
       <i>buffer&nbsp;content</i> (not the file) is consulted.</p>
 
     <p>In transient mark mode, if the region is active, only the text
@@ -155,9 +157,48 @@
 	</tr>
       </table>
     </center>
-    <br>
 
-    <br><br><br>
+    <center><h2>Multi-line queries</h2></center>
+
+    <i>ediprolog</i> also supports multi-line queries. There are two
+    ways to write a query that spans multiple lines:
+
+    <ul>
+      <li> Comment out <i>each&nbsp;line</i> of the query,
+      using&nbsp;<tt>%</tt>.
+        <br><br>
+      For example:
+
+        <pre>
+%?- X <a href="/prolog/clpfd#constraint">#\=</a> 3,
+%   X <a href="/prolog/clpfd#constraint">#\=</a> 5.
+%@ X <a href="/prolog/clpfd#domain">in</a> inf..2\/4\/6..sup.
+        </pre>
+      </li>
+      <li>Put the whole query in a <i>comment&nbsp;block</i> that
+      spans multiple lines.
+
+        <br><br>
+
+        For example:
+
+        <pre>
+/*
+  ?- Vs = [X,Y,Z],
+     Vs <a href="/prolog/clpfd#domain">ins</a> 1..2,
+     <a href="/prolog/clpfd#propagation">all_distinct</a>(Vs).
+  %@ false.
+*/
+        </pre>
+        Using <a href="/pceprolog/">PceProlog</a>, you can quickly
+        create such comment blocks with <tt>C-c&nbsp;q</tt>.
+      </li>
+    </ul>
+
+    <br><br>
+
+    More about Prolog: <b><a href="/prolog">The Power of&nbsp;Prolog</a></b>
+    <br><br>
     <b><a href="/">Main page</a></b>
   </body>
 </html>
