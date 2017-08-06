@@ -161,7 +161,8 @@
     <center><h2>Multi-line queries</h2></center>
 
     <i>ediprolog</i> also supports multi-line queries. There are two
-    ways to write a query that spans multiple lines:
+    ways to write a query that spans multiple lines in such a way that
+    the meaning of the program is retained:
 
     <ul>
       <li> Comment out <i>each&nbsp;line</i> of the query,
@@ -195,7 +196,11 @@
       </li>
     </ul>
 
-    <br><br>
+    To evaluate a multi-line query, invoke <tt>ediprolog-dwim</tt> on
+    the <i>first</i>&nbsp;line of the query, which starts
+    with&nbsp;<tt>?-</tt>.
+
+    <br><br><br>
 
     More about Prolog: <b><a href="/prolog">The Power of&nbsp;Prolog</a></b>
     <br><br>
