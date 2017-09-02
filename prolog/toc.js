@@ -94,6 +94,9 @@ var toc = new Array(
     },
     { link: "/prolog/showcases/",
       title: "Showcases"
+    },
+    { link: "/prolog/attributedvariables",
+      title: "Attributed Variables"
     }
 );
 

@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Attributed Variables in Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Attributed Variables in Prolog">
+    <meta name="keywords" content="Prolog,Constraints,Attributed variables">
+    <meta name="author" content="Markus Triska">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Attributed Variables in Prolog</h1></center>
+    <br><br>
+
+    The most important thing you need to know about <i>attributed
+      variables</i> is that Prolog application&nbsp;programmers
+      normally <b>need not use them</b>. This chapter is intended
+      mainly for Prolog <b>library&nbsp;authors</b> who want to
+      improve or implement more declarative language constructs.
+
+    <br><br>
+
+    Attributed variables are a <b>low-level mechanism</b> for
+    implementing declarative constructs. However, when considered in
+    isolation, they have the potential to prevent and run counter to
+    the <a href="reading#declarative"><i>declarative</i>&nbsp;reading</a>
+    we want to apply to <a href="purity">pure</a>
+    Prolog&nbsp;programs.
+
+    <br><br>
+
+    For this reason, attributed variables should only be used as
+    a <i>building&nbsp;block</i>
+    for <i>higher-level</i>&nbsp;mechanisms.
+
+    <br><br>
+
+    If you are a Prolog library author, your interest in this topic
+    may be warranted. To application programmers, my recommendation is
+    to use existing libraries that provide equivalent functionality
+    under more declarative&nbsp;wrappers.
+
+    <br><br>
+
+    Prolog implementors may be interested in
+    the <a href="#minatotask"><b>Minato&nbsp;task</b></a> to assess
+    the generality of their interface predicates.
+
+    <center><h2>How it started</h2></center>
+
+    Already the first Prolog system, sometimes
+    called <i>Prolog&nbsp;0</i>, supported the
+    <i>constraint</i>&nbsp;<a href="concepts#builtin"><tt>dif/2</tt></a>.
+
+    <br><br>
+
+    To Prolog implementors and practitioners, the question soon
+    became: <i>By which <b>general mechanism</b> can we we implement
+      further constraints conveniently, correctly and efficiently</i>?
+
+    <br><br>
+
+    The first mechanism to solve this was proposed by
+    <a href="https://www.complang.tuwien.ac.at/ulrich/">Ulrich&nbsp;Neumerkel</a>
+    in his
+    1990&nbsp;paper <a href="https://www.complang.tuwien.ac.at/ulrich/papers/PDF/meta90.pdf"><i>Extensible
+    Unification by Metastructures</i></a>.
+
+    <br><br>
+
+    Here is a salient quote from the paper:
+
+    <blockquote class="quote">
+      When considering existing approaches of extensions to syntactic
+unification, we observe: highly specialized implementations, where the
+unification algorithm cannot be manipulated by the user
+(e.g.&nbsp;[Col87,JaLa87,vH89]), approaches too general to be
+implemented efficiently and too general to allow the reuse of existing
+Prolog programs&nbsp;[Ko84], or extensions allowing definitions in a
+procedural language&nbsp;[CLiST89] only.
+
+      <br><br>
+
+      Our approach focuses on a sufficient abstract yet efficient
+interface, which permits to write <b>implementations of constraints in
+Prolog</b>, neglecting the actual representation of the constrained
+variables. Metastructures are applicable, but not restricted to the
+      following areas:
+
+      <br><br>
+      ...
+    </blockquote>
+
+    Among the projected use cases, stream-based side effect free I/O
+    is already mentioned in the paper. This is now available
+    in <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/sicstus/pio.pl"><tt>library(pio)</tt></a>.
+
+
+    <center><h2>How it continued</h2></center>
+
+    Christian Holzbaur, who back then was a very close colleague of
+    Ulrich&nbsp;Neumerkel, used metastructures in his
+    1990&nbsp;dissertation, <i>Specification of Constraint Based
+    Inference Mechanism through Extended Unification</i>, in which he
+    implemented&nbsp;CLP(Q).
+
+
+    <br><br>
+
+    After this experience, and having observed some shortcomings of
+    metastructures, Holzbaur proposed an alternative yet very strongly
+    related mechanism called <b>attributed&nbsp;variables</b>.
+
+    <br><br>
+
+    Holzbaur later published a comparison paper, <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.45.3893&rep=rep1&type=pdf"><i>Metastructures vs. Attributed Variables in the Context of Extensible Unification</i></a>.
+
+    <br><br>
+
+    The proposal by Christian Holzbaur was adopted in
+    SICStus&nbsp;Prolog, one of the leading&nbsp;systems
+    in the area of constraint&nbsp;programming.
+
+    <br><br>
+
+    To quote from the <a href="https://sicstus.sics.se/sicstus/docs/3.7.1/html/sicstus_17.html"><i>Attributed&nbsp;Variables</i></a> section in the
+    SICStus documentation:
+
+    <blockquote class="quote">
+This package implements attributed variables. It provides a means of
+<i>associating with variables arbitrary attributes</i>, i.e. named properties
+that can be used as storage locations as well as to extend the default
+unification algorithm when such variables are unified with other terms
+or with each other.
+
+<br><br>
+
+This facility was primarily designed as a clean interface between
+Prolog and constraint solvers, but has a number of other uses as well.
+The basic idea is due to Christian Holzbaur and he was actively
+involved in the final design. For background material, see the
+dissertation&nbsp;[Holzbaur 90].
+    </blockquote>
+
+
+    If you are interested in more information about the origin of
+    these developments, I recommend you ask the involved people
+    in&nbsp;person.
+
+    <br><br>
+
+    The same interface is also implemented in other Prolog systems,
+    such as&nbsp;<a href="https://ciao-lang.org/">Ciao</a>.
+
+    <center><h2>How it was stymied</h2></center>
+
+    In 2002, Bart Demoen published a highly influential paper
+    called <a href="https://pdfs.semanticscholar.org/3104/a69b2ed0bc58d67678c6b91eb3d864fe1de2.pdf"><i>Dynamic
+    attributes, their hProlog implementation, and a first
+        evaluation</i></a>.
+
+    <br><br>
+
+    Bart Demoen is an extremely prolific and highly regarded member of
+    the Prolog community, and several systems therefore adopted the
+    approach he proposed.
+
+    <br><br>
+
+    The interface he proposed and implemented deliberately falls short
+    in a critical respect. I quote from the paper and highlight the
+    key passages:
+
+    <blockquote class="quote">
+      <b>4 Basic choice III: no <tt><i>pre_unify</i></tt></b>
+
+      <br><br>
+
+      The most profound difference between attributed variables in
+      SICStus Prolog and ECLiPSe is the state of the variable at the
+      moment the unifcation handler is called.
+
+      <br><br>
+
+      As an example: assume the attributed variable&nbsp;X has one
+      attribute&nbsp;A (with module <tt>user</tt>) and X is unifed
+      with the integer&nbsp;666. In SICStus
+      Prolog, <a href="https://sicstus.sics.se/sicstus/docs/3.7.1/html/sicstus_17.html#IDX980"><tt>verify_attributes</tt></a>
+      is called with X <b>still being unbound</b>. In ECLiPSe, the
+      unify handler is called with A as an argument - <b>X has been
+      bound to&nbsp;666 already</b>.
+
+      <br><br>
+
+      The SICStus Prolog behavior follows [6] which claims that <b>it
+        is important to have the variables as if not yet bound</b>.
+
+
+      <br><br>
+
+      ECLiPSe people on the other hand (Joachim Schimpf) claim <b>that
+        this is not needed</b>.
+
+      <br><br>
+
+      We do not want to take a stand in this issue: we had implemented
+      at some point the full SICStus Prolog behavior (but on dynamic
+      attributes of course) and were not convinced that the extra
+      implementation complexity was worth the gain. However, we were
+      not impressed by the manuals of SICStus Prolog and ECLiPSe,
+      which claim that <b>binding the X during a
+        <tt>pre_unify</tt> yields unexpected results</b>: in our
+      opinion (and experience), it just shows that full support for
+      <tt>pre_unify</tt> is too cumbersome to implement and maintain
+      in a full system like SICStus Prolog or ECLiPSe. So we
+      switched to the ECLiPSe model, but without the compromise to
+      support <tt>pre_unify</tt> for compatibility reasons: Occam's
+      razor is a blessing&nbsp;:-)
+    </blockquote>
+
+    Unfortunately, despite the smiley, the above passage was taken
+    seriously by Prolog implementors, and this limited interface is
+    what for example SWI-Prolog now provides.
+
+
+    <center><h2>Occam's razor</h2></center>
+
+    <a href="https://en.wikipedia.org/wiki/Occam%27s_razor">Occam's
+    razor</a>, in its most popular version, states that <i>"Entities
+      are not to be multiplied without necessity"</i>.
+
+    <br><br>
+
+    I ask you, then, <i>why do we have 3 different interfaces for
+    attributed variables, two of which are clearly less general than
+    the other?</i>
+
+    <br><br>
+
+    A conservative approach, more than 20 years after the work of
+    Neumerkel and Holzbaur, could look as follows:
+
+    <br><br>
+
+    Let us consider 4 widely used Prolog systems, such as SICStus,
+    GNU-Prolog, ECLiPSe and&nbsp;SWI, and 4 widely used types of
+    constraints: <a href="optimization">CLP(H)</a>, <a href="clpfd">CLP(FD)</a>,
+    <a href="/clpb/">CLP(B)</a>
+    and&nbsp;<a href="https://sicstus.sics.se/sicstus/docs/3.7.1/html/sicstus_32.html">CLP(Q)</a>.
+
+    <br><br>
+
+    SICStus supports 4 of them. SWI supports 3 of them. ECLiPSe and
+    GNU-Prolog support 2 of them. Of these systems, <i>which has the
+    most general interface for attributed variables</i>? Take this
+    system as the one we want to strive&nbsp;towards. <i>By Occam's
+    razor</i>, chances are that they have <i>only done what is
+    needed</i> to support the constraint&nbsp;solvers they provide.
+
+    <br><br>
+
+    <center><h2>What we have now</h2></center>
+
+    As we see from the above, the concrete features of attributed
+    variables <i>vary between Prolog&nbsp;systems</i>. However, in all
+    systems that provide attributed variables, we have essentially the
+    following features at our disposal:
+
+    <ol>
+      <li>We can <i>attach information</i> to logical variables.</li>
+      <li>This information can be taken into account when a variable
+        is being <i>unified</i>.</li>
+      <li>This information can be <i>displayed in answers</i> on the
+        Prolog <a href="concepts#toplevel">toplevel</a>.</li>
+    </ol>
+
+    In the following, we consider one specific implementation of these
+    features in more detail.
+
+    <center><h2>Attributed variables in SWI-Prolog</h2></center>
+
+    <center><h3>Preliminaries</h3></center>
+
+    To illustrate the key concepts of attributed variables, we
+    consider here SWI-Prolog because it is freely available.
+    Therefore, you can easily gain experience with its interface for
+    attributed&nbsp;variables.
+
+    <br><br>
+
+    I would like to stress again that attributed variables normally
+    need&nbsp;not and also <i>should&nbsp;not be&nbsp;used</i> in
+    typical Prolog&nbsp;applications. Instead, and also in SWI-Prolog,
+    attributed variables are available to implement features
+    from <a href="http://eu.swi-prolog.org/pldoc/man?section=clp"><b>Constraint
+    Logic Programming</b></a>, and you should use these higher-level
+    predicates instead in typical use&nbsp;cases.
+
+    <br><br>
+
+    When working with attributed variables, you need to know
+    3&nbsp;kinds of interface predicates, in accordance with the
+    features outlined above:
+
+    <ol>
+      <li>Predicates for adding, changing and removing attributes.</li>
+      <li>Predicates to reason about the <i>unification</i> of
+        variables that have attributes attached.</li>
+      <li>Predicates that let you <i>display</i> attributes on the toplevel in some form.</li>
+    </ol>
+
+    We now consider these kinds of predicates in turn. For more
+    information, see especially
+    <a href="http://eu.swi-prolog.org/pldoc/man?section=attvar">7.1&nbsp;Attributed&nbsp;variables</a>
+    in the SWI-Prolog&nbsp;manual. Even though the details differ in
+    other Prolog systems, the <i>kinds</i> of predicates are the same
+    also in other systems.
+
+    <br><br>
+
+    <center><h3>Adding and changing attributes</h3></center>
+
+    In SWI-Prolog, an attributed variable is a <i>relation</i> between
+    a&nbsp;<i>variable</i>, a&nbsp;<i>module</i> and a&nbsp;<i>value</i>.
+
+    <br><br>
+
+    Consequently, the predicate for <i>adding</i> and <i>changing</i>
+    an attribute has three arguments:
+
+    <br>
+    <div id="put_attr" class="predicate">
+      <tt><b>put_attr(V, Module, Value)</b></tt>:
+      <br>
+      Associate an arbitrary Prolog&nbsp;<a href="data#term">term</a>
+      <tt>Value</tt> with the logical variable&nbsp;<tt>V</tt> in
+      module&nbsp;<tt>Module</tt> (a Prolog&nbsp;<i>atom</i>).
+    </div>
+
+    <br>
+    We can readily try out this predicate on
+    the <a href="concepts#toplevel">toplevel</a>. For example:
+
+    <pre>
+?- put_attr(X, m, test).
+<b>put_attr(X, m, test).</b>
+    </pre>
+
+    We see that in response, the Prolog toplevel simply repeats what
+    we said. Thus, the toplevel retains the important invariant
+    that <i>the answer is declaratively equivalent to the original
+    query</i>. In this concrete case, all there is to say is: The
+    value <tt>test</tt> is associated with the
+    variable&nbsp;<tt>X</tt> in module&nbsp;<tt>m</tt>, and that's
+    exactly what this answer states. We call a variable that has an
+    attribute attached an <i>attributed&nbsp;variable</i>.
+
+    <br><br>
+
+    We can attach arbitrary terms to arbitrary variables and modules:
+
+    <pre>
+?- put_attr(X, m1, test(Y)), put_attr(Y, m2, test(Z)).
+<b>put_attr(X, m1, test(Y)),
+put_attr(Y, m2, test(Z)).</b>
+    </pre>
+
+    However, in typical cases, you will want to implement
+    a <i>single</i> module (such as for
+    example <tt><a href="clpfd">clpfd</a></tt>), and the predicates
+    you provide will only reason about the attributes
+    in <i>that</i> specific&nbsp;module.
+
+    <br><br>
+
+    Importantly, when you use <tt>put_attr/3</tt> <i>repeatedly</i>
+    with the same variable and module, then any previously attached
+    value is simply <i>overwritten</i>. For example:
+
+    <pre>
+?- put_attr(X, m, hi),
+   put_attr(X, m, ho).
+<b>put_attr(X, m, ho).</b>
+    </pre>
+
+    Thus, after these two calls, <b><tt>ho</tt></b> is the single
+    remaining value that is attached to <tt>X</tt> in
+    module&nbsp;<tt>m</tt>.
+
+    <br><br>
+
+    We say that <tt>put_attr/3</tt> <i>destructively modifies</i> an
+    attribute. For this reason, you can use <tt>put_attr/3</tt> also
+    as a somewhat more declarative and less error-prone alternative
+    to&nbsp;<tt>setarg/3</tt>.
+
+    <br><br>
+
+    Note also that the effect of <tt>put_attr/3</tt> is <i>undone</i>
+    on backtracking. For example:
+
+    <pre>
+?- ( put_attr(X, m, hello)
+   ; true
+   ).
+<b>put_attr(X, m, hello) ;
+true.</b>
+    </pre>
+
+    When the alternative is reported, we see from the absence of any
+    goals besides&nbsp;<tt>true</tt> that <i>no more attribute</i> is
+    attached to&nbsp;<tt>X</tt>. For this reason, assigning attributes
+    to variables blends well with Prolog's
+    built-in <a href="sorting#searching">search</a>&nbsp;strategy, and
+    is similar to <i>unification</i> in that respect. We say that the
+    modification is <i>backtrackable</i>.
+
+
+    <br><br> An additional predicate called <tt>del_attr/2</tt> lets
+    you <i>remove</i> an attribute from a variable.
+
+    <br><br>
+
+    <center><h3>Unification of attributed variables</h3></center>
+
+    The key distinction between variables and <i>attributed</i>
+    variables is what happens at the time of&nbsp;<i>unification</i>.
+
+    <br><br>
+
+    Attributed variables are special in that an <i>extensible</i>
+    predicate is <i>automatically&nbsp;invoked</i> when they are
+    unified. In SWI-Prolog, the particular predicate that is invoked
+    is <tt>attr_unify_hook/2</tt> residing in the <i>module</i> where
+    the attribute is attached. You, the Prolog&nbsp;programmer, can
+    provide a custom <i>definition</i> of this predicate, and it will
+    be automatically invoked by the Prolog&nbsp;engine when a variable
+    that has attributes attached is being unified.
+
+    <br><br>
+
+    For example, let us define a very rudimentary version
+    of <tt>attr_unify_hook/2</tt> in module&nbsp;<tt>m</tt>:
+
+    <pre>
+m:attr_unify_hook(X, Y) :- throw(cannot_unify(X,Y)).
+    </pre>
+
+    With this definition, which simply throws an <i>exception</i> when
+    it is invoked, we get for example:
+
+
+    <pre>
+?- put_attr(X, m, a),
+   put_attr(Y, m, b),
+   <b>X = Y</b>.
+<b>ERROR: Unhandled exception: cannot_unify(b,_612)</b>
+    </pre>
+
+    From the raised exception, we already see the <i>asymmetry</i> of
+    this predicate: Contrary to what you may
+    expect, <tt>attr_unify_hook/2</tt> is <i>not</i> invoked with the
+    arguments of the unification (which are the
+    two <i>variables</i> <tt>X</tt> and&nbsp;<tt>Y</tt>), but rather
+    with one <i>attribute</i>&nbsp;(namely <tt>b</tt>, which was the
+    attribute of&nbsp;<tt>X</tt>), and one
+    <i>variable</i>.
+
+    <br><br>
+
+    This happens because the hook is defined as follows:
+
+    <br>
+    <div id="attr_unify_hook" class="predicate">
+      <tt><b>M:attr_unify_hook(Attr, Value)</b></tt>:
+      <br>
+      This hook is called <i>after an attributed variable has been
+        unified</i> with <tt>Value</tt>, which may be another
+      attributed variable. <tt>Attr</tt> is the attribute that was
+      associated with the variable in the module&nbsp;<tt>M</tt>,
+      and <tt>Value</tt> is the new value of the variable. If this
+      predicate fails, the unification fails. If <tt>Value</tt> is
+      another attributed variable, the hook often combines the two
+      attributes and associates the combined attribute
+      with <tt>Value</tt>, using <a href="#put_attr">put_attr/3</a>.
+    </div>
+
+    The way in which this predicate works makes it insufficient to
+    implement important classes of constraint solvers. We discuss
+    this point below. For now, let us make&nbsp;do with what
+    we&nbsp;have.
+
+    <br><br>
+
+    First, let us try out what the documentation states: For example,
+    let us make the unification&nbsp;<i>fail</i>.
+
+    <pre>
+m:attr_unify_hook(_, _) :- <b>false</b>.
+    </pre>
+
+    Example query and answer:
+
+    <pre>
+?- put_attr(X, m, n(1)),
+   put_attr(Y, m, n(2)),
+   <b>X = Y</b>.
+<b>false.</b>
+    </pre>
+
+    OK, this works as advertised. In this example and the following,
+    we use
+    <a href="data#term">compound&nbsp;terms</a> of the
+    form&nbsp;<tt>n(N)</tt> to represent the integer&nbsp;<tt>N</tt>.
+    We <i>could</i> also use the integers directly instead. However,
+    this would risk ending up with a <a href="data#clean">defaulty</a>
+    representation, and also prevent us from symbolically
+    distinguishing attributes from logical variables in the code
+    below.
+
+    <br><br>
+
+    Second, let us <i>modify</i> the
+    involved attributes upon unification. If a unification
+    involves <i>two</i> (or more) logical variables, we must
+    state how such a unification affects the involved variables.
+
+    <br><br>
+
+    Let us extend the example from above: In the above case, we have
+    associated the Prolog terms <tt>n(1)</tt> and&nbsp;<tt>n(2)</tt>
+    with the variables <tt>X</tt> and&nbsp;<tt>Y</tt> and
+    module&nbsp;<tt>m</tt>. To gather experience with the interface,
+    let us say that upon unification of two variables with respective
+    attributes <tt>n(A)</tt> and <tt>n(B)</tt>, where <tt>A</tt>
+    and <tt>B</tt> are integers, we want to attach the new
+    attribute <tt>n(C)</tt> to the resulting (single) variable,
+    where <tt>C</tt> is the <i>sum</i> of <tt>A</tt>
+    and&nbsp;<tt>B</tt>.
+
+    <br><br>
+
+    To accomplish this, we need a way to reason about <i>existing</i>
+    attributes of variable. The predicate <tt>get_attr/3</tt> is
+    available for this purpose:
+
+    <br>
+    <div id="get_attr" class="predicate">
+      <tt><b>get_attr(V, Module, Value)</b></tt>:
+      <br>
+      This predicate succeeds <i>if and only if</i> <tt>Value</tt> is
+      the attribute of the variable&nbsp;<tt>V</tt> in
+      module&nbsp;<tt>Module</tt>.
+    </div>
+    <br>
+
+    Thus, we shall now implement the following steps:
+
+    <ol>
+      <li>Upon unification of two variables with attributes from
+        module&nbsp;<tt>m</tt>, <i>fetch</i> these attributes.
+      </li>
+
+      <li>Compute the <i>sum</i> of these attributes,
+        using <a href="clpfd">integer arithmetic.</a></li>
+
+      <li>Attach the sum as the new attribute to the variable. Note
+        that we speak here about <i>the</i> variable because there is
+        only a single variable remaining <i>after</i> the unification
+        has taken place.</li>
+    </ol>
+
+    In Prolog, this becomes:
+
+    <pre>
+m:attr_unify_hook(n(A), Var) :-
+        get_attr(Var, m, n(B)),      % step (1)
+        C #= A + B,                  % step (2)
+        put_attr(Var, m, n(C)).      % step (3)
+    </pre>
+
+    Note that at the time the hook is invoked, the attribute
+    of <i>one</i> of the variables (we do not know which) is already
+    available as an <i>argument</i>
+    of <a href="#attr_unify_hook"><tt>attr_unify_hook/2</tt></a>, so
+    we only have to
+    use <a href="#get_attr"><tt>get_attr/3</tt></a> <i>once</i>.
+
+    <br><br>
+
+    Now, let us try it out:
+
+    <pre>
+?- put_attr(X, m, n(1)),
+   put_attr(Y, m, n(2)),
+   X = Y.
+<b>X = Y,
+put_attr(Y, m, n(3)).</b>
+    </pre>
+
+    And indeed this works: After the unification, <tt>n(3)</tt> is
+    associated with the resulting single variable, which is <tt>X</tt>
+    or, <i>equivalently</i>,&nbsp;<tt>Y</tt>, and 3 is the result
+    of&nbsp;1+2.
+
+    <br><br>
+
+    The following <i>fails</i>, simply
+    because <tt>get_attr/3</tt> <i>fails</i> if its first argument
+    is <i>not</i> a variable:
+
+    <pre>
+?- put_attr(X, m, n(1)),
+   <b>X = a</b>.
+<b>false.</b>
+    </pre>
+
+    In fact, with the above definition of <tt>attr_unify_hook/2</tt>,
+    only very specific kinds of unifications will <i>succeed</i>. In
+    particular, every unification with a <i>ground</i> value
+    will&nbsp;<i>fail</i>. However, in actual constraint&nbsp;systems,
+    we are very interested in ground terms, because they typically
+    represent concrete <i>solutions</i>.
+
+    <br><br>
+
+    Let us therefore <i>generalize</i> the above definition
+    of <tt>attr_unify_hook/2</tt> (in module&nbsp;<tt>m</tt>) in such
+    a way that it still illustrates a key feature of the whole
+    interface, namely the ability to <i>selectively veto
+    unifications</i>. For example, in our concrete case, let us allow
+    unifications with a concrete <b>integer</b> <i>iff</i> that
+    integer matches the associated integer value that is stored in the
+    involved variable's attribute.
+
+    <br><br>
+
+    We hence must <i>distinguish</i> two different cases when two
+    terms&nbsp;<tt>X</tt> and <tt>Y</tt> are unified. Let us consider
+    it from the perspective of <tt>X</tt>, i.e., let us suppose
+    that <tt>attr_unify_hook/2</tt> is invoked with the attribute
+    of <tt>X</tt> as the first argument. (Of course, the other case is
+    completely symmetric, but we need to draw this distinction to
+    discuss the cases.) Then, <i>either</i> <tt>Y</tt> is
+    an <i>integer</i>&nbsp;<i>k</i>. In that case, we must <i>veto</i>
+    the unification (i.e., fail) if <i>k</i> does not match the
+    integer that is stored in the attribute
+    of&nbsp;<tt>X</tt>. <i>Or</i> <tt>Y</tt> is an
+    attributed <i>variable</i>. In that case, we proceed exactly as
+    previously: We compute the <i>sum</i> of the two integers that are
+    stored in the attributes of the involved variables, and associate
+    that sum with the unified variable.
+
+    <br><br>
+
+    In Prolog, we can express this distinction with the built-in
+    predicate <tt>integer/1</tt>:
+
+    <pre>
+m:attr_unify_hook(n(A), Other) :-
+        (   <b>integer</b>(Other) ->
+            Other = A
+        ;   get_attr(Other, m, n(B)),
+            C #= A + B,
+            put_attr(Other, m, n(C))
+        ).
+    </pre>
+
+    Here are a few sample queries and their results:
+
+    <pre>
+?- put_attr(X, m, n(1)), X = 1.
+<b>X = 1.</b>
+
+?- put_attr(X, m, n(1)), X = 3.
+<b>false.</b>
+
+?- put_attr(X, m, n(1)),
+   put_attr(Y, m, n(2)),
+   X = Y,
+   X = 3.
+<b>X = Y, Y = 3.</b>
+    </pre>
+
+    Thus, everything seems to work as intended. We have successfully
+    created a simplistic <i>constraint&nbsp;solver</i>, which
+    admittedly has quite peculiar semantics but implements what we
+    have outlined. However, this concrete solver has a very severe
+    declarative&nbsp;flaw, which becomes apparent if you eliminate the
+    goal <tt>X&nbsp;=&nbsp;Y</tt> in the above conjunction:
+
+    <pre>
+?- put_attr(X, m, n(1)),
+   put_attr(Y, m, n(2)),
+   X = 3.
+<b>false.</b>
+    </pre>
+
+    In this case, <i>generalizing</i> a query (by <i>removing</i> a
+    constraint) has created a
+    <i>more&nbsp;specific</i> program (which is now equivalent
+    to <tt>false</tt>). This violates elementary properties we expect
+    from logic&nbsp;programs and
+    prevents for example <a href="debugging">declarative&nbsp;debugging</a>.
+
+    <br><br>
+
+    The key takeaway from this is that <i>the interface for attributed
+    variables does not by itself provide any guarantees of the
+    resulting constraint&nbsp;solver</i>. You, the programmer, must
+    implement your system in such a way that desirable properties are
+    preserved in resulting programs. We return to this point below.
+
+    <br><br>
+
+    For now, let us conclude this section with a more interesting and
+    also more realistic example: The SWI-Prolog documentation contains
+    an example of a simplistic constraint solver
+    over <i>finite&nbsp;domains</i>, where the attribute of each
+    involved variable (in the module called&nbsp;<tt>domain</tt>) is
+    an <i>ordered&nbsp;list</i> of elements, representing the
+    admissible <i>domain</i> of the variable.
+
+    <br><br>
+
+    A suitable unification hook for such a constraint solver could
+    look like this:
+
+    <pre>
+domain:attr_unify_hook(Dom1, Other) :-
+        (   <a href="#get_attr">get_attr</a>(Other, domain, Dom2) ->
+            ord_intersection(Dom1, Dom2, Dom),
+            dif(Dom, []),
+            (   Dom = [Value] ->
+                Other = Value
+            ;   <a href="#put_attr">put_attr</a>(Other, domain, Dom)
+            )
+        ;   ord_memberchk(Other, Dom1)
+        ).
+    </pre>
+
+    Informally, we can read this as:
+
+    <ol>
+      <li>If <tt>Other</tt> is a variable that has an associated
+        domain <tt>Dom2</tt>, then we build
+        the <i>intersection</i> <tt>Dom</tt> =
+        <tt>Dom1</tt> &cap; <tt>Dom2</tt>. This ordered list contains
+        all elements that are admissible for <i>both</i> variables
+        that have been unified.
+      </li>
+
+      <li>We only proceed if <tt>Dom</tt> is <i>different</i>
+        (<tt>dif/2</tt>) from the
+        empty <a href="data#list">list</a>&nbsp;<tt>[]</tt>, and
+        hence there is at least one remaining domain element
+        that is admissible for the resulting unified variable.
+      </li>
+
+      <li>If <tt>Dom</tt> has only a single remaining element, then
+        that element must be <i>equal&nbsp;to</i> the unified variable
+        (because there is no other choice).
+      </li>
+
+      <li>Otherwise, assign the intersection <tt>Dom</tt> as
+        an <i>attribute</i> to the unified variable.</li>
+
+      <li>If <tt>Other</tt> has no associated domain, then the
+        unification is only admissible if <tt>Other</tt> is
+        a <i>member</i> of the domain&nbsp;<tt>Dom1.</tt>
+      </li>
+    </ol>
+
+    In addition, let us use the following definition to associate a
+    variable with its domain:
+
+    <pre>
+domain(X, List) :-
+        list_to_ord_set(List, Dom),
+        <a href="#put_attr">put_attr</a>(X, domain, Dom).
+    </pre>
+
+    With these definitions in place, we can query:
+
+    <pre>
+?- domain(X, [a,b,c]),
+   domain(Y, [c,d,e]),
+   X = Y.
+    </pre>
+
+    In response, we get the concrete solution:
+
+    <pre>
+<b>X = Y, Y = c.</b>
+    </pre>
+
+    This works because upon unification, the hook is invoked, builds
+    the intersection of the two domains, determines that they have
+    only a single&nbsp;element in common, and hence unifies the
+    resulting variable with that element. Note that <tt>X</tt>
+    and <tt>Y</tt> have become completely indistinguishable.
+    Unification has truly <i>unified</i> them.
+
+    <br><br>
+
+    <b>Exercise</b> (hard): The following property is highly desirable
+      for a constraint solver. Prove that it holds in this case, or
+      provide a counterexample:<br><i>For every
+      Prolog&nbsp;query&nbsp;<tt>Q</tt> that consists <i>only</i>
+      of <tt>domain/2</tt> and <tt>(=)/2</tt> goals, <i>removing</i>
+      one of the goals makes the resulting query&nbsp;<tt>Q'</tt> at
+      least as general as&nbsp;<tt>Q</tt>, in the sense that the set
+      of solutions of <tt>Q</tt> is a subset of those
+      of&nbsp;<tt>Q'</tt>.</i>
+
+    <br><br>
+
+    <center><h3>Displaying attributes</h3></center>
+
+    In an actual constraint solver, we are not content with answers
+    that look like <tt>put_attr(X, m, test)</tt>. Instead, what we
+    expect from a constraint solver is a representation of remaining
+    attributes that is <i>meaningful to humans</i>. Thus, we expect a
+    constraint solver to emit more high-level <i>Prolog&nbsp;goals</i>
+    as answers, which have a well-defined meaning no matter how they
+    are internally implemented.
+
+    <br><br>
+
+    For this purpose, there is
+    the <a href="dcg">DCG&nbsp;nonterminal</a> <tt>M:attribute_goals//1</tt>. In
+    SWI-Prolog, you can define this nonterminal in a
+    module&nbsp;<tt>M</tt>, and it is automatically invoked by the
+    Prolog&nbsp;engine for each variable&nbsp;<tt>X</tt> that has an
+    attribute in&nbsp;<tt>M</tt>. It is defined as follows:
+
+    <br>
+    <div id="attribute_goals" class="predicate">
+      <tt><b>M:attribute_goals(V)</b></tt>:
+      <br>
+      This is a <a href="dcg">DCG nonterminal</a> describing
+      a <i>list</i> of Prolog goals which caused the presence
+      of <tt>V</tt>'s attributes in module&nbsp;<tt>M</tt>. This means
+      that executing these goals should lead to equivalent attributes
+      on&nbsp;<tt>X</tt> in module&nbsp;<tt>M</tt>.
+    </div>
+    <br>
+
+    For example, let us apply this feature to our simple finite
+    domain constraint solver that we considered above. It only has a
+    single interface predicate,
+    called&nbsp;<tt>domain/2</tt>. Ideally, answers that are reported
+    on the toplevel should only use public interface predicates,
+    since their meaning is known to&nbsp;users.
+
+    <br><br>
+
+    Thus, it remains for us to <i>translate</i> attributes to
+    so-called <i>residual&nbsp;goals</i>, using the above nonterminal.
+    In the concrete case above, we can do it like this:
+
+    <pre>
+domain:attribute_goals(Var) --&gt;
+        { get_attr(Var, domain, Dom) },
+        [domain(Var, Dom)].
+    </pre>
+
+    This simply fetches the attribute from module <tt>domain</tt>, and
+    describes a list with a <i>single</i> goal. Here is an example
+    that illustrates that this predicate is automatically invoked by
+    the toplevel when reporting answers:
+
+    <pre>
+?- domain(X, [a,b,c]).
+<b>domain(X, [a, b, c]).</b>
+    </pre>
+
+    It also works for more complex queries:
+
+    <pre>
+?- domain(X, [a,b,c]),
+   domain(Y, [b,c,d]),
+   X = Y.
+X = Y,
+<b>domain(Y, [b, c])</b>.
+    </pre>
+
+    Using this mechanism, you can always translate internal attributes
+    to Prolog&nbsp;goals that are more meaningful to users.
+
+    <br><br>
+
+    The toplevel provides this functionality by internally invoking
+    the predicate&nbsp;<tt>copy_term/3</tt>. This predicate creates
+    a <i>copy</i> of variables that may be involved in constraints,
+    and uses <tt>attribute_goals//1</tt> to create a <i>list
+    of&nbsp;goals</i> that, when called, create equivalent attributes
+    on the copy. You can use <tt>copy_term(X, X, Gs)</tt> to reason
+    about the constraints&nbsp;<tt>Gs</tt> that <tt>X</tt> is
+    involved&nbsp;in. Note that a <i>list</i> of goals is used, since
+    this is a <a href="data#clean">clean</a> representation
+    of&nbsp;goals that allows convenient further analysis.
+
+    <br><br>
+
+    <center><h3>Pitfalls</h3></center>
+
+    Working with attributed variables is <i>extremely</i> error-prone.
+    I have considerable experience with such interfaces: I have
+    contributed <a href="clpfd">CLP(FD)</a> to SWI-Prolog, and ported
+    the whole system to SICStus&nbsp;Prolog
+    as <a href="https://github.com/triska/clpz">CLP(Z)</a>. I have
+    contributed <a href="/clpb/">CLP(B)</a> to SWI-Prolog, and created
+    a <a href="/clpb/clpb.pl">port</a> to SICStus&nbsp;Prolog. I have
+    a doctoral degree in the area of constraints: My dissertation is
+    called <a href="/drt.pdf"><i>Correctness Considerations in
+    CLP(FD)&nbsp;Systems</i></a> and it deals with exactly
+    such&nbsp;issues among&nbsp;others. Still, I find
+    it <i>extremely</i> hard to work in particular with the SWI-Prolog
+    interface.
+
+    <br><br>
+
+    The core shortcoming of the SWI-Prolog interface for attributed
+    variables is that <tt>attr_unify_hook/2</tt> is only
+    invoked <i>after</i> a variable has already been unified.
+
+    <br><br>
+
+    This may seem quite innocent at first: After all, the (previous)
+    attribute of that variable is an argument
+    of <tt>attr_unify_hook/2</tt>, so everything we need to know is
+    available, <i>right</i>? Let us suppose that this is the case
+    (although it&nbsp;<i>isn't</i>, as we discuss below). Even then,
+    several variables may <i>at&nbsp;once</i> become instantiated, for
+    example via a goal like <tt>[X,Y]&nbsp;=&nbsp;[0,1]</tt>. It is
+    easy to see that if such a unification
+    involves <tt>n</tt>&nbsp;variables, then there are at least
+    2<sup><i>n</i></sup> different <i>kinds</i> of possible
+    instantiation patterns that may arise in a single
+    unification. Nobody is able to think all cases through completely.
+    An example of a situation that can arise due to simultaneous
+    unifications is explained in
+    commit&nbsp;<a href="https://github.com/SWI-Prolog/swipl-devel/commit/9c8ea20b7c9aa5a2b86d4bcc82a93f8f0e7b34c1">9c8ea20b7</a>. A
+    highly experienced expert in constraint programming ran into
+    the <a href="https://github.com/SWI-Prolog/issues/issues/15">same&nbsp;issue</a>
+    in his own constraint solver.
+
+    <br><br>
+
+
+    But still, maybe the interface is not to blame, right? Maybe we
+    have only not tried hard enough to work with the interface. After
+    all, only poor craftspeople blame their&nbsp;<i>tools</i>, right?
+
+    <br><br>
+
+    <b>Wrong!</b> If an interface not only makes possible but
+    downright <i>enforces</i> such mistakes, then it is time to
+    reconsider the interface. Normally, such issues should be reason
+    enough to seriously rethink the interface. However, in the Prolog
+    community, the error-prone nature of this interface is not by
+    itself enough reason for&nbsp;change. Traditionally, it
+    is <i>performance</i> that matters&nbsp;most, and who cares about
+    correctness as long as your system is&nbsp;fast, <i>right</i>?
+    Therefore, I give you a second argument:
+
+    <br><br>
+
+    The SWI-Prolog interface is <i>not&nbsp;sufficient</i> to express
+    important classes of constraint solvers. Consider again the
+    unification <tt>[X,Y] = [0,1]</tt>. This means that the attributes
+    of <i>both</i> variables become unavailable at the same time. It
+    is true: When <tt>attr_unify_hook/2</tt> is run
+    for&nbsp;<tt>X</tt>, you have access to its former attribute. But
+    at that time, you can no longer access the former attribute
+    of&nbsp;<tt>Y</tt> via <tt>get_attr/3</tt>, and in fact you can
+    no&nbsp;longer even tell that <tt>Y</tt> was a variable. The next
+    section shows an example where this is needed, but not possible.
+
+    <br><br>
+
+    <center><h2 id="minatotask">Minato task</h2></center>
+
+    Let us now consider a specific task, which is easily encountered
+    when implementing a <a href="/clpb/">CLP(B)&nbsp;system</a> based
+    on
+    <a href="https://en.wikipedia.org/wiki/Zero-suppressed_decision_diagram">Zero-suppressed
+      decision diagrams</a>&nbsp;(ZDDs). ZDDs are a very important
+      data&nbsp;structure, and
+    <a href="http://www-cs-faculty.stanford.edu/~knuth/">Donald&nbsp;Knuth</a>
+    has called them "the most beautiful construct in
+    computer&nbsp;science" in
+    a&nbsp;<a href="https://www.youtube.com/watch?v=xLBvCB2kr4Q">talk</a>.
+
+    <br><br>
+
+    I call this task <b>Minato&nbsp;task</b>, in honor of
+    <a href="http://art.ist.hokudai.ac.jp/~minato/index-j.html">
+    湊　真一(みなと　しんいち)</a>, MINATO Shin-ichi, the inventor
+    of&nbsp;ZDDs
+    (see <a href="https://pdfs.semanticscholar.org/9593/6223362a16a50de2959475d87aefe2a1fec7.pdf"><i>Zero-Suppressed
+    BDDs for Set Manipulation in Combinatorial Problems</i></a>). We
+    shall use this&nbsp;task to determine whether a Prolog system's
+    interface predicates for attributed variables
+    are <i>general&nbsp;enough</i> to naturally express a certain
+    class of constraints that are of great practical importance.
+
+    <br><br>
+
+    A ZDD is a <i>decision&nbsp;diagram</i>. This means that we can
+    simply follow the lines of the diagram to arrive at a
+    truth&nbsp;value. The nodes of a&nbsp;ZDD
+    are <i>branching&nbsp;variables</i>: If a variable
+    is&nbsp;<tt>1</tt>, then we take the <i>plain</i>&nbsp;line, and
+    if a variable is&nbsp;<tt>0</tt>, then we take
+    the <i>dotted</i>&nbsp;line. In that respect, a ZDD is like
+    a <i>Binary Decision Diagram</i>&nbsp;(BDD). However, a ZDD is
+    interpreted with the following distinguishing&nbsp;twist: If a
+    variable does <i>not</i>&nbsp;appear on a path that leads
+    to&nbsp;<b>true</b>, then that variable must be equal
+    to&nbsp;<tt>0</tt>.
+
+    <br><br>
+
+    For example, here is a ZDD that represents the truth value
+    of the Boolean function <i>X</i>&nbsp;<tt>xor</tt>&nbsp;<i>Y</i>:
+
+    <br><br>
+
+    <center>
+      <object data="xor.svg" type="image/svg+xml" style="padding:20pt">
+      </object>
+    </center>
+
+    We can represent a ZDD as a
+    Prolog <a href="data#term">term</a>. The truth
+    values <b>true</b> and <b>false</b> can be represented
+    as <i>atoms</i>, and an inner node can be represented as
+    <tt>(&nbsp;X&nbsp;&rightarrow;&nbsp;Then&nbsp;;&nbsp;Else&nbsp;)</tt>,
+    where:
+
+    <ul>
+      <li><tt>X</tt> is a <i>branching variable</i></li>
+      <li><tt>Then</tt> and <tt>Else</tt> are nodes.
+      </li>
+    </ul>
+
+    In analogy to Prolog syntax, <tt>Then</tt> is taken to mean
+    that <tt>X</tt> is&nbsp;<tt>1</tt> (<b>true</b>), and <tt>Else</tt> means
+    that <tt>X</tt> is&nbsp;<tt>0</tt> (<b>false</b>).
+
+    <br><br>
+
+    For example, the ZDD above can be represented as:
+
+    <pre>
+( X -&gt; <b>true</b> ; ( Y -&gt; <b>true</b> ; <b>false</b> ) )
+    </pre>
+
+    Both variables, <tt>X</tt> and <tt>Y</tt>, participate in this
+    decision diagram. Therefore, to reason about such constraints in
+    Prolog, it is natural to attach this diagram as
+    an <i>attribute</i> to both variables. Here is how we can do this
+    with <a href="#put_attr">put_attr/3</a>:
+
+    <pre>
+?- ZDD = ( X -> true ; ( Y -> true ; false ) ),
+   put_attr(X, zdd, ZDD),
+   put_attr(Y, zdd, ZDD).
+    </pre>
+
+    We now consider a series of unifications, and you tell us how you
+    use your system's interface predicates to arrive at the correct
+    truth values for <tt>X</tt> and <tt>Y</tt>.
+
+    <ol>
+      <li>
+        As a start, consider the following unification: <tt>X = 0</tt>.
+
+        <br><br>
+        You reply for example with: That's easy, I simply take a look at
+        the decision diagram, which now is:
+
+    <pre>
+( 0 -> true ; ( Y -> true ; false ) )
+    </pre>
+
+    Since the first branching variable is now instantiated, it is
+    clear which branch we must take, so we can replace the whole diagram with:
+
+    <pre>
+( Y -> true ; false )
+    </pre>
+    From there, further unifications are easy.
+
+    <br><br>
+
+      </li>
+
+
+      <li>
+
+        Here is a slightly harder case: <tt>X = 1</tt>.
+
+        <br><br>
+
+        This means that the ZDD could be reduced to:
+
+    <pre>
+true
+    </pre>
+
+    But wait, that's not all! As we explained, a variable that
+    does <i>not</i> appear in a path to <b>true</b> must be equal
+    to&nbsp;<tt>0</tt>. In this case, <tt>Y</tt> is such a variable,
+    so we must set it to&nbsp;<tt>0</tt>. But&nbsp;how? Well, one way
+    to do this is to keep track of <i>all&nbsp;variables</i> that have
+    so far appeared in constraints, and to represent the ZDD for
+    example as a <i>pair</i> of terms, such as:
+
+    <pre>
+( X -&gt; true ; ( Y -&gt; true ; false ) )-<b>[X,Y]</b>
+    </pre>
+
+    This means that in the above case, we would end up with:
+
+    <pre>
+true-[1,Y]
+    </pre>
+
+    and from there it is easy to state that <tt>Y&nbsp;=&nbsp;0</tt>.
+
+      </li>
+
+
+      <li>Here is a third case: <tt>[X,Y]&nbsp;=&nbsp;[1,1]</tt>.
+
+        <br><br>
+
+        And you solve the <b>Minato task</b> by telling us how your
+        interface predicates can be used to determine that this
+        unification is <i>not&nbsp;admissible</i> due to the
+        constraints the variables are involved&nbsp;in.
+
+        <br><br>
+
+        For comparison, the unification must <i>succeed</i> if the ZDD
+        is for example:
+
+        <pre>
+ZDD = ( X -> Inner ; Inner ), Inner = ( Y -> true ; false )
+        </pre>
+
+        This illustrates that you cannot look into <i>other</i>
+        branches of the&nbsp;ZDD to recover any information
+        about&nbsp;<tt>Y</tt>.
+      </li>
+    </ol>
+
+    Note especially the following: There is no doubt that this issue
+    can be solved <i>somehow</i>, even with a very primitive interface
+    for attributed variables. One example would be to duplicate all
+    kinds of attributes so that they are available redundantly in all
+    data structures that occur anywhere. However, an interface that
+    demands such contortions cannot be taken seriously. In
+    my&nbsp;view, the key&nbsp;questions are:
+
+    <ul>
+
+      <li>How <i>naturally</i> can an interface be used to solve
+        such&nbsp;tasks?</li>
+
+      <li>How likely are <i>mistakes</i> by application programmers
+        who use it?</li>
+
+      <li>How hard do we want to make our lives for the sake of
+        negligible additional performance?</li>
+    </ul>
+
+    In my opinion, we should strive for convenient and <i>general</i>
+    interface predicates that make mistakes <i>as unlikely as
+    possible</i>. People have suggested that I "want the SICStus
+    interface". I would in fact prefer an interface that
+    provides <i>even stronger guarantees</i>. However, from those
+    interfaces that are currently available, I consider the SICStus
+    interface the most desirable, and therefore recommend its
+    emulation.
+
+    <br><br>
+
+    <center><h3 id="minatotask_sicstus">Solution with SICStus Prolog</h3></center>
+
+    For completeness, here is a possible solution of the
+    Minato&nbsp;task, using SICStus&nbsp;Prolog and its very
+    general <a href="https://sicstus.sics.se/sicstus/docs/3.7.1/html/sicstus_17.html#IDX980">interface</a>
+    for attributed&nbsp;variables</a>.
+
+    <br><br>
+
+    First, of course, let us use
+    a <a href="data#clean"><i>clean</i></a> representation of nodes, such as:
+
+    <ul>
+      <li>a <i>leaf</i> is represented as <tt>b(true)</tt> or <tt>b(false)</tt></li>
+      <li>an <i>inner node</i> is represented as <tt>( Var -&gt; Then
+          ; Else )</tt>, where <tt>Then</tt> and <tt>Else</tt> are nodes.
+      </li>
+    </ul>
+
+    Note in particular that we can now <i>symbolically</i> distinguish
+    leaves from inner&nbsp;nodes, thanks to the <tt>b/1</tt> wrapper
+    we use for concrete Boolean&nbsp;values.
+
+    <br><br>
+
+    As a warm-up, let us express the so-called <b>restriction</b> of
+    a&nbsp;ZDD. This means the relation between one&nbsp;ZDD, and a
+    new&nbsp;ZDD that arises when the variable&nbsp;<tt>Var</tt> is
+    unified with the concrete Boolean truth value&nbsp;<tt>Value</tt>,
+    which is either <tt>0</tt> or&nbsp;<tt>1</tt>:
+
+    <pre>
+zdd_restriction(b(T), _, _, b(T)).
+zdd_restriction(( Var0 -&gt; Then0 ; Else0), Var, Value, ZDD) :-
+        (   Var0 == Var -&gt;
+            (   Value =:= 0 -&gt; ZDD = Else0
+            ;   Value =:= 1 -&gt; ZDD = Then0
+            ;   throw(no_boolean)
+            )
+        ;   zdd_restriction(Then0, Var, Value, Then),
+            zdd_restriction(Else0, Var, Value, Else),
+            ZDD = ( Var0 -&gt; Then ; Else )
+        ).
+    </pre>
+
+    Example query:
+
+    <pre>
+?- zdd_restriction((X -> b(true) ; b(false)), X, 1, ZDD).
+<b>ZDD = b(true).</b>
+    </pre>
+
+    Note that the above method is an extremely inefficient way to
+    compute the restriction of a&nbsp;ZDD. Making it faster by
+    using <a href="/prolog/memoization"><b>memoization</b></a> is left as an
+    exercise.
+
+    <br><br>
+
+        We need a single public predicate to demonstrate how our solution
+    works: <tt><b>variables_set_zdd(Vs, ZDD)</b></tt> shall attach the
+    given&nbsp;ZDD as an <i>attribute</i> to all variables
+    in&nbsp;<tt>Vs</tt>. The attribute shall be of the
+    form&nbsp;<tt>zdd_vs(ZDD, Vs)</tt> and store the&nbsp;ZDD as well
+    as all variables we want to reason about.
+
+    <br><br>
+
+    In SICStus Prolog, we use <tt>library(atts)</tt> to declare and
+    reason about attributes. For example:
+
+    <pre>
+:- use_module(library(atts)).
+
+:- attribute zdd_vs/2.
+
+variables_set_zdd(Vs, ZDD) :-
+        maplist(set_zdd(ZDD, Vs), Vs).
+
+set_zdd(ZDD, Vs, V) :-
+        put_atts(V, +zdd_vs(ZDD, Vs)).
+    </pre>
+
+    We are now ready to implement <tt>verify_attributes/3</tt>, which
+    is a more general and more declarative form
+    of <tt>attr_unify_hook/2</tt>. In SICStus&nbsp;Prolog, this hook
+    is invoked <i>before</i> variables with attributes are unified. It
+    lets us conveniently reason about all variables. When a ZDD is
+    reduced to the leaf&nbsp;node&nbsp;<tt>b(true)</tt>, then all
+    variables that were not encountered in that branch must
+    be&nbsp;<tt>0</tt>. We enforce this with
+    a&nbsp;<a href="dcg">DCG</a> that describes a list of <tt>V=0</tt>
+    goals, one for each remaining variable:
+
+    <pre>
+verify_attributes(Var, Value, Goals) :-
+        (   get_atts(Var, +zdd_vs(ZDD0,Vs)) -&gt;
+            (   integer(Value) -&gt;
+                zdd_restriction(ZDD0, Var, Value, ZDD)
+            ;   throw(aliasing_not_implemented)
+            ),
+            phrase(remaining_vars_0(ZDD, Var, Vs), Goals)
+        ;   Goals = []
+        ).
+
+remaining_vars_0(b(true), Var, Vs) --&gt; all_others_0(Vs, Var).
+remaining_vars_0((_;_), _, _) --&gt; [].
+
+all_others_0([], _) --&gt; [].
+all_others_0([V|Vs], Var) --&gt;
+        (   { var(V), V \== Var } -&gt; [V=0]
+        ;   []
+        ),
+        all_others_0(Vs, Var).
+    </pre>
+
+    The full code is available from: <a href="minatotask.pl"><tt>minatotask.pl</tt></a>
+
+    <br><br>
+
+    A few sample queries are included. In particular, the
+    Minato&nbsp;task works as desired:
+
+    <pre>
+?- ZDD = ( X -&gt; b(true) ; ( Y -&gt; b(true) ; b(false) ) ),
+   Vs = [X,Y],
+   variables_set_zdd(Vs, ZDD),
+   Vs = [1,1].
+<b>no</b>
+    </pre>
+
+    It is clear that the general and declarative SICStus interface has
+    some performance impact in comparison with more
+    limited&nbsp;hooks. However, in addition to its generality,
+    SICStus&nbsp;Prolog is also widely known as one of
+    the <i>most&nbsp;efficient</i> Prolog&nbsp;systems.  The argument
+    that we should sacrifice correctness for efficiency, even if it
+    were a sensible&nbsp;one, can therefore <i>not</i> be applied in
+    this case.
+
+    <center><h2>Further reading and future work</h2></center>
+
+    Attributed variables are typically used to implement constraint
+    solvers on top of&nbsp;Prolog. This is their most important, but
+    not their <i>only</i> use&nbsp;case.
+
+    <br><br>
+
+    Especially for Prolog programs that need destructive assignments
+    or reason about <i>graphs</i>, attributed variables are often a
+    good and convenient representation. Do not get carried away with
+    destructive assignment though, because it destroys the relational
+    nature of your&nbsp;code.
+
+    <br><br>
+
+    A good approach is to <i>encapsulate</i> the use of attributed
+    variables behind more declarative interface predicates of
+    your&nbsp;libraries. For example, consider the implementation of
+    Tarjan's&nbsp;algorithm to find the
+    so-called <i>Strongly&nbsp;Connected Components</i> of
+    a&nbsp;graph:&nbsp;<a href="/scc.pl"><tt><b>scc.pl</b></tt></a>. In
+    that case, the use of attributed variables allows us to implement
+    the algorithm with close to asymptotically <i>optimal</i>
+    performance.
+
+    <br><br>
+
+    I have described some of the issues in the peer-reviewed
+    publication <a href="/swiclpb.pdf"><i><b>The Boolean Constraint Solver of
+          SWI-Prolog</b></i></a>. An extended version is in preparation.
+
+    <br><br>
+
+    To me, the current state of interface predicates for
+    attributed&nbsp;variables can at best be considered as definitely
+    deserving <i>much additional work</i>. For instance, what would be
+    the best way to let <i>different</i> constraint
+    solvers <i>cooperate</i> in the intersection of their domains?
+
+    <br><br>
+
+    If you have a good idea for new interface predicates, consider
+    writing a
+    <a href="/acomip/">meta-interpreter</a> that lets you present the
+    mechanism to the community by extending an existing
+    Prolog&nbsp;system without the need for low-level
+    changes. Alternatively, follow the example of Douglas&nbsp;Miles
+    and <a href="https://github.com/SWI-Prolog/roadmap/issues/14">extend
+    an existing engine directly</a>.
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

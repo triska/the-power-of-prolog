@@ -29,3 +29,15 @@ span.nobr { white-space: nowrap; }
             margin-top: 1.5em;
             display: inline-block;
             margin-bottom: 1em;}
+
+.predicate {  border: 1px dotted;
+            padding: 5pt;
+            margin-top: 1.5em;
+            display: inline-block;
+            margin-bottom: 1em;}
+.quote {  border: 1px dotted;
+            padding: 5pt;
+            margin-top: 1.5em;
+            display: inline-block;
+            margin-bottom: 1em;}
+

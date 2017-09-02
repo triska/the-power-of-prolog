@@ -224,7 +224,9 @@
     even is an impure predicate called <tt>setarg/3</tt> which allows
     destructive modifications to a term. Use it at your own peril: If
     you use <tt>setarg/3</tt>, you can no longer reason about your
-    code in the way you expect from pure relations.
+    code in the way you expect from pure relations. If you really need
+    efficient destructive modifications of terms, it is better to
+    use <a href="attributedvariables">attributed&nbsp;variables</a>.
 
     <center><h2 id="clean">Clean vs. defaulty representations</h2></center>
 
