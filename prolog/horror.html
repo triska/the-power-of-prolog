@@ -98,17 +98,39 @@
 
     As a beginner, you will sometimes be tempted to <i>print</i>
     answers on the system terminal instead of letting the toplevel
-    report&nbsp;them. The major drawback of this approach is
-    that <i>you cannot easily reason about such output</i>. Therefore,
-    you will not write test cases for such output, increasing the
-    likelihood of introducing changes that break such predicates.
+    report&nbsp;them. For example, your programs may contain code
+    like&nbsp;this:
+
+    <pre>
+solve :-
+        solution(S),
+        format("the solution is: ~q\n", [S]).
+    </pre>
+
+    A major drawback of this approach is that <i>you cannot easily
+    reason about such output</i>, since it only occurs on the system
+    terminal and is not available as a Prolog&nbsp;term within your
+    program. Therefore, you will not write test cases for such output,
+    increasing the likelihood of introducing changes that break such
+    predicates. Another severe shortcoming is that this prevents you
+    to use the code as a true <i>relation</i>.
 
     <br><br>
 
-    The primary means to make your programs defective in this way is
-    to use impure I/O like&nbsp;<tt>format/2</tt>. A declarative way
-    out is to describe the output in a pure way, using for example the
+    To benefit from the full generality of relations, <i>describe</i>
+    a solution with Prolog&nbsp;code, and <i>let the toplevel do the
+    printing</i>:
+
+    <pre>
+solution(S) :-
+        constraint_1(S),
+        etc.
+    </pre>
+
+    Sometimes, you may want special formatting. In such case, you can
+    still describe the output in a pure way, using for example the
     nonterminal&nbsp;<a href="dcg#output"><tt><b>format_//2</b></tt></a>.
+    This makes test&nbsp;cases easy to&nbsp;write.
 
     <center><h2>The horror: Low-level language constructs</h2></center>
 
