@@ -27,15 +27,15 @@
     <ul>
       <li>an <b>atom</b> is a term. Examples of atoms
         are: <tt>x</tt>, <tt>test</tt> and <tt>'quotes and space'</tt>.</li>
-      
+
       <li> a <b>variable</b> is a term. Variables start with an
         uppercase letter or underscore&nbsp;<tt>_</tt>. A single
         underscore denotes an <i>anonymous&nbsp;variables</i> and can
         be read as "any&nbsp;term".</li>
-      
+
       <li><b>integers</b> and <b>floating point numbers</b> are terms.
         Examples: 42 and 42.42. </li>
-      
+
       <li>a <b>compound term</b> is a term, defined inductively as
         follows: <i>If</i> <tt>T<sub>1</sub></tt>, <tt>T<sub>2</sub></tt>,
         ..., <tt>T<sub>n</sub></tt> are
@@ -88,7 +88,7 @@
     <ol>
       <li>The list <tt>'.'(a, '.'(b, '.'(c, [])))</tt> can also be
         written as <tt>[a,b,c]</tt>.</li>
-      
+
       <li>The term <tt>'.'(L, Ls)</tt> can also be written as <tt>[L|Ls]</tt>.
       </li>
     </ol>
@@ -125,7 +125,7 @@
     term <tt>'.'(A,'.'(B,'.'(C,[])))</tt> and thus takes
     roughly <i>twice</i> the space of the term <tt>f(A,B,C)</tt>
     in&nbsp;memory.
-    
+
     <br><br>
 
     <a href="dcg">DCG notation</a> is frequently used for
@@ -157,9 +157,46 @@
     <br><br>
 
     There is a public domain library called <tt>library(assoc)</tt>
-    that ships with many Prolog systems and
-    provides <i>O(log(N))</i>&nbsp; operations for inserting, fetching
-    and changing elements of a collection.
+    that ships with many Prolog systems and provides operations for
+    inserting, fetching and changing elements of a collection.
+
+    <br><br>
+
+    Here is one way to represent an AVL&nbsp;tree in Prolog:
+
+    <ol>
+      <li>the <i>empty</i> tree is represented by the
+        atom&nbsp;<tt>t</tt>.</li>
+      <li>an <i>inner&nbsp;node</i> is represented as
+        a <i>compound&nbsp;term</i> of the form <tt>t(Key, Value,
+          Balance, Left, Right)</tt> where:
+
+        <ul>
+          <li><tt>Key</tt> and <tt>Value</tt> represent
+            the <i>association</i> of&nbsp;<tt>Key</tt>
+            with&nbsp;<tt>Value</tt>.</li>
+          <li><tt>Balance</tt> is an <i>atom</i> that denotes a
+          balance criterion, such as a relation between the number of
+          children of the left and right subtrees. For example, we can
+          use the atoms <tt>&lt;</tt>, <tt>=</tt> and <tt>&gt;</tt> to
+            denote different states between the subtrees.
+          </li>
+
+          <li><tt>Left</tt> and <tt>Right</tt> are AVL&nbsp;trees.</li>
+        </ul>
+    </ol>
+
+    Every operation on AVL&nbsp;trees, such as adding or changing an
+    association, can be described as a <i>relation</i> between
+    different trees, one tree <i>before</i> the operation and
+    one <i>after</i>&nbsp;it. See <a href="/tist/"><i>Thinking
+        in&nbsp;States</i></a> for more information.
+
+    <br><br>
+
+    AVL&nbsp;trees let us perform many important operations
+    in <i>O</i>(log(<i>N</i>))&nbsp;time, where <i>N</i> is the number
+    of associations. This is acceptably efficient in many&nbsp;cases.
 
 
     <center><h2 id="string">Strings?</h2></center>
@@ -259,7 +296,7 @@
       <li><b>nodes</b>, which have two children that are again full
       binary trees.</li>
     </ul>
-    
+
     We can represent such trees with Prolog terms as follows:
 
     <ul>
