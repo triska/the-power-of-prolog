@@ -48,8 +48,9 @@
     <br><br>
 
     Prolog implementors may be interested in
-    the <a href="#minatotask"><b>Minato&nbsp;task</b></a> to assess
-    the generality of their interface predicates.
+    the <a href="#minatotask"><b>Minato&nbsp;task</b></a> and
+    in the <a href="#equivalencetask"><b>Equivalence&nbsp;task</b></a> to
+    assess the generality of their interface predicates.
 
     <center><h2>How it started</h2></center>
 
@@ -321,8 +322,6 @@ dissertation&nbsp;[Holzbaur 90].
     other Prolog systems, the <i>kinds</i> of predicates are the same
     also in other systems.
 
-    <br><br>
-
     <center><h3>Adding and changing attributes</h3></center>
 
     In SWI-Prolog, an attributed variable is a <i>relation</i> between
@@ -423,8 +422,6 @@ true.</b>
 
     <br><br> An additional predicate called <tt>del_attr/2</tt> lets
     you <i>remove</i> an attribute from a variable.
-
-    <br><br>
 
     <center><h3>Unification of attributed variables</h3></center>
 
@@ -818,8 +815,6 @@ domain(X, List) :-
       of solutions of <tt>Q</tt> is a subset of those
       of&nbsp;<tt>Q'</tt>.</i>
 
-    <br><br>
-
     <center><h3>Displaying attributes</h3></center>
 
     In an actual constraint solver, we are not content with answers
@@ -905,8 +900,6 @@ X = Y,
     involved&nbsp;in. Note that a <i>list</i> of goals is used, since
     this is a <a href="data#clean">clean</a> representation
     of&nbsp;goals that allows convenient further analysis.
-
-    <br><br>
 
     <center><h3>Pitfalls</h3></center>
 
@@ -1192,8 +1185,6 @@ ZDD = ( X -> Inner ; Inner ), Inner = ( Y -> true ; false )
     interface the most desirable, and therefore recommend its
     emulation.
 
-    <br><br>
-
     <center><h3 id="minatotask_sicstus">Solution with SICStus Prolog</h3></center>
 
     For completeness, here is a possible solution of the
@@ -1334,6 +1325,82 @@ all_others_0([V|Vs], Var) --&gt;
     were a sensible&nbsp;one, can therefore <i>not</i> be applied in
     this case.
 
+    <center><h2 id="equivalencetask">Equivalence task</h2></center>
+
+    We now consider a second task, which I
+    call <b>Equivalence&nbsp;task</b>, and which also arises in
+    connection with&nbsp;<a href="/clpb/">CLP(B)</a>. I hope this task
+    is useful for&nbsp;you to assess the generality and expressiveness
+    of your system's interface predicates.
+
+    <br><br>
+
+    The
+    <a href="https://sicstus.sics.se/sicstus/docs/4.3.5/html/sicstus/CLPB-Interface.html#CLPB-Interface">SICStus&nbsp;documentation</a>
+    states for <tt>sat(Expression)</tt>, which is
+    true <i>iff</i> <tt>Expression</tt> is satisfiable:
+
+    <blockquote class="quote">
+      If a variable&nbsp;<tt>X</tt>, occurring in the expression, is
+    subsequently unified with some term&nbsp;<tt>T</tt>, this is
+    treated as a shorthand for the constraint
+
+<pre>
+| ?- sat(X=:=T).
+</pre>
+    </blockquote>
+    <br><br>
+
+    To implement this in Prolog, an interface for attributed variables
+    must have the ability to reason about a unification <i>before</i>
+    it takes&nbsp;place. Again, a different implementation strategy
+    necessitates highly unnatural and error-prone encodings.
+
+    <br><br>
+
+    Consider for example the query:
+
+    <pre>
+?- sat(X=:=Z), X = X+1.
+    </pre>
+
+    and ask yourself how this could be handled in your system.
+    According to the SICStus&nbsp;documentation, it should be
+    equivalent to:
+
+    <pre>
+?- sat(X=:=Z), sat(X=:=X+1).
+    </pre>
+
+    This is <i>satisfiable</i> and should therefore yield for example:
+
+    <pre>
+<b>X = Z, Z = 1.</b>
+    </pre>
+
+    If your system cannot yield such an answer, think about what a
+    suitable approximation may look&nbsp;like, and how it can be
+    computed.
+
+    <br><br>
+
+    For example, with your interface predicates for attributed
+    variables, can you at least somehow <i>distinguish</i> the above
+    case from:
+
+    <pre>
+?- sat(X=:=Z), X = ~X.
+    </pre>
+
+    which ought to be equivalent to:
+
+    <pre>
+?- sat(X=:=Z), sat(X =:= ~X).
+    </pre>
+
+    and hence <i>fail</i>.
+
+    </pre>
     <center><h2>Further reading and future work</h2></center>
 
     Attributed variables are typically used to implement constraint
