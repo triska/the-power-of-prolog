@@ -9,8 +9,9 @@ a:active  { background-color:  #4d4dff;
            color: #ffffff;
          }
 
-h2 { padding-top: 30pt; }
 h1 { font-size: 300%; }
+h2 { padding-top: 30pt; }
+h3 { padding-top: 20pt; }
 pre { padding-left: 5%; }
 .query { padding-top: 2pt;
          background-color: #eeeeee;
