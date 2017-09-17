@@ -68,6 +68,9 @@ var toc = new Array(
     { link: "/prolog/web",
       title: "Web Applications"
     },
+    { link: "/prolog/cryptography",
+      title: "Cryptography"
+    },
     { link: "/prolog/business",
       title: "Business Cases"
     },

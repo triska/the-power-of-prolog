@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cryptography with Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Cryptography with Prolog">
+    <meta name="keywords" content="Prolog,Cryptography,SSL,TLS">
+    <meta charset="utf-8" />
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+    <style type="text/css">
+<!--
+    .hex { font-weight: bold;
+              color: #0000cc;
+            }
+    .hex:hover  { background-color:  #4d4dff;
+                     color: #ffffff;
+                   }
+
+    .secret { color: red; }
+-->
+    </style>
+
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Cryptography with Prolog</h1></center>
+    <br><br>
+
+
+    <center><h2>Introduction</h2></center>
+
+    Prolog has several features that make it extremely well-suited
+    for <b>cryptographic</b> applications.  For example,
+    built-in <a href="clpfd">integer&nbsp;arithmetic</a> that works
+    for arbitrarily large numbers makes it easy to reason about large
+    prime&nbsp;numbers and various operations on them that frequently
+    arise in the context of cryptography. As another example, Prolog's
+    built-in&nbsp;<a href="sorting#searching">search&nbsp;mechanism</a>
+    lets you easily experiment with brute-force attacks such as
+    exhaustive search for&nbsp;keys, which has great didactic
+    value. The Prolog&nbsp;<a href="concepts#toplevel">toplevel</a>
+    lets us interactively try various predicates and their
+    parameters. And so&nbsp;on.
+
+    <br><br>
+
+    Support for cryptographic algorithms varies between
+    Prolog&nbsp;systems. In the following, we are using SWI-Prolog due
+    to its
+    extensive <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/ssl.html%27%29">OpenSSL&nbsp;bindings</a>
+    and
+    <a href="http://eu.swi-prolog.org/pldoc/man?section=crypto"><tt>library(crypto)</tt></a>. In
+    addition, SWI-Prolog is especially useful for
+    building <a href="web">web&nbsp;applications</a>, and in such
+    applications, sound cryptographic principles are often
+    particularly important.
+
+    <br><br>
+
+    In this text, we consider three aspects of cryptography that are
+    extremely relevant in practice:
+
+    <ul>
+      <li><a href="#hash"><b>hash&nbsp;functions</b></a> that let us assess the <a href="https://en.wikipedia.org/wiki/Data_integrity">integrity</a> of data</li>
+      <li><a href="#signatures"><b>digital&nbsp;signatures</b></a> to declare and assess the <a href="https://en.wikipedia.org/wiki/Authentication">authenticity</a> of data</li>
+      <li><a href="#symmetric-encryption"><b>symmetric encryption</b></a> to ensure the <a href="https://en.wikipedia.org/wiki/Confidentiality">confidentiality</a> of data.</li>
+    </ul>
+
+    We shall focus on the <i>practical</i> application of these
+    methods, with sample code that you can try out and&nbsp;use.  The
+    methods I use in this document are all deemed at
+    least <i>reasonably&nbsp;secure</i>
+    in September&nbsp;2017. <b>Beware</b>&nbsp;though: Make sure to follow best
+    current practices when you use these methods in your own
+    applications. This includes studying additional reference material
+    and at least an introductory textbook on this subject. For
+    example, consider
+    reading <a href="https://www.crcpress.com/Introduction-to-Modern-Cryptography-Second-Edition/Katz-Lindell/p/book/9781466570269"><i>Introduction
+    to Modern Cryptography</i></a> by Jonathan&nbsp;Katz and
+    Yehuda&nbsp;Lindell, and the references included&nbsp;therein.
+
+    <br><br>
+
+    To try the Prolog examples of this document, you need
+    SWI-Prolog&nbsp;<b>7.5.15</b> or greater, and
+    OpenSSL&nbsp;<b>1.1.0</b> or greater. You can find out which
+    OpenSSL version you are using with the following
+    Prolog&nbsp;query:
+
+    <pre>
+?- use_module(library(ssl)), current_prolog_flag(ssl_library_version, V).
+<b>V = 'OpenSSL 1.1.0f  25 May 2017'</b>.
+    </pre>
+
+    The convention I use
+    in this document is that information that ought to be
+    kept <span class="secret"><i>secret</i></span> is written
+    in&nbsp;<span class="secret">red</span>.
+
+    <center><h2>Data representation: codes, bytes, octets, hex etc.</h2></center>
+
+    Before we start with the actual cryptographic functionality, we
+    consider a few different ways to represent <i>data</i>
+    in&nbsp;Prolog, and especially <i>binary</i>&nbsp;data.
+
+    <br><br>
+
+    In Prolog, all data is represented by
+    Prolog&nbsp;<a href="data#term">terms</a>. In SWI-Prolog, the
+    cryptographic predicates let you encrypt, decrypt, sign and hash
+    the following <i>types</i> of terms:
+
+    <ul>
+      <li>atoms</li>
+      <li>strings</li>
+      <li>lists of <i>characters</i></li>
+      <li>lists of <i>codes</i>, such as Unicode code points</li>
+      <li>lists of <i>bytes</i>, also called <i>octets</i>, which are
+      integers between 0 and&nbsp;255.</li>
+    </ul>
+
+    As long as you use atoms or strings throughout in your
+    applications, you need not worry much about how these terms are
+    internally represented in Prolog. However, if you are using lists
+    of <i>integers</i> in this context, you should consider
+    what you want to denote. In Prolog, such lists often denote lists
+    of
+    <i>codes</i>, such as Unicode code&nbsp;points.
+
+    For example:
+
+    <pre>
+?- atom_codes(<b>κρυπτός</b>, Cs).
+Cs = [954, 961, 965, 960, 964, 972, 962].
+    </pre>
+
+    However, cryptographic methods typically work
+    on&nbsp;<i>bytes</i>, and code points that are greater
+    than&nbsp;255 do not fit into a single&nbsp;byte. Therefore, if
+    all you have is such a list of <i>integers</i>, you must make sure
+    to use the intended interpretation. By default, they will be
+    interpreted as a list of <i>codes</i>, and are internally
+    converted to a suitable encoding (UTF-8) such that they become
+    amenable to processing with the cryptographic routines. If you
+    want the integers to be interpreted as <i>bytes</i>, you can
+    specify this via the
+    option&nbsp;<tt>encoding(<b>octet</b>)</tt>. Of course, this only
+    works if all occurring integers are in the range&nbsp;0..255.
+
+
+    <br><br>
+
+
+    There are conversion predicates that let you transform every such
+    term into any other type. Of particular interest in this context is the
+    <a href="dcg">DCG&nbsp;nonterminal</a> <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=utf8%3Autf8_codes//1"><tt>utf8_codes//1</tt></a>:
+
+    <pre>
+?- atom_codes(<b>κρυπτός</b>, Cs),
+   phrase(utf8_codes(Cs), UTF8).
+Cs = [954, 961, 965, 960, 964, 972, 962],
+<b>UTF8 = [206, 186, 207, 129, 207, 133, 207, 128, 207|...].</b>
+    </pre>
+
+    Thus, if you need total control over the representation, you can
+    always convert your data to <i>bytes</i>, and use
+    the <tt>encoding(octet)</tt> option of several cryptographic
+    predicates.
+
+    <br><br>
+
+    In cryptographic applications, short lists of <i>bytes</i> also
+    often need to be communicated to other programs and participants,
+    and in these use cases it is common to represent such lists
+    in <i>hexadecimal</i> notation. This means that each byte is
+    represented by exactly two hexadecimal&nbsp;digits
+    (between <tt>0</tt> and&nbsp;<tt>F</tt>) that are then stringed
+    together. You can use
+    <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=hex_bytes/2"><tt><b>hex_bytes/2</b></tt></a>
+    to easily convert between these encodings:
+
+    <pre>
+?- hex_bytes(<b>'501ACE'</b>, Bs).
+Bs = [80, 26, 206].
+
+?- hex_bytes(Hex, <b>[80,26,206]</b>).
+Hex = '501ace'.
+    </pre>
+
+    To create a list of <i>cryptographically strong</i> pseudo-random
+    bytes, you can
+    use <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=crypto_n_random_bytes/2"><tt><b>crypto_n_random_bytes/2</b></tt></a>. For
+    example, here is a 256-bit (i.e., 32&nbsp;bytes) sequence that in all
+    likelihood nobody else has ever generated before&nbsp;me:
+
+    <pre>
+?- crypto_n_random_bytes(32, Bs),
+   hex_bytes(Key, Bs).
+Bs = [169, 150, 152, 246, 5, 80, 194, 181, 117|...],
+Key = <b>a99698f60550c2b575cb6ffc01c065b195b32a468ff046621f4db91308c1bfd3</b>.
+    </pre>
+
+    Thus, we can easily generate strong keys and unique tokens when needed.
+
+    <br><br>
+
+    To more compactly store and embed binary data in your
+    applications, also consider Base64&nbsp;encoding. In SWI-Prolog,
+    you can
+    use <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=base64%3Abase64_encoded/3"><tt>base64_encoded/3</tt></a>
+    for this conversion. For example:
+
+    <pre>
+?- base64_encoded(κρυπτός, Base64, []).
+<b>Base64 = "vcTFw8fMwg==".</b>
+    </pre>
+
+    <center><h2 id="hash">Cryptographic hash functions</h2></center>
+
+    A <a href="https://en.wikipedia.org/wiki/Cryptographic_hash_function">cryptographic
+      hash function</a> lets us efficiently map data
+      of <i>arbitrary</i> size to a bit&nbsp;string of <i>fixed</i>
+      size in such a way that the mapping is infeasible to invert and
+      collisions are very&nbsp;unlikely.
+
+    <br><br>
+
+    Hash functions are needed in almost all applications of modern
+    cryptography. In <a href="http://eu.swi-prolog.org/pldoc/man?section=crypto"><tt>library(crypto)</tt></a>,
+    among the most important predicates for computing cryptographic
+    hashes
+    are <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=crypto_data_hash/3"><tt>crypto_data_hash/3</tt></a>
+    and <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=crypto_file_hash/3"><tt>crypto_file_hash/3</tt></a>.
+
+    <br><br>
+
+    Here is an example (click on the hash to expand it):
+
+    <pre>
+?- crypto_data_hash('Hello world!', Hash, [algorithm(blake2s256)]).
+<b>Hash = <span class="hex">c63813a8f804abece06213a46acd04a2d738c8e7a58fbf94bfe066a9c7f89197</span></b>.
+    </pre>
+
+    We can
+    use <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=hex_bytes/2"><tt>hex_bytes/2</tt></a>
+    to convert such hex-encoded values to lists of&nbsp;<i>bytes</i>,
+    by which we mean lists of integers between
+    0&nbsp;and&nbsp;255. For example:
+
+    <pre>
+?- hex_bytes(<span class="hex">c63813a8f804abece06213a46acd04a2d738c8e7a58fbf94bfe066a9c7f89197</span>, Bytes).
+<b>Bytes = [198, 56, 19, 168, 248, 4, 171, 236, 224|...].</b>
+    </pre>
+
+    <i>Security of default algorithms</i> is an important design
+    principle of <tt>library(crypto)</tt>. For this reason, the only
+    guarantee that the hash predicates give is that <i>the default
+    algorithm is cryptographically secure</i>. The default may change
+    in the future.  To find out which algorithm was actually used, you
+    can specify the <tt>algorithm/1</tt> option, and use
+    a <i>logical&nbsp;variable</i> as argument. For example:
+
+    <pre>
+?- crypto_data_hash('Hello world!', Hash, [algorithm(A)]).
+Hash = <span class="hex">c0535e4be2b79ffd93291305436bf889314e4a3faec05ecffcbb7df31ad9e51a</span>,
+<b>A = sha256.</b>
+    </pre>
+
+    This shows that <tt>sha256</tt> is <i>currently</i> the default
+    algorithm. You can use this approach to ensure interoperability
+    and at the same time benefit from more secure defaults that may be
+    used in the&nbsp;future.
+
+    <br><br>
+
+    A hash can be used to assess the <b>integrity</b> of data: By
+    computing the hash and comparing it against a
+    reference&nbsp;value, you can detect corruption and manipulation
+    of your&nbsp;data.
+
+    <br><br>
+
+    This raises the question: How can we be certain that such
+    a <i>reference</i>&nbsp;value is actually <i>authentic</i>, i.e.,
+    truly stemming from the purported originator? One way to ensure
+    the <i>authenticity</i> of data is to
+    use <a href="#signatures">digital&nbsp;signatures</a>.
+
+    <center><h3 id="passwords">Storing passwords safely</h3></center>
+
+    Hashes can also be used to securely store
+    user&nbsp;<i>passwords</i> for the purpose of authentication. In
+    fact, to store a password securely, the main&nbsp;idea is
+    to <i>avoid</i> storing the password altogether. Instead, we store
+    only the <i>hash</i> of the password. Later, when the user enters
+    a password, we compute its hash, and compare that hash against the
+    stored&nbsp;value.
+
+    <br><br>
+
+    Two additional features make this process vastly more secure:
+
+    <ol>
+      <li>First, we make computing the hash <i>as&nbsp;slow as
+        we&nbsp;can</i>. This counteracts brute-force attacks where an
+        attacker tries many different passwords to find one whose hash
+        matches the stored hash. One way to do this is to compute
+        the <i>N</i>-fold application of the hash&nbsp;function. For
+        example, <i>N</i>&nbsp;=&nbsp;2<sup>17</sup> makes brute-force
+        attacks more than 100&nbsp;000&nbsp;times slower than applying
+        the hash only&nbsp;once.
+      </li>
+
+      <li>Second, we generate a so-called <i>salt</i>, which is a list
+        of random bytes that we combine with the password before it is
+        hashed. We thus ensure (with extremely high probability) that
+        even <i>identical</i> passwords yield <i>different</i>
+        hashes. We store the salt together with the computed hash, so
+        that we can use it for later reference.
+      </li>
+    </ol>
+
+    All of this happens completely <i>automatically</i>
+    with <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=crypto_password_hash/2"><b><tt>crypto_password_hash/2</tt></b></a>.
+
+    <br><br>
+
+    For example:
+
+    <pre>
+?- crypto_password_hash(<span class="secret">test</span>, Hash).
+Hash = '<span class="hex">$pbkdf2-sha512$t=131072$Xj6ZIfB4U+QOeZr3ymE/AA$2KYXsPFI2zJVMb9PHVtN+pVwQ6f7LleXF8ehbyqgOmkINcIYjO8IFhz8LelwMjzidEtojRHmC0B5RQJDEB2/tw</span>'.
+
+?- crypto_password_hash(<span class="secret">test</span>, Hash).
+Hash = '<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sLbBZPQD1/FtBJUE+iWXRF0VvC/p8etsP6JGSo2dz5U+lV3a6tFDo84mluW1BufFoGZkAuaMW+K74DIaQ</span>'.
+    </pre>
+
+    In this case, even though the password was the <i>same</i> in
+    both&nbsp;queries, the hashes are different.
+
+    <br><br>
+
+    The resulting hash encapsulates everything that is necessary to
+    later <i>verify</i> a password and thus authenticate
+    the&nbsp;user:
+
+    <pre>
+?- crypto_password_hash(<span class="secret">test</span>, '<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sLbBZPQD1/FtBJUE+iWXRF0VvC/p8etsP6JGSo2dz5U+lV3a6tFDo84mluW1BufFoGZkAuaMW+K74DIaQ</span>').
+<b>true.</b>
+
+?- crypto_password_hash(<span class="secret">password</span>, '<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sLbBZPQD1/FtBJUE+iWXRF0VvC/p8etsP6JGSo2dz5U+lV3a6tFDo84mluW1BufFoGZkAuaMW+K74DIaQ</span>').
+<b>false</b>.
+    </pre>
+
+    Experience shows that most users choose very predictable
+    passwords, and also reuse the same passwords for different
+    applications. Using <tt>crypto_password_hash/2</tt> in your
+    applications makes it hard for attackers to find out which
+    passwords were used, even if they manage to obtain all hashes
+    you&nbsp;store.
+
+    <br><br>
+
+    If necessary, you can
+    use <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=crypto_password_hash/3"><tt>crypto_password_hash/3</tt></a>
+    to specify the applied algorithm, a custom&nbsp;salt, and the
+    number of iterations.
+
+    <center><h2 id="signatures">Digital signatures</h2></center>
+
+
+    To establish the <i>authenticity</i> of data, there are different
+    signature algorithms with different strengths and weaknesses. Of
+    the widely used <i>public&nbsp;key
+    algorithms</i>, <tt>library(crypto)</tt>
+    currently supports <a href="http://eu.swi-prolog.org/pldoc/man?section=crypto-ECDSA">ECDSA</a>
+    and&nbsp;<a href="http://eu.swi-prolog.org/pldoc/man?section=crypto-RSA">RSA</a>.
+
+    <br><br>
+
+    Private and public keys can for example be loaded from PEM and DER encoding via <a href="http://eu.swi-prolog.org/pldoc/man?predicate=load_private_key/3"><tt>load_private_key/3</tt></a> and <a href="http://eu.swi-prolog.org/pldoc/man?predicate=load_public_key/2"><tt>load_public_key/2</tt></a>, respectively.
+
+    <br><br>
+
+    As a concrete example, let us consider the signatures in
+    the <i>certificate&nbsp;chain</i> of the
+    domain&nbsp;<a href="https://www.metalevel.at"><tt>www.metalevel.at</tt></a>.
+
+    <br><br>
+
+    Using SWI-Prolog, it is easy to obtain the certificate chain of
+    this domain, using <a href="web#client"><tt>http_open/3</tt></a>
+    with the HTTPS scheme, followed
+    by <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=ssl_peer_certificate_chain/2"><tt>ssl_peer_certificate_chain/2</tt></a>
+    on the resulting SSL&nbsp;stream:
+
+    <pre>
+?- http_open('<a href="https://www.metalevel.at">https://www.metalevel.at</a>', Stream, []),
+   ssl_peer_certificate_chain(Stream, Cs).
+    </pre>
+
+    This yields in <tt>Cs</tt> a <a href="data#list">list</a> of
+    certificates, where each certificate is represented as a list
+    of <tt>Name(Value)</tt>&nbsp;terms, one for each accessible
+    attribute of the certificate.
+
+    <br><br>
+
+    Note that the SSL bindings of SWI-Prolog <i>automatically</i>
+    verify the signature of each involved certificate. In the
+    following, we want to do this ourselves to see how it is done
+    internally. We say that we <a href="/acomip/"><i>reify</i></a> the
+    verification, because we make explicit what is otherwise implicit.
+
+    <br><br>
+
+    Let us inspect the <i>first</i> certificate in this list,
+    using <tt>portray_clause/1</tt> to print each&nbsp;attribute:
+
+    <pre>
+?- http_open('<a href="https://www.metalevel.at">https://www.metalevel.at</a>', Stream, []),
+   ssl_peer_certificate_chain(Stream, <b>[First|_]</b>),
+   maplist(portray_clause, First).
+    </pre>
+
+    This outputs the following Prolog <a href="data#term">terms</a>:
+
+    <pre>
+version(2).
+notbefore(1492041600).
+notafter(1528847999).
+serial('2FD9ADA774690FCFD2D69B0AF2096AE2').
+subject(['CN'='www.metalevel.at']).
+hash("F96CDAF470FECC7B2F0FE426270EF678294935EFBE0C2245AB79442D2DFFE54B").
+signature("<span class="hex">35A5467AAFE158229AB363A88740881B853F3D1A3B6A6747998C9DC0F0CB3BD6062F266D19D88942D164EF6FF109699ABB9F8156340C8DA979AFE31B6D994DCB3B84EFBE8E5CC998D3D80B84D70917EEBF49CC7BF931A6930998C243B57F5E4C26FBF4EDC1F55F321D28116ED9ED4E41A510C0A4C663AB1B3DF324128C375476BC3A950E8E58A03BDE619566E943D04E40852253A38CC79A76A3AEFE85E7F45B06EC46D35747894BAB386BAD74761342C3FB5495DF1CE88BF61411B451A1E1FFCCCA057D3BC3CEDC69E29C0378F8AFDB010A8D89158C2778AC32D43A2BA7CA0911DCC50ABEBE9ED78779BC98BE3A3A03A73479E8D4A00B038E3633F2C38FA518</span>").
+signature_algorithm('<b>RSA-SHA256</b>').
+to_be_signed("<span class="hex">3082047DA00302010202102FD9ADA774690FCFD2D69B0AF2096AE2300D06092A864886F70D01010B05003065310B300906035504061302555331153013060355040A130C7468617774652C20496E632E311D301B060355040B1314446F6D61696E2056616C6964617465642053534C3120301E060355040313177468617774652044562053534C20534841323536204341301E170D3137303431333030303030305A170D3138303631323233353935395A301B3119301706035504030C107777772E6D6574616C6576656C2E617430820122300D06092A864886F70D01010105000382010F003082010A0282010100DC7E4EE613582D9D6293BC792B8569C15F939AC2CCC0817D48779948AA54A001B7ECF5266DD2B05A6C266595BF0F55EBE11F64081B2F58B9F65F4B3F11BCE1FF00E8E3FFEDE7B5165CEA0694925F67E757A740BD9DED6028D1080420C0DFE48E672C0759D36FCF5141647851F7FCF9081EEDA1BEB4834F21D973AF03D30DD58EDC3C1D6FA04C812B608C97F677B45A011F8DDA92E073C83DB86A18CBF7C048AE03F8145A94333DAEA1E6B87B963EED0C78C7DE5068F8A9B80D1A4DDA62DB80BBBD81041BA1CEE491D5C630E73F1F0F0CDDCD4E198B15092C3904DD71BB348F252392EBC66858767B4F9E4EE64C792C4D68D8BE48233FDDEECD78AEDEC457C3450203010001A38202893082028530290603551D110422302082107777772E6D6574616C6576656C2E6174820C6D6574616C6576656C2E617430090603551D1304023000302B0603551D1F042430223020A01EA01C861A687474703A2F2F746D2E73796D63622E636F6D2F746D2E63726C306E0603551D20046730653063060667810C0102013059302606082B06010505070201161A68747470733A2F2F7777772E7468617774652E636F6D2F637073302F06082B0601050507020230230C2168747470733A2F2F7777772E7468617774652E636F6D2F7265706F7369746F7279301F0603551D230418301680147D29312FC11E6EAE31056AB3EB1CCDA9DDAE809A300E0603551D0F0101FF0404030205A0301D0603551D250416301406082B0601050507030106082B06010505070302305706082B06010505070101044B3049301F06082B060105050730018613687474703A2F2F746D2E73796D63642E636F6D302606082B06010505073002861A687474703A2F2F746D2E73796D63622E636F6D2F746D2E63727430820105060A2B06010401D6790204020481F60481F300F1007600DDEB1D2B7A0D4FA6208B81AD8168707E2E8E9D01D55C888D3D11C4CDB6ECBECC0000015B679E9C9A0000040300473045022043D95C8201CF802751D104F1A39AD69C648A1D9F6D66C00FB7EE10B598762D46022100A73811D11680E14DDA9048C2BDB61BBD17A443F2EA67940C6594C3BE49FE733A007700A4B90990B418581487BB13A2CC67700A3C359804F91BDFB8E377CD0EC80DDC100000015B679E9DA40000040300483046022100E40047A5966BED0A726326D0E4CA5D1C1E4F8C0AFC67CBA074582C3AC779B0FF022100DED9A9A854867EEB37C464726AE3E6C57C15EB40019FF639C25413495C8D5CC6</span>").
+issuer_name(['C'='US', 'O'='thawte, Inc.', 'OU'='Domain Validated SSL', 'CN'='thawte DV SSL SHA256 CA']).
+key(public_key(rsa("<span class="hex">DC7E4EE613582D9D6293BC792B8569C15F939AC2CCC0817D48779948AA54A001B7ECF5266DD2B05A6C266595BF0F55EBE11F64081B2F58B9F65F4B3F11BCE1FF00E8E3FFEDE7B5165CEA0694925F67E757A740BD9DED6028D1080420C0DFE48E672C0759D36FCF5141647851F7FCF9081EEDA1BEB4834F21D973AF03D30DD58EDC3C1D6FA04C812B608C97F677B45A011F8DDA92E073C83DB86A18CBF7C048AE03F8145A94333DAEA1E6B87B963EED0C78C7DE5068F8A9B80D1A4DDA62DB80BBBD81041BA1CEE491D5C630E73F1F0F0CDDCD4E198B15092C3904DD71BB348F252392EBC66858767B4F9E4EE64C792C4D68D8BE48233FDDEECD78AEDEC457C345</span>", "010001", -, -, -, -, -, -))).
+crl(['http://tm.symcb.com/tm.crl']).
+    </pre>
+
+    To verify the signature of this certificate, we need the following
+    information:
+
+    <ul>
+      <li>The <i>to-be-signed</i> portion of the certificate. This is
+      a hex&nbsp;value that represents all attributes and values of
+        the certificate that were signed.</li>
+      <li>The <i>algorithm</i> that was used for signing the
+      certificate.
+
+      <li>The <i>public&nbsp;key</i> of the entity that signed this
+        certificate.</li>
+    </ul>
+
+    The output from the above query includes the to-be-signed portion,
+    and also the algorithm that was used for signing: It
+    is&nbsp;<tt>RSA-SHA256</tt>.
+
+    Thus, we first use <tt>crypto_data_hash/3</tt> to compute the
+    SHA256&nbsp;<a href="#hash"><i>hash</i></a> of the to-be-signed
+    portion. We first convert the hex&nbsp;value to <i>bytes</i>, and
+    then use the <tt>encoding(<b>octet</b>)</tt> option to compute the
+    hash of the <i>octet&nbsp;sequence</i>, since this is how
+    signatures of SSL&nbsp;certificates work:
+
+    <pre>
+?- hex_bytes('<span class="hex">3082047DA00302010202102FD9ADA774690FCFD2D69B0AF2096AE2300D06092A864886F70D01010B05003065310B300906035504061302555331153013060355040A130C7468617774652C20496E632E311D301B060355040B1314446F6D61696E2056616C6964617465642053534C3120301E060355040313177468617774652044562053534C20534841323536204341301E170D3137303431333030303030305A170D3138303631323233353935395A301B3119301706035504030C107777772E6D6574616C6576656C2E617430820122300D06092A864886F70D01010105000382010F003082010A0282010100DC7E4EE613582D9D6293BC792B8569C15F939AC2CCC0817D48779948AA54A001B7ECF5266DD2B05A6C266595BF0F55EBE11F64081B2F58B9F65F4B3F11BCE1FF00E8E3FFEDE7B5165CEA0694925F67E757A740BD9DED6028D1080420C0DFE48E672C0759D36FCF5141647851F7FCF9081EEDA1BEB4834F21D973AF03D30DD58EDC3C1D6FA04C812B608C97F677B45A011F8DDA92E073C83DB86A18CBF7C048AE03F8145A94333DAEA1E6B87B963EED0C78C7DE5068F8A9B80D1A4DDA62DB80BBBD81041BA1CEE491D5C630E73F1F0F0CDDCD4E198B15092C3904DD71BB348F252392EBC66858767B4F9E4EE64C792C4D68D8BE48233FDDEECD78AEDEC457C3450203010001A38202893082028530290603551D110422302082107777772E6D6574616C6576656C2E6174820C6D6574616C6576656C2E617430090603551D1304023000302B0603551D1F042430223020A01EA01C861A687474703A2F2F746D2E73796D63622E636F6D2F746D2E63726C306E0603551D20046730653063060667810C0102013059302606082B06010505070201161A68747470733A2F2F7777772E7468617774652E636F6D2F637073302F06082B0601050507020230230C2168747470733A2F2F7777772E7468617774652E636F6D2F7265706F7369746F7279301F0603551D230418301680147D29312FC11E6EAE31056AB3EB1CCDA9DDAE809A300E0603551D0F0101FF0404030205A0301D0603551D250416301406082B0601050507030106082B06010505070302305706082B06010505070101044B3049301F06082B060105050730018613687474703A2F2F746D2E73796D63642E636F6D302606082B06010505073002861A687474703A2F2F746D2E73796D63622E636F6D2F746D2E63727430820105060A2B06010401D6790204020481F60481F300F1007600DDEB1D2B7A0D4FA6208B81AD8168707E2E8E9D01D55C888D3D11C4CDB6ECBECC0000015B679E9C9A0000040300473045022043D95C8201CF802751D104F1A39AD69C648A1D9F6D66C00FB7EE10B598762D46022100A73811D11680E14DDA9048C2BDB61BBD17A443F2EA67940C6594C3BE49FE733A007700A4B90990B418581487BB13A2CC67700A3C359804F91BDFB8E377CD0EC80DDC100000015B679E9DA40000040300483046022100E40047A5966BED0A726326D0E4CA5D1C1E4F8C0AFC67CBA074582C3AC779B0FF022100DED9A9A854867EEB37C464726AE3E6C57C15EB40019FF639C25413495C8D5CC6</span>', Bs),
+   crypto_data_hash(Bs, Hash, [encoding(octet)]).
+Bs = [48, 130, 4, 125, 160, 3, 2, 1, 2|...],
+Hash = <span class="hex">b21649782577d4328540e77232ad494415b6fe67c4524b10e5b74146405e79ba</span>.
+    </pre>
+
+    We now fetch the <i>public&nbsp;key</i> of the entity
+    that <i>signed</i> this certificate. In the list of certificates,
+    each certificate ought to be signed by its <i>successor</i>, when
+    considering the elements from left to right. Therefore, in order
+    to verify the signature of the <i>first</i> certificate in the
+    list, we must fetch the public&nbsp;key of the <i>second</i>
+    certificate in the list:
+
+    <pre>
+?- http_open('https://www.metalevel.at', Stream, []),
+   ssl_peer_certificate_chain(Stream, [_,<b>Second</b>|_]),
+   member(key(Key), Second).
+Stream = &lt;stream&gt;(0x1d7a370,0x1d75570),
+Second = [...],
+<b>Key = public_key(rsa("<span class="hex">B3AC0D7FADBB134D945F67426AD08971A9ED74049324C84D56A1F0919684D9846ACF5221E31AB1544CE6C69E9E4B38A996541DF5B3ED9204D06E54906E2FE97D98B48A2D12A3B442471D7F5F40E1FC7F91A601DC55A450782A633F847E2CC82B21B6C60E5EBCB8B1D41B98B3C6F8E1E828ED32441BCB7FF7E4B111EBC608B05BEEA8C2EC46AA8F29DFB9B7A403A0357A583F8B2947C1D222FA2CC6C76CCDD3F758329394D16FA92A9C0F0A2892AB140AB6DFED407A640754CEEA759732B996A075C977310274AF54774F99A2814B7959B8923FF907EA4274572E35EC558AFC613C3E5771923BABE4C1E1172C64360084B57C1A7DB041337C23F64E775A2CC14B</span>", "010001", -, -, -, -, -, -))</b> .
+    </pre>
+
+    To <i>verify</i> an RSA signature, we have at least two options:
+
+    <ol>
+      <li>use <a href="clpfd">integer arithmetic</a></li>
+      <li>use <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=rsa_verify/4"><tt>rsa_verify/4</tt></a> from <tt>library(crypto)</tt></li>
+    </ol>
+
+    We consider both approaches in the following.
+
+
+    <center><h3>Verification via integer arithmetic</h3></center>
+
+    Let us consider option (1) first. To verify a
+    signature <i>Sig</i>, we compute <i>R</i>
+    = <i>Sig</i><sup><i>Exp</i></sup>&nbsp;mod&nbsp;<i>M</i>, where:
+
+    <ol>
+      <li><i>Exp</i> is the <i>exponent</i> of the public key, i.e.,
+        <tt><b>10001</b></tt> (in hexadecimal notation, which is 65537
+        in decimal&nbsp;notation) in this&nbsp;case.</li>
+
+      <li><i>M</i> is the <i>modulus</i> of the public key, i.e., <tt><span class="hex">B3AC0D7FADBB134D945F67426AD08971A9ED74049324C84D56A1F0919684D9846ACF5221E31AB1544CE6C69E9E4B38A996541DF5B3ED9204D06E54906E2FE97D98B48A2D12A3B442471D7F5F40E1FC7F91A601DC55A450782A633F847E2CC82B21B6C60E5EBCB8B1D41B98B3C6F8E1E828ED32441BCB7FF7E4B111EBC608B05BEEA8C2EC46AA8F29DFB9B7A403A0357A583F8B2947C1D222FA2CC6C76CCDD3F758329394D16FA92A9C0F0A2892AB140AB6DFED407A640754CEEA759732B996A075C977310274AF54774F99A2814B7959B8923FF907EA4274572E35EC558AFC613C3E5771923BABE4C1E1172C64360084B57C1A7DB041337C23F64E775A2CC14B</span></tt> in this case.
+      </li>
+    </ol>
+
+    In Prolog, we can use numbers in <i>hexadecimal</i> notation
+    simply by prepending "0x". For example, the number&nbsp;252 can be
+    written in hexadecimal notation as&nbsp;<tt>0xfc</tt>. Conversely,
+    we can <i>output</i> any number in hexadecimal notation by using
+    the the format&nbsp;string&nbsp;<tt>"~16r"</tt>. For example:
+
+    <pre>
+?- format("~16r", [252]).
+<b>fc</b>
+    </pre>
+
+    Therefore, we can compute <i>R</i> and output it in
+    hexadecimal&nbsp;notation as follows,
+    using <a href="clpfd#constraint">(#=)/2</a>:
+
+    <pre>
+?- R #= 0x<span class="hex">35A5467AAFE158229AB363A88740881B853F3D1A3B6A6747998C9DC0F0CB3BD6062F266D19D88942D164EF6FF109699ABB9F8156340C8DA979AFE31B6D994DCB3B84EFBE8E5CC998D3D80B84D70917EEBF49CC7BF931A6930998C243B57F5E4C26FBF4EDC1F55F321D28116ED9ED4E41A510C0A4C663AB1B3DF324128C375476BC3A950E8E58A03BDE619566E943D04E40852253A38CC79A76A3AEFE85E7F45B06EC46D35747894BAB386BAD74761342C3FB5495DF1CE88BF61411B451A1E1FFCCCA057D3BC3CEDC69E29C0378F8AFDB010A8D89158C2778AC32D43A2BA7CA0911DCC50ABEBE9ED78779BC98BE3A3A03A73479E8D4A00B038E3633F2C38FA518</span>^0x10001 mod 0x<span class="hex">B3AC0D7FADBB134D945F67426AD08971A9ED74049324C84D56A1F0919684D9846ACF5221E31AB1544CE6C69E9E4B38A996541DF5B3ED9204D06E54906E2FE97D98B48A2D12A3B442471D7F5F40E1FC7F91A601DC55A450782A633F847E2CC82B21B6C60E5EBCB8B1D41B98B3C6F8E1E828ED32441BCB7FF7E4B111EBC608B05BEEA8C2EC46AA8F29DFB9B7A403A0357A583F8B2947C1D222FA2CC6C76CCDD3F758329394D16FA92A9C0F0A2892AB140AB6DFED407A640754CEEA759732B996A075C977310274AF54774F99A2814B7959B8923FF907EA4274572E35EC558AFC613C3E5771923BABE4C1E1172C64360084B57C1A7DB041337C23F64E775A2CC14B</span>,
+   format("~16r", [R]).
+<span class="hex">1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff003031300d060960864801650304020105000420b21649782577d4328540e77232ad494415b6fe67c4524b10e5b74146405e79ba</span>
+    </pre>
+
+    We see that the hash value which we computed <i>is a suffix</i> of
+    the result of this arithmetic operation. This means that the
+    signature <i>is&nbsp;valid</i>.
+
+    <center><h3>Verification with <tt>rsa_verify/4</tt></h3></center>
+
+    Using <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=rsa_verify/4"><tt>rsa_verify/4</tt></a>,
+    all of the above is readily encapsulated in a single
+    predicate&nbsp;call that succeeds <i>iff</i> the signature
+    is&nbsp;valid.
+
+    <br><br>
+
+    In particular, we need to specify:
+
+    <ul>
+      <li>The <i>public key</i> of the (purported) signing entity.</li>
+      <li>The <i>data</i> that was signed. In our case, it is
+      the <i>hash</i> of the <i>to-be-signed</i> portion that must
+      have been signed. Recall from above that this hash
+        is&nbsp;<tt><span class="hex">b21649782577d4328540e77232ad494415b6fe67c4524b10e5b74146405e79ba</span></tt>.
+      </li>
+      <li>The <i>signature</i>.</li>
+      <li><i>Options</i> that specify the used algorithm and, if
+        necessary, the <i>encoding</i> of the data.</li>
+    </ul>
+
+
+    In total, we have:
+
+    <pre>
+?- Key = public_key(rsa("<span class="hex">B3AC0D7FADBB134D945F67426AD08971A9ED74049324C84D56A1F0919684D9846ACF5221E31AB1544CE6C69E9E4B38A996541DF5B3ED9204D06E54906E2FE97D98B48A2D12A3B442471D7F5F40E1FC7F91A601DC55A450782A633F847E2CC82B21B6C60E5EBCB8B1D41B98B3C6F8E1E828ED32441BCB7FF7E4B111EBC608B05BEEA8C2EC46AA8F29DFB9B7A403A0357A583F8B2947C1D222FA2CC6C76CCDD3F758329394D16FA92A9C0F0A2892AB140AB6DFED407A640754CEEA759732B996A075C977310274AF54774F99A2814B7959B8923FF907EA4274572E35EC558AFC613C3E5771923BABE4C1E1172C64360084B57C1A7DB041337C23F64E775A2CC14B</span>", "010001", -, -, -, -, -, -)),
+   Hash = '<span class="hex">b21649782577d4328540e77232ad494415b6fe67c4524b10e5b74146405e79ba</span>',
+   Signature = "<span class="hex">35A5467AAFE158229AB363A88740881B853F3D1A3B6A6747998C9DC0F0CB3BD6062F266D19D88942D164EF6FF109699ABB9F8156340C8DA979AFE31B6D994DCB3B84EFBE8E5CC998D3D80B84D70917EEBF49CC7BF931A6930998C243B57F5E4C26FBF4EDC1F55F321D28116ED9ED4E41A510C0A4C663AB1B3DF324128C375476BC3A950E8E58A03BDE619566E943D04E40852253A38CC79A76A3AEFE85E7F45B06EC46D35747894BAB386BAD74761342C3FB5495DF1CE88BF61411B451A1E1FFCCCA057D3BC3CEDC69E29C0378F8AFDB010A8D89158C2778AC32D43A2BA7CA0911DCC50ABEBE9ED78779BC98BE3A3A03A73479E8D4A00B038E3633F2C38FA518</span>",
+   <b>rsa_verify(Key, Hash, Signature, [type(sha256)]).</b>
+    </pre>
+
+    Since this <i>succeeds</i>, the signature is <i>valid</i>.
+
+    <center><h2 id="symmetric-encryption">Symmetric encryption</h2></center>
+
+    We now come to the topic you are probably most interested
+    in: <i>symmetric</i> encryption. This means
+    that <i>the&nbsp;same</i> key is used for encrypting and
+    decrypting the&nbsp;data. For example, an important use&nbsp;case
+    is encrypting files with a <i>password</i>, so
+    that <i>the&nbsp;same</i> password can be used to decrypt them.
+
+    <br><br>
+
+    SWI-Prolog makes it extremely easy to encrypt arbitrary&nbsp;data
+    in a secure&nbsp;way, using the predicate
+    <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=crypto_data_encrypt/6"><b><tt>crypto_data_encrypt/6</tt></b></a>.
+
+    <br><br>
+
+    In addition to the data you want to encrypt, you must provide:
+
+    <ol>
+      <li>the <b>algorithm</b> you want to use</li>
+      <li>the <b>key</b> that is used for encryption</li>
+      <li>the <b>initialization vector</b>&nbsp;(IV).</li>
+    </ol>
+
+    We now consider each of these parameters.
+
+    <br><br>
+
+    For a start, let us use a widely known and very secure encryption
+    algorithm: <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard"><b>AES</b></a>,
+    which is a subset of the Rijndael&nbsp;cipher developed by
+    Vincent&nbsp;Rijmen and Joan&nbsp;Daemen. AES is the only publicly
+    accessible cipher that the NSA has approved
+    for <i>top&nbsp;secret</i> information. AES is
+    a <i>block&nbsp;cipher</i> and can be used in several <i>modes</i>
+    that guarantee different properties. As our first example, we
+    shall use&nbsp;AES with a 128-bit&nbsp;key and 128-bit&nbsp;IV
+    in <i>Cipher&nbsp;Block Chaining</i>&nbsp;(CBC) mode. We obtain
+    this algorithm by specifying
+    the <i>atom</i> <tt><b>'aes-128-cbc'</b></tt>.
+
+    <br><br>
+
+    The IV is
+    often called <b>nonce</b>. This is short for "number used once"
+    and emphasizes that for a fixed&nbsp;key, an&nbsp;IV must be used
+    at most <i>once</i>.
+
+    <br><br>
+
+    We can specify keys and IVs as lists of <i>bytes</i>. In this
+    case, since the algorithm we want to try needs 128-bit keys and
+    IVs, we specify 16&nbsp;bytes. We can use
+    <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=crypto_n_random_bytes/2"><tt>crypto_n_random_bytes/2</tt></a>
+    to generate <i>cryptographically&nbsp;strong</i> pseudo-random
+    bytes. With extremely high likelihood, each invocation will
+    generate a completely different&nbsp;key and nonce.
+
+    <br><br>
+
+    With this knowledge, we can already try an encryption! For
+    example:
+
+    <pre>
+?- crypto_n_random_bytes(16, <span class="secret">Ks</span>),
+   crypto_n_random_bytes(16, IV),
+   crypto_data_encrypt(<span class="secret"><b>test</b></span>, 'aes-128-cbc', <span class="secret">Ks</span>, IV, CipherText, []).
+    </pre>
+
+    The result depends on which random numbers are actually generated
+    when you run&nbsp;it. For example, I&nbsp;get:
+
+    <pre>
+<span class="secret">Ks = [31, 240, 156, 156, 161, 198, 9, 230, 109|...]</span>,
+IV = [165, 227, 153, 21, 246, 53, 136, 179, 201|...],
+<b>CipherText = "uç&#x27;þß\026\nåÉ®#º&#x28;î\nâ".</b>
+    </pre>
+
+    The <i>key</i> must be kept absolutely <i>secret</i> to retain the
+    confidentiality of the encrypted&nbsp;text. In contrast, the IV can be
+    safely stored and transmitted in plain&nbsp;text. By
+    default, <i>padding</i> is used so that input of any length can be
+    processed even though this algorithm always operates on blocks
+    that contain exactly 16&nbsp;bytes. For this reason, the
+    ciphertext is longer than the plaintext in this&nbsp;case.
+
+    <br><br>
+
+    Before we continue, a few test runs are highly appropriate. For
+    example, let us see whether we can <i>decrypt</i> the ciphertext
+    if we supply the same algorithm, key and&nbsp;IV to
+    <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=crypto_data_decrypt/6"><tt><b>crypto_data_decrypt/6</b></tt></a>. In
+    addition, let us try this not only <i>once</i>, but <i>over and
+    over</i>, with a freshly generated key and IV in each run:
+
+    <pre>
+?- <b>repeat</b>,
+      <span class="secret">PlainText = <b>"test"</b></span>,
+      Algorithm = 'aes-128-cbc',
+      crypto_n_random_bytes(16, <span class="secret">Ks</span>),
+      crypto_n_random_bytes(16, IV),
+      crypto_data_encrypt(<span class="secret">PlainText</span>, Algorithm, <span class="secret">Ks</span>, IV, CipherText, []),
+      crypto_data_decrypt(CipherText, Algorithm, <span class="secret">Ks</span>, IV, <span class="secret">PlainText</span>, []),
+      portray_clause(<b>ok</b>),
+      <b>false</b>.
+    </pre>
+
+    As result, we get:
+
+    <pre>
+<b>ok.
+ok.
+ok.</b>
+etc.
+    </pre>
+
+    After a few hundred thousand iterations of this, we can be
+    reasonably confident that what is encrypted can also be decrypted.
+    When experimenting with different algorithms, it is a common error
+    to specify keys or IVs that are shorter than what the chosen
+    algorithm requires, and such test cases help us to detect these
+    mistakes.
+
+    <center><h3 id="authenticated-encryption">Authenticated encryption</h3></center>
+
+    As long as the key and IV are chosen (sufficiently) randomly, AES
+    in CBC mode ensures <i>confidentiality</i> of the
+    plain&nbsp;text. However, the cipher falls critically short in
+    other respects: It does <i>not</i> guarantee <i>integrity</i> and
+    therefore also not <i>authenticity</i> of the ciphertext. This
+    means that an attacker can <i>change</i> the ciphertext during
+    transmission or on a storage&nbsp;device, and we <i>will not
+    notice the change</i> if we only rely on this cipher. This can
+    cause highly dramatic consequences. For example, suppose the
+    plaintext is "<i>Send you a&nbsp;kiss!</i>", and malicious
+    modifications of the ciphertext yield a deviating decrypted text
+    that reads "<i>Send him a&nbsp;kiss!</i>".
+
+    <br><br>
+
+    There are several ways to solve this. We start&mdash;and
+    end&mdash;with the
+    <i>best</i> way to do it: Use a cipher that, in addition to
+    confidentiality of the plaintext, <i>also</i> ensures integrity
+    and authenticity of the ciphertext.
+
+    <br><br>
+
+
+    To illustrate the idea, we now use a powerful and efficient
+    algorithm denoted by the atom <tt><b>'chacha20-poly1305'</b></tt>: It is
+    the <a href="https://cr.yp.to/chacha.html">ChaCha20</a>
+    stream&nbsp;cipher that was introduced by
+    Daniel&nbsp;J.&nbsp;Bernstein, coupled with
+    the <a href="https://cr.yp.to/mac.html">Poly1305</a> authenticator
+    that was also introduced by Daniel&nbsp;J.&nbsp;Bernstein.
+
+    <br><br>
+
+    This cipher uses a 256-bit <i>key</i> and a 96-bit <i>nonce</i>,
+    i.e., 32 and&nbsp;12&nbsp;<i>bytes</i>,
+    respectively. Authenticated ciphers work by computing a <b>tag</b>
+    that is obtained upon <i>encryption</i>, and must be supplied
+    for <i>decryption</i>. The tag is obtained and supplied via
+    the <tt>tag/1</tt>&nbsp;option in both cases.
+
+    <br><br>
+
+    For example, here is a concrete encryption with ChaCha20-Poly1305,
+    using a random key and nonce:
+
+    <pre>
+?- crypto_n_random_bytes(32, <span class="secret">Ks</span>),
+   crypto_n_random_bytes(12, IV),
+   crypto_data_encrypt(<span class="secret"><b>test</b></span>, 'chacha20-poly1305', <span class="secret">Ks</span>, IV, CipherText, [<b>tag(Ts)</b>]).
+    </pre>
+
+    In response, we get the encrypted text, and a 128-bit <i>tag</i> which
+    is specified as a list of 16&nbsp;bytes:
+
+    <pre>
+<span class="secret">Ks = [84, 148, 85, 236, 235, 183, 51, 68, 144|...]</span>,
+IV = [182, 70, 102, 111, 6, 170, 45, 76, 148|...],
+<b>CipherText = "Pç,õ"</b>,
+<b>Ts = [119, 23, 173, 207, 167, 255, 29, 135, 101|...]</b>.
+    </pre>
+
+    Again, the key must be kept completely secret. In contrast,
+    the tag and nonce (IV) can be safely stored and shared in
+    plain&nbsp;text.
+
+
+    <br><br>
+
+    Decryption only works if the correct <i>tag</i> is supplied. For
+    example:
+
+    <pre>
+?- crypto_data_decrypt($CipherText, 'chacha20-poly1305', <span class="secret">$Ks</span>, $IV, <span class="secret">PlainText</span>, [<b>tag($Ts)</b>]).
+<span class="secret">PlainText = "test"</span>,
+CipherText = "Pç,õ",
+<span class="secret">Ks = [84, 148, 85, 236, 235, 183, 51, 68, 144|...]</span>,
+IV = [182, 70, 102, 111, 6, 170, 45, 76, 148|...],
+Ts = [119, 23, 173, 207, 167, 255, 29, 135, 101|...].
+    </pre>
+
+    In contrast, even if we only <i>slightly</i> shorten, extend or
+    modify the ciphertext, nonce, or the required tag in any way, we
+    get for example:
+
+    <pre>
+?- crypto_data_decrypt($CipherText, 'chacha20-poly1305', <span class="secret">$Ks</span>, $IV, <span class="secret">PlainText</span>, [tag([<b>1</b>|$Ts])]).
+<b>ERROR: SSL(00000000) func(0): reason(0)</b>
+    </pre>
+
+
+    Thus, an attacker who changes the ciphertext must also make
+    a <i>fitting</i> change in the&nbsp;tag for the change to go
+    unnoticed. However, without knowing the secret key, such a change is
+    extremely improbable.
+
+    <br><br>
+
+    A second example of an authenticated cipher
+    is <tt>'aes-128-gcm'</tt>, which denotes AES
+    in <a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode">Galois/Counter&nbsp;mode</a>.
+
+
+    <center><h3>Deriving keys and initialization vectors</h3></center>
+
+    In most actual applications, it is not enough to generate a
+    <i>random</i>&nbsp;key. Instead, we typically must find a way
+    to <i>derive</i> a key and&nbsp;IV from <i>other</i> information,
+    which is called <i>input keying material</i>&nbsp;(IKM).
+
+    <br><br>
+
+    For example, in
+    the <a href="https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange">Diffie-Hellman-Merkle
+    key&nbsp;exchange</a>, we first negotiate
+    a <i>shared&nbsp;secret</i> with another participant, and then
+    must derive a suitable key from that secret. Examples of such
+    secrets are integers, and points on an elliptic&nbsp;curve.
+
+    <br><br>
+
+    There is a standard algorithm that lets us derive keys and IVs
+    from arbitrary input data. It is called <b>HKDF</b> (HMAC-based
+    key derivation function), and it is described
+    in <a href="https://tools.ietf.org/html/rfc5869">RFC&nbsp;5869</a>. In
+    SWI-Prolog, it is available
+    as <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=crypto_data_hkdf/4"><tt><b>crypto_data_hkdf/4</b></tt></a>.
+
+    <br><br>
+
+    For example, let us now derive a key and an IV from
+    a <i>password</i> in such a way that entering the same password
+    always yields the same key and&nbsp;IV.
+
+    <br><br>
+
+    Using HKDF, we <i>could</i> of course derive a key <i>directly</i>
+    from a given&nbsp;password. However, consider what we said
+    about <a href="#passwords">storing&nbsp;passwords</a>: First,
+    attackers that try to guess the password should be slowed
+    down. Second, using a password should not leak any information
+    even if the same password is also used elsewhere.
+
+    <br><br>
+
+    Therefore, instead of <span class="secret"><i>password</i></span>
+    &rightarrow; <span class="secret"><i>key</i></span>, we will do:
+
+    <br><br>
+
+    <span style="padding-left: 30pt"><i><span class="secret">password</span> and salt</i>
+    &rightarrow; intentionally slow <span class="secret"><i>hash</i></span>
+      &rightarrow; <span class="secret"><i>key</i></span>.</span>
+
+    <br><br>
+
+
+    Thus, we will now <i>combine</i> password-based hash derivation
+    with HMAC-based key derivation,
+    using <tt>crypto_password_hash/3</tt>
+    and <i>then</i> <tt>crypto_data_hkdf/4</tt>.
+
+    <br><br>
+
+    To ensure that <i>the same</i> key is generated also when the same
+    password is entered later, we must <i>fix</i> all parameters
+    of <tt>crypto_password_hash/3</tt>. For example, recall that by
+    default, a <i>random</i> salt is used. Now, we will supply our
+    own&nbsp;salt, and store it for later reference. We can easily
+    generate a salt with <tt>crypto_n_random_bytes/2</tt>. For
+    example, let us use a 128-bit&nbsp;salt (16&nbsp;bytes). In
+    addition, let us explicitly supply the algorithm we want to use
+    (<tt>'pbkdf2-sha512'</tt>, which is currently the only supported
+    option in any case) and also the number of iterations. For
+    example, let us use 2<sup>19</sup> iterations.
+
+    <br><br>
+
+    From the generated <i>hash</i>, we can easily derive a
+    key <i>and</i> an&nbsp;IV: The <tt>info/1</tt>&nbsp;option
+    of <tt>crypto_data_hkdf/4</tt> can be used to derive several
+    different keys and IVs from the same&nbsp;IKM. We also fix
+    the <i>algorithm</i> that is used by <tt>crypto_data_hkdf/4</tt>.
+
+    <br><br>
+
+    Taking all these considerations into account, we obtain for
+    example the following predicate to derive a 128-bit (i.e.,
+    16&nbsp;bytes) key and&nbsp;IV from a given password and salt:
+
+    <pre>
+<b>password_salt_key_iv</b>(<span class="secret">Password</span>, Salt, <span class="secret">Ks</span>, IV) :-
+        crypto_password_hash(<span class="secret">Password</span>, <span class="secret">Hash</span>, [algorithm('pbkdf2-sha512'),
+                                              cost(19),
+                                              salt(Salt)]),
+        crypto_data_hkdf(<span class="secret">Hash</span>, 16, <span class="secret">Ks</span>, [info(key),algorithm(sha256)]),
+        crypto_data_hkdf(<span class="secret">Hash</span>, 16, IV, [info(iv),algorithm(sha256)]).
+    </pre>
+
+    Sample usage, with a fresh 128-bit salt:
+
+    <pre>
+?- crypto_n_random_bytes(16, Salt),
+   password_salt_key_iv(<span class="secret"><b>test</b></span>, <b>Salt</b>, <span class="secret">Ks</span>, IV).
+    </pre>
+
+    This yields:
+
+    <pre>
+Salt = [203, 81, 172, 46, 86, 244, 37, 2, 215|...],
+<span class="secret"><b>Ks</b> = [38, 141, 86, 95, 83, 22, 243, 31, 38|...]</span>,
+<b>IV</b> = [36, 149, 175, 179, 48, 192, 213, 175, 71|...].
+    </pre>
+
+    When we later use the same password and salt, exactly the same
+    results are derived:
+
+    <pre>
+?- password_salt_key_iv(<span class="secret"><b>test</b></span>, <b>$Salt</b>, <span class="secret">Ks</span>, IV).
+Salt = [203, 81, 172, 46, 86, 244, 37, 2, 215|...].
+<span class="secret"><b>Ks</b> = [38, 141, 86, 95, 83, 22, 243, 31, 38|...]</span>,
+<b>IV</b> = [36, 149, 175, 179, 48, 192, 213, 175, 71|...],
+    </pre>
+
+    Thus, we only need to store the <i>salt</i> that was used, and can
+    later (again) use HKDF to derive all required values when the
+    password is entered. It is safe to store the salt in plain text,
+    since it has no discernible or realistically computable relation
+    with the derived values, as long as the <i>password</i> is kept
+    completely secret.
+
+    <br><br>
+
+    The SWI documentation contains an example for negotiating a shared
+    secret
+    via <a href="http://eu.swi-prolog.org/pldoc/man?section=crypto-shared-secret">ECDH</a>. Again,
+    once such a secret is established, you can derive keys from it
+    using <tt>crypto_data_hkdf/4</tt>.
+
+    <br><br>
+
+    Sometimes, keys are themselves derived from keys. For example, you
+    may have a <i>master&nbsp;key</i>, and derive further keys from
+    it, such as one key per file you want to encrypt. In such cases,
+    you can for example specify a <i>file&nbsp;name</i> in
+    the <tt>info/1</tt>&nbsp;option
+    of <tt>crypto_data_hkdf/4</tt>. Even if an attacker finds out one
+    of these keys, the master key remains safe. As another example,
+    you could prove the <i>authenticity</i> of the cipher text by
+    deriving a further key that you use to compute
+    an&nbsp;<a href="https://en.wikipedia.org/wiki/Hash-based_message_authentication_code">HMAC</a>
+    over the encrypted data and the&nbsp;IV. However, although this
+    construction does not leak the primary key even if the derived key
+    is broken, it is less error-prone and therefore safer to use a
+    cipher with built-in support for
+    <a href="#authenticated-encryption">authenticated&nbsp;encryption</a>
+    for such use&nbsp;cases.
+
+
+    <center><h2>Further reading</h2></center>
+
+    We have barely scratched the surface of what you can and should do
+    with Prolog in the context of cryptography.
+
+    <br><br>
+
+    In many cases, you can benefit from cryptographic features even
+    without knowing how they work internally. For example, if you
+    simply want to enable encrypted traffic for your web applications,
+    see <a href="https://github.com/triska/letswicrypt"><b>LetSWICrypt</b></a>
+    to set up an HTTPS&nbsp;server with SWI-Prolog.
+
+    <br><br>
+
+    In other cases, you can use the available functionality to
+    implement specific applications on your own. For example, you can
+    use Prolog to reason about <i>Bitcoin</i>&nbsp;addresses.
+    See <a href="/bitcoinolog/"><b>Bitcoinolog</b></a> for more
+    information. You can use the above methods to <i>encrypt</i> your
+    Bitcoin&nbsp;wallets.
+
+    <br><br>
+
+    The cryptographic functionality of SWI-Prolog is subject to
+    continuous improvements. Please see
+    the <a href="https://github.com/SWI-Prolog/packages-ssl/wiki/Roadmap-for-7.6-and-beyond">SSL&nbsp;Roadmap</a>
+    for more information.
+
+    <br><br>
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+    <script>
+
+var hex_consts = [
+
+["c0535e4be2b79ffd93291305436bf889314e4a3faec05ecffcbb7df31ad9e51a",
+ "c0535...e51a"],
+
+["c63813a8f804abece06213a46acd04a2d738c8e7a58fbf94bfe066a9c7f89197",
+ "c638...9197"],
+
+["35A5467AAFE158229AB363A88740881B853F3D1A3B6A6747998C9DC0F0CB3BD6062F266D19D88942D164EF6FF109699ABB9F8156340C8DA979AFE31B6D994DCB3B84EFBE8E5CC998D3D80B84D70917EEBF49CC7BF931A6930998C243B57F5E4C26FBF4EDC1F55F321D28116ED9ED4E41A510C0A4C663AB1B3DF324128C375476BC3A950E8E58A03BDE619566E943D04E40852253A38CC79A76A3AEFE85E7F45B06EC46D35747894BAB386BAD74761342C3FB5495DF1CE88BF61411B451A1E1FFCCCA057D3BC3CEDC69E29C0378F8AFDB010A8D89158C2778AC32D43A2BA7CA0911DCC50ABEBE9ED78779BC98BE3A3A03A73479E8D4A00B038E3633F2C38FA518",
+"35A5...A518"],
+
+["3082047DA00302010202102FD9ADA774690FCFD2D69B0AF2096AE2300D06092A864886F70D01010B05003065310B300906035504061302555331153013060355040A130C7468617774652C20496E632E311D301B060355040B1314446F6D61696E2056616C6964617465642053534C3120301E060355040313177468617774652044562053534C20534841323536204341301E170D3137303431333030303030305A170D3138303631323233353935395A301B3119301706035504030C107777772E6D6574616C6576656C2E617430820122300D06092A864886F70D01010105000382010F003082010A0282010100DC7E4EE613582D9D6293BC792B8569C15F939AC2CCC0817D48779948AA54A001B7ECF5266DD2B05A6C266595BF0F55EBE11F64081B2F58B9F65F4B3F11BCE1FF00E8E3FFEDE7B5165CEA0694925F67E757A740BD9DED6028D1080420C0DFE48E672C0759D36FCF5141647851F7FCF9081EEDA1BEB4834F21D973AF03D30DD58EDC3C1D6FA04C812B608C97F677B45A011F8DDA92E073C83DB86A18CBF7C048AE03F8145A94333DAEA1E6B87B963EED0C78C7DE5068F8A9B80D1A4DDA62DB80BBBD81041BA1CEE491D5C630E73F1F0F0CDDCD4E198B15092C3904DD71BB348F252392EBC66858767B4F9E4EE64C792C4D68D8BE48233FDDEECD78AEDEC457C3450203010001A38202893082028530290603551D110422302082107777772E6D6574616C6576656C2E6174820C6D6574616C6576656C2E617430090603551D1304023000302B0603551D1F042430223020A01EA01C861A687474703A2F2F746D2E73796D63622E636F6D2F746D2E63726C306E0603551D20046730653063060667810C0102013059302606082B06010505070201161A68747470733A2F2F7777772E7468617774652E636F6D2F637073302F06082B0601050507020230230C2168747470733A2F2F7777772E7468617774652E636F6D2F7265706F7369746F7279301F0603551D230418301680147D29312FC11E6EAE31056AB3EB1CCDA9DDAE809A300E0603551D0F0101FF0404030205A0301D0603551D250416301406082B0601050507030106082B06010505070302305706082B06010505070101044B3049301F06082B060105050730018613687474703A2F2F746D2E73796D63642E636F6D302606082B06010505073002861A687474703A2F2F746D2E73796D63622E636F6D2F746D2E63727430820105060A2B06010401D6790204020481F60481F300F1007600DDEB1D2B7A0D4FA6208B81AD8168707E2E8E9D01D55C888D3D11C4CDB6ECBECC0000015B679E9C9A0000040300473045022043D95C8201CF802751D104F1A39AD69C648A1D9F6D66C00FB7EE10B598762D46022100A73811D11680E14DDA9048C2BDB61BBD17A443F2EA67940C6594C3BE49FE733A007700A4B90990B418581487BB13A2CC67700A3C359804F91BDFB8E377CD0EC80DDC100000015B679E9DA40000040300483046022100E40047A5966BED0A726326D0E4CA5D1C1E4F8C0AFC67CBA074582C3AC779B0FF022100DED9A9A854867EEB37C464726AE3E6C57C15EB40019FF639C25413495C8D5CC6",
+ "3082...5CC6"],
+
+["DC7E4EE613582D9D6293BC792B8569C15F939AC2CCC0817D48779948AA54A001B7ECF5266DD2B05A6C266595BF0F55EBE11F64081B2F58B9F65F4B3F11BCE1FF00E8E3FFEDE7B5165CEA0694925F67E757A740BD9DED6028D1080420C0DFE48E672C0759D36FCF5141647851F7FCF9081EEDA1BEB4834F21D973AF03D30DD58EDC3C1D6FA04C812B608C97F677B45A011F8DDA92E073C83DB86A18CBF7C048AE03F8145A94333DAEA1E6B87B963EED0C78C7DE5068F8A9B80D1A4DDA62DB80BBBD81041BA1CEE491D5C630E73F1F0F0CDDCD4E198B15092C3904DD71BB348F252392EBC66858767B4F9E4EE64C792C4D68D8BE48233FDDEECD78AEDEC457C345",
+     "DC7E...C345"],
+
+["b21649782577d4328540e77232ad494415b6fe67c4524b10e5b74146405e79ba",
+"b216...5e79ba"],
+
+["B3AC0D7FADBB134D945F67426AD08971A9ED74049324C84D56A1F0919684D9846ACF5221E31AB1544CE6C69E9E4B38A996541DF5B3ED9204D06E54906E2FE97D98B48A2D12A3B442471D7F5F40E1FC7F91A601DC55A450782A633F847E2CC82B21B6C60E5EBCB8B1D41B98B3C6F8E1E828ED32441BCB7FF7E4B111EBC608B05BEEA8C2EC46AA8F29DFB9B7A403A0357A583F8B2947C1D222FA2CC6C76CCDD3F758329394D16FA92A9C0F0A2892AB140AB6DFED407A640754CEEA759732B996A075C977310274AF54774F99A2814B7959B8923FF907EA4274572E35EC558AFC613C3E5771923BABE4C1E1172C64360084B57C1A7DB041337C23F64E775A2CC14B",
+ "B3AC...C14B"],
+
+["1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff003031300d060960864801650304020105000420b21649782577d4328540e77232ad494415b6fe67c4524b10e5b74146405e79ba",
+ "1fff...5e79ba"],
+
+["$pbkdf2-sha512$t=131072$Xj6ZIfB4U+QOeZr3ymE/AA$2KYXsPFI2zJVMb9PHVtN+pVwQ6f7LleXF8ehbyqgOmkINcIYjO8IFhz8LelwMjzidEtojRHmC0B5RQJDEB2/tw",
+ "$pbkdf2-sha512$t=131072$...EB2/tw"
+],
+["$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sLbBZPQD1/FtBJUE+iWXRF0VvC/p8etsP6JGSo2dz5U+lV3a6tFDo84mluW1BufFoGZkAuaMW+K74DIaQ",
+ "$pbkdf2-sha512$t=131072$...74DIaQ"]
+
+];
+
+
+function expand_hex(span) {
+    var text = $(span).text();
+    for (var i = 0; i < hex_consts.length; i++) {
+        if (hex_consts[i][0] == text) {
+            $(span).text(hex_consts[i][1]); break;
+        } else if (hex_consts[i][1] == text) {
+            $(span).text(hex_consts[i][0]); break;
+        }
+    }
+}
+
+
+$(document).ready(function () {
+
+    $(".hex").click(function(){
+        expand_hex($(this));
+    });
+    $.each($(".hex"), function(i, v) {
+        expand_hex(v);
+    });
+
+});
+
+    </script>
+
+  </body>
+</html>
