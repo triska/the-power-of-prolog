@@ -680,6 +680,7 @@ IV = [165, 227, 153, 21, 246, 53, 136, 179, 201|...],
       Algorithm = 'aes-128-cbc',
       crypto_n_random_bytes(16, <span class="secret">Ks</span>),
       crypto_n_random_bytes(16, IV),
+      portray_clause(<b>verifying</b>),
       crypto_data_encrypt(<span class="secret">PlainText</span>, Algorithm, <span class="secret">Ks</span>, IV, CipherText, []),
       crypto_data_decrypt(CipherText, Algorithm, <span class="secret">Ks</span>, IV, <span class="secret">PlainText</span>, []),
       portray_clause(<b>ok</b>),
@@ -689,9 +690,12 @@ IV = [165, 227, 153, 21, 246, 53, 136, 179, 201|...],
     As result, we get:
 
     <pre>
-<b>ok.
-ok.
-ok.</b>
+verifying.
+<b>ok.</b>
+verifying.
+<b>ok.</b>
+verifying.
+<b>ok.</b>
 etc.
     </pre>
 
@@ -799,6 +803,13 @@ Ts = [119, 23, 173, 207, 167, 255, 29, 135, 101|...].
     a <i>fitting</i> change in the&nbsp;tag for the change to go
     unnoticed. However, without knowing the secret key, such a change is
     extremely improbable.
+
+    <br><br>
+
+    Prolog is well-suited for studying how such algorithms work by
+    prototyping their implementations. For example, here is a Prolog
+    implementation of the Poly1305
+    authenticator: <a href="poly1305aes.pl"><tt>poly1305aes.pl</tt></a>.
 
     <br><br>
 
@@ -966,7 +977,11 @@ Salt = [203, 81, 172, 46, 86, 244, 37, 2, 215|...].
     <center><h2>Further reading</h2></center>
 
     We have barely scratched the surface of what you can and should do
-    with Prolog in the context of cryptography.
+    with Prolog in the context of cryptography. For example,
+    <a href="http://web.cs.wpi.edu/~cs564/f12/papers/blanchet_csfw01.pdf"><i>An
+    Efficient Cryptographic Protocol Verifier Based on Prolog
+    Rules</i></a> by Bruno Blanchet outlines how you can use Prolog to
+    verify properties of a cryptographic protocol.
 
     <br><br>
 
