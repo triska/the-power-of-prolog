@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Declarative Debugging</title>
+    <title>Debugging Prolog Programs</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
-    <meta name="description" content="Declarative Debugging">
+    <meta name="description" content="Declarative debugging of Prolog programs">
     <meta name="keywords" content="Prolog,Debugging,Declarative">
     <meta name="author" content="Markus Triska">
     <link rel="stylesheet" type="text/css" href="prolog.css">
@@ -13,7 +13,7 @@
 
     <br><br>
     <br><br>
-    <center><h1>Declarative Debugging</h1></center>
+    <center><h1>Debugging Prolog Programs</h1></center>
     <br><br>
 
     First, a note on terminology: In the following, the
@@ -27,7 +27,7 @@
       <li>Mistakes should be <i>corrected</i>.</li>
     </ul>
 
-    We will now explain declarative ways to <i>locate</i>
+    We now consider <i>declarative</i> ways to <i>locate</i>
     and <i>correct</i> mistakes in Prolog programs. The techniques we
     explain have been invented and popularized
     by <a href="http://www.complang.tuwien.ac.at/ulrich/">Ulrich
@@ -38,7 +38,9 @@
     
     The methods are based on declarative ways
     of <a href="reading"><b>reading Prolog programs</b></a>,
-    exploiting logical properties to quickly narrow down mistakes.
+    exploiting logical properties to quickly narrow down mistakes.  We
+    call this approach <b>declarative&nbsp;debugging</b>.
+
 
     <center><h2>Tracing falls short</h2></center>
 
@@ -100,7 +102,23 @@
     solutions. In the latter case, the program must
     be <i>generalized</i>. These cases are <i>not</i> mutually
     exclusive: A Prolog program may be too general <i>and</i> too
-    specific.</li>
+    specific.
+
+    <br><br>
+
+    When beginners write their first Prolog programs, they frequently
+    ask: "<i>Why</i> does my predicate fail?" This means that their
+    predicate fails <i>although they intend it to succeed</i>. It
+    means that their predicate is <i>too&nbsp;specific</i> and must
+    be <i>generalized</i>. The question itself is perfectly adequate:
+    Notice how natural it is to ask for the <i>why</i>. It would be
+    extremely inconvenient and in most cases almost impossible to
+    follow the exact <i>steps</i> that Prolog performs,
+    i.e., <i>how</i> it fails. We care more about
+    high-level <i>explanations</i> than about low-level <i>traces</i>.
+    We will thus use Prolog to locate the <i>reasons</i> for
+    unintended failures, i.e., those parts of our programs
+    that <i>cause</i> unintended failures.
 
 
     <center><h2>Example: Length of a list</h2></center>
