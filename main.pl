@@ -9,18 +9,20 @@
    https://www.metalevel.at/prolog
    ===============================
 
-   Example usage to spawn a server on port 5050:
+   Example usage to spawn a server on port 5051:
 
-       $ swipl main.pl --port=5050 --interactive
+       $ swipl main.pl --port=5051
 
    then direct your browser to:
 
-   http://localhost:5050/prolog
+   http://localhost:5051/prolog
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- module(main,
 	  []).
+
+:- initialization main.
 
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
@@ -30,13 +32,19 @@
 :- use_module(library(http/http_log)).
 :- use_module(library(http/mimetype)).
 :- use_module(library(settings)).
-:- use_module(library(http/http_unix_daemon)).
+:- use_module(library(optparse)).
 
 :- set_prolog_flag(default_mimetype, text/plain).
 
 :- http_handler(/, handle_request, [prefix]).
 :- http_handler('/prolog', http_reply_file('prolog/prolog.html', []), []).
 
+main :-
+        OptSpec = [[opt(port),type(integer),default(5053),
+                    shortflags([p]),longflags([port]),
+                    help('port for launching the server')]],
+        opt_arguments(OptSpec, [port(Port)], _),
+        http_server(http_dispatch, [port(Port)]).
 
 handle_request(Request) :-
         memberchk(path(Path0), Request),

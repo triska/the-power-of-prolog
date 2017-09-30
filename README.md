@@ -24,7 +24,7 @@ you browse most of the content locally. When you access files that are
 To run it, you need SWI-Prolog&ge;**7.5.10**. To spawn the server on
 port&nbsp;5053, use for example:
 
-    $ swipl main.pl --port=5053 --interactive
+    $ swipl main.pl --port=5053
 
 Then, direct your browser to:
 
