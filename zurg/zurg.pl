@@ -1,5 +1,8 @@
 %   Solution for "Escape from Zurg"
 %   Written by Markus Triska (triska@metalevel.at), Sept. 4th 2007
+%
+%   https://www.metalevel.at/zurg/
+%   ==============================
 
 toy_time(buzz,   5).
 toy_time(woody, 10).

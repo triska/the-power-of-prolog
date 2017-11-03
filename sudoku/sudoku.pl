@@ -1,5 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   Sudoku CLP(FD) animation.
+   Solving Sudoku with Prolog
+   https://www.metalevel.at/sudoku/
 
    Written Feb. 2008 by Markus Triska  (triska@metalevel.at)
    Public domain code.
