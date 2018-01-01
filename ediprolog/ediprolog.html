@@ -39,7 +39,8 @@
 
           <br><br>
 
-          Video demonstration: <a href="ediprolog.mpg"><tt>ediprolog.mpg</tt></a>&nbsp;(1MB)
+          <b>Video</b>: <a href="https://youtu.be/3zC9gPSyoVE">https://youtu.be/3zC9gPSyoVE</a>
+
           <!-- A version for YAP Prolog is <a href="yap/ediprolog.el">here</a>. -->
 	  <br><br>
 
@@ -61,31 +62,58 @@
 
     <center><h2>Installation</h2></center>
 
-    To install <i>ediprolog</i>,
-    copy <a href="ediprolog.el"><tt>ediprolog.el</tt></a> to your load-path,
-    and add to your .emacs:
+    With Emacs&ge;24.1, the simplest way to install <i>ediprolog</i>
+    is to use Emacs's built-in <i>package&nbsp;manager</i> via:
+
+    <pre>
+M-x package-install RET ediprolog RET
+    </pre>
+
+    Alternatively,
+    copy <a href="ediprolog.el"><tt>ediprolog.el</tt></a> to your
+    load-path and add the following form to your <tt>.emacs</tt>, then
+    evaluate the form or restart&nbsp;Emacs:
 
     <pre>
 (require 'ediprolog)
-(global-set-key [f10] 'ediprolog-dwim)
     </pre>
 
-    If <tt>F10</tt> is not free on your platform, bind ediprolog-dwim
-    to any other key sequence, for example, use:
+    After you have installed ediprolog, you can customize it
+    with:
+
     <pre>
-(global-set-key "\C-c\C-e" 'ediprolog-dwim)
+M-x customize-group RET ediprolog RET
     </pre>
-    to bind it to <tt>C-c&nbsp;C-e</tt>. In the following,
-    replace&nbsp;<tt>F10</tt> with your custom binding.
-
-    <br><br>
-
-    Restart Emacs and use <tt>M-x customize-group RET
-      ediprolog RET</tt> to configure ediprolog.
 
     <br><br>
 
     <center><h2>Usage</h2></center>
+
+    The central function is <tt>ediprolog-dwim</tt> (Do What
+    I&nbsp;Mean). I recommend to bind it to a suitable
+    key&nbsp;sequence. For example, you can bind it to the
+    function&nbsp;key&nbsp;F10 with:
+
+    <pre>
+(global-set-key [f10] 'ediprolog-dwim)
+    </pre>
+
+    If <tt>F10</tt> is not free on your platform,
+    bind <tt>ediprolog-dwim</tt> to any other key sequence. For
+    example, to bind it to <tt>C-c&nbsp;C-e</tt>, use:
+    <pre>
+(global-set-key "\C-c\C-e" 'ediprolog-dwim)
+    </pre>
+
+    In the following, replace&nbsp;<tt>F10</tt> with your custom
+    binding.
+
+    <br><br>
+
+    Depending on the content at point, <tt>ediprolog-dwim</tt> does
+    the "appropriate" thing: If point is on a <i>query</i>, it sends
+    the query to a Prolog process, and you interact with the process
+    in the current buffer as on a terminal.
 
     Queries in Prolog source files start with&nbsp;<tt>?-</tt>
     or&nbsp;<tt>:-</tt>, possibly preceded by&nbsp;<tt>%</tt> and
@@ -109,11 +137,6 @@
 %@ false.
     </pre>
 
-    <p>When waiting for output of the Prolog process, you can
-      press&nbsp;<tt>C-g</tt> to unblock Emacs and continue with other
-      work. To resume interaction with the Prolog process, use
-      <tt>M-x&nbsp;ediprolog-toplevel&nbsp;RET</tt>.</p>
-
     <p>If you press <tt>F10</tt> when point is <i>not</i> on a query,
       the buffer content is consulted in the Prolog process, and point
       is moved to the first error (if any). You do&nbsp;<i>not</i>
@@ -123,9 +146,24 @@
     <p>In transient mark mode, if the region is active, only the text
       in the region is consulted.</p>
 
+    <p>When waiting for output of the Prolog process, you can
+      press&nbsp;<tt>C-g</tt> to unblock Emacs and continue with other
+      work. To resume interaction with the Prolog process, use
+      <tt>M-x&nbsp;ediprolog-toplevel&nbsp;RET</tt>.</p>
+
+    <p>For convenience, the most recent interactions with the Prolog
+      process are logged in the buffer <tt>*ediprolog-history*</tt>.</p>
+
+    <p>
+      Use <tt>M-x ediprolog-localize RET</tt> to make any Prolog
+      process started in the current buffer <i>buffer-local</i>. This
+      way, you can run distinct processes simultaneously. Revert with
+      <tt>M-x&nbsp;ediprolog-unlocalize&nbsp;RET</tt>.</p>
+
     <br><br>
 
-    Other key sequences:
+
+    <tt>ediprolog-dwim</tt> with prefix arguments has special meanings:
 
     <br><br>
     <center>

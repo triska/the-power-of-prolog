@@ -31,6 +31,8 @@
     Since some of the features shown on this page are
     inspired by PceEmacs, I call this collection <i>PceProlog</i>.
     </blockquote>
+
+    <b>Videos</b>: <a href="https://www.youtube.com/watch?v=sRhWGbBkQLI&list=PLEvH6T-1oh77QEknzIhgFWGv864JfndXG">Prolog Development Environment</a>
     
     <center><h2>Editing Prolog code</h2></center>
 
@@ -86,6 +88,18 @@
 
 (global-set-key "\C-cq" 'prolog-insert-comment-block)
     </pre>
+
+    In addition, I recommend the following definition so that
+    C-c&nbsp;l inserts <tt>:-&nbsp;use_module(library()).</tt> and
+    places the point between the inner parentheses.
+
+    <pre>
+(global-set-key "\C-cl" (lambda ()
+                          (interactive)
+                          (insert ":- use_module(library()).")
+                          (forward-char -3)))
+    </pre>
+
 
     <center><h2>Prolog interaction</h2></center>
 

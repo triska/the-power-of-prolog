@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Lisprolog -- Interpreter for a simple Lisp. Written in Prolog.
     Written Nov. 26th, 2006 by Markus Triska (triska@metalevel.at).
-    Public domain code.
+    Public domain code.        https://www.metalevel.at/lisprolog/
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- set_prolog_flag(double_quotes, chars).

@@ -83,39 +83,45 @@
 
     The approach taken by the paper follows a long tradition: First, a
     convoluted Prolog solution is presented, and this is then compared
-    with a more elegant solution in a different language. The point of
+    with a more elegant solution in a different language.
+
+    <br><br>
+
+    The point of
     this page is to show you that there is also an
-    elegant <i>Prolog&nbsp;solution</i> for this task.
+    <b>elegant Prolog&nbsp;solution</b> for this task.
     <br><br>
 
     <center>
       <h2>Prolog solution</h2>
     </center>
 
-    To represent the <i>state</i> of the world in this problem, we will
+    To represent the <b>state</b> of the world in this task, we
     use a term of the form <tt>state(T,Ls,Rs)</tt>, where:
 
     <ul>
-      <li><tt>T</tt> is an integer that denotes the time taken so far</li>
+      <li><tt>T</tt> is an integer that denotes the <i>time</i> taken so far</li>
 
-      <li><tt>Ls</tt> is a list of toys that are on the left side</li>
+      <li><tt>Ls</tt> is a list of toys that are currently on
+      the <i>left</i>&nbsp;side</li>
 
-      <li><tt>Rs</tt> is a list of toys that are on the right side</li>
+      <li><tt>Rs</tt> is a list of toys that are currently on
+      the <i>right</i>&nbsp;side</li>
     </ul>
     <br>
 
     Without loss of generality, let us suppose that all toys are
-    initially on the <i>left</i> side, and need to cross the bridge to
-    get to the <i>right</i> side. Clearly, two important states are
-    hence:
+    initially on the <i>left</i>&nbsp;side, and need to cross the
+    bridge to get to the <i>right</i>&nbsp;side. Clearly, two
+    important states are hence:
 
     <ul>
 
-      <li>the <i>initial state</i>, which we can represent
+      <li>the <b>initial&nbsp;state</b>, which we can represent
         as <tt>state(0,[buzz,woody,rex,hamm],[])</tt> in our representation</li>
 
 
-      <li>the desired <i>final state</i>, where all toys are on the
+      <li>the desired <b>final&nbsp;state</b>, where all toys are on the
       right side, or equivalently, none of the toys are on the left
       side, and which we can hence represent
         as&nbsp;<tt>state(_,[],_)</tt>
@@ -124,12 +130,9 @@
 
     <br>
 
-    We are looking for a sequence of <i>state transitions</i>
-    or <i>moves</i> that take us from the initial state to the desired
-    final state. For convenience, we are using a
-    Prolog <a href="/prolog/dcg"><b>Definite Clause
-    Grammar&nbsp;(DCG)</b></a> to describe such sequences
-    of&nbsp;moves.
+    We are looking for a sequence of <b>state&nbsp;transitions</b>
+    or <b>moves</b> that take us from the initial state to the desired
+    final state.
 
     <br><br>
 
@@ -142,11 +145,19 @@
       from right to left</li>
     </ul>
 
-    It follows from the from task description that no other kinds of
+    It follows from the task description that no other kinds of
     moves are necessary.<br><br>
 
     An important precondition for each such move is that we stay
-    within the time limit of 60&nbsp;minutes.
+    within the <b>time&nbsp;limit</b> of 60&nbsp;minutes.
+
+    <br><br>
+
+    For convenience, we are using a
+    Prolog <a href="/prolog/dcg"><b>Definite Clause
+    Grammar&nbsp;(DCG)</b></a> to describe a sequence of&nbsp;moves.
+    In addition, we are using <a href="/prolog/clpfd">declarative
+    integer arithmetic</a> to reason about integer expressions.
 
     <br><br>
 
@@ -202,7 +213,7 @@ no
     Related: <a href="/tist/"><b>Thinking in States</b></a>
 
     <br><br><br>
-    <b><a href="/prolog">More about Prolog</a></b>
+    More about Prolog: <b><a href="/prolog">The Power of Prolog</a></b>
     
     <br><br><br>
     <a href="/"><b>Main page</b></a>
