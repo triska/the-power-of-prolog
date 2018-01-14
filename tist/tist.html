@@ -384,9 +384,9 @@ Ms = [from_to(a,b),from_to(b,c),from_to(c,a),from_to(b,c),from_to(a,b),from_to(b
     <br><br><br>
     <center><h2>States in programs</h2></center>
 
-    Let us now build an interpreter for a simple programming language
-    over integers in Prolog.  Using Prolog terms, we represent
-    programs as abstract syntax trees (ASTs) like:
+    Let us now build an <b>interpreter</b> for a simple programming
+    language over integers in Prolog.  Using Prolog terms, we
+    represent programs as abstract syntax trees (ASTs) like:
 
     <pre class="code">
 function(Name, Parameter, Body)
@@ -588,11 +588,11 @@ run(AST) :-
 
     To get rid of the interpreter's overhead incurred by looking up
     variables and function definitions in the environment, we now
-    compile programs to <i>virtual machine code</i> in which variables
-    and functions are addressed by offsets into specific regions of
-    the virtual machine's "memory". Using a programming language
-    permitting efficient array indexing, you can thus interpret
-    variable access and function calls in&nbsp;O(1).
+    <b>compile</b> programs to <i>virtual machine code</i> in which
+    variables and functions are addressed by offsets into specific
+    regions of the virtual machine's "memory". Using a programming
+    language permitting efficient array indexing, you can thus
+    interpret variable access and function calls in&nbsp;O(1).
 
     <br><br>
 
