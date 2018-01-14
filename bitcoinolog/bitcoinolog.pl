@@ -16,7 +16,7 @@
                         public_key_to_address/2,
                         hex_to_base58check/2,
                         base58check_to_integer/2
-                        ]).
+                       ]).
 
 :- use_module(library(clpfd)).
 :- use_module(library(crypto)).
