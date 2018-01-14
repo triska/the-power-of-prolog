@@ -92,6 +92,9 @@ var toc = new Array(
     { link: "/prolog/fun",
       title: "Fun Facts"
     },
+    { link: "/prolog/engineering",
+      title: "Engineering Aspects"
+    },
     { link: "/prolog/future",
       title: "The Future"
     },

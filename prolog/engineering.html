@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Engineering Aspects</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prolog Programming: Software Engineering Aspects">
+    <meta name="keywords" content="Prolog,Development,Engineering">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Engineering Aspects</h1></center>
+    <br>
+
+    <center><h2>Prolog Development Environment</h2></center>
+
+    There are several good <i>development environments</i> with
+    special support for Prolog&nbsp;coding.
+
+    <br><br>
+
+    For example, see <a href="/pceprolog/">PceProlog</a> to
+    configure <b>GNU&nbsp;Emacs</b> for Prolog.
+
+    <br><br>
+
+    The <tt>comp.lang.prolog</tt> <a href="/prolog/faq/">FAQ</a>
+    contain pointers to several additional environments.
+
+    <br><br>
+
+    Prolog systems ship with different features that
+    make <i>compiling</i> and <i>consulting</i> your code easier. For
+    example, in SWI-Prolog, you can invoke the built-in
+    predicate <tt>make/0</tt> to reconsult all source files. This
+    feature works to various degrees, depending on other features you
+    are using. Using <a href="/ediprolog/">ediprolog</a>, you can stay
+    in the Emacs&nbsp;buffer, and interact with Prolog directly in the
+    buffer.
+
+    <br><br>
+
+    I recommend you use the system that works best for you, i.e., I
+    recommend you use&nbsp;Emacs for Prolog development. Make sure to
+    configure your keyboard so that you can
+    use <tt>Caps&nbsp;Lock</tt> as an
+    additional <tt>Ctrl</tt>&nbsp;key! In my experience, Emacs is most
+    usable with a <i>Dvorak</i> keyboard layout.
+
+    <center><h2>Module Systems</h2></center>
+
+
+    For programming <i>in the large</i>, and even for
+    programming <i>in the medium</i>, and <i>even</i> for several
+    other kinds of programming, you will want to make use of your
+    Prolog's <i>module&nbsp;system</i> to separate logical&nbsp;units
+    of&nbsp;code.
+
+    <br><br>
+
+    Different Prolog implementations support different <i>kinds</i> of
+    module systems. Notably, there are <i>functor-based</i> module
+    systems and <i>predicate-based</i> module systems, with different
+    consequences and trade-offs. It is very hard to <i>design</i> a
+    module system and think all consequences through. Usually,
+    conflicting requirements are imposed on a module system: On the
+    one hand, you want to use modules
+    to <i>separate&nbsp;concerns</i>, and on the other hand, you want
+    to support <i>code&nbsp;introspection</i> and other features that
+    run counter to true separation. Therefore, typical module systems
+    are ultimately inconsistent, yet useful for structuring your
+    source files and avoiding name&nbsp;conflicts.
+
+    <br><br>
+
+    <i>Using</i> a particular module system is usually very
+    straight-forward. Essentially, you typically place
+    a <tt>module/2</tt> (or similar) directive in your source file,
+    such as:
+
+    <pre>
+:- module(my_nice_module, [first_exported_predicate/2,
+                           second_exported_predicate/1,
+                           third_exported_predicate/4,
+                           ...
+                          ]).
+    </pre>
+
+    where the various <i>exported</i> predicates are listed by their
+    predicate <i>indicators</i> (name and arity). In Prolog&nbsp;files
+    that <i>use</i> a module, you place a
+    corresponding <tt>use_module/1</tt> (or similar) directive, such
+    as:
+
+    <pre>
+:- use_module(my_nice_module).
+    </pre>
+
+    A major advantage is that the <i>internal</i> predicates
+    of <tt>my_nice_module</tt> cannot cause conflicts with internal
+    predicates of other programs and modules.
+
+    <center><h2>Timing and Profiling</h2></center>
+
+    Different Prolog systems provide different ways to <i>time</i>
+    and <i>profile</i> your&nbsp;predicates. For example, in
+    SWI-Prolog, you can use the built-in predicate <tt>time/1</tt> to
+    measure the run&nbsp;time of any goal. For example:
+
+    <pre>
+?- <b>time</b>((X in 0..100 000,indomain(X),false)).
+% 6,700,137 inferences, <b>0.362 CPU in 0.389 seconds</b> (93% CPU, 18485129 Lips)
+false.
+    </pre>
+
+    SWI-Prolog also ships with a very nice <i>profiler</i> which you
+    can invoke via <tt>profile/1</tt>. Simply supply the goal you want
+    to profile as an argument. Other systems such as
+    SICStus&nbsp;Prolog also ship with a
+    built-in <a href="https://sicstus.sics.se/sicstus/docs/4.3.2/html/sicstus/Execution-Profiling.html">profiler</a>.
+
+    <br><br>
+
+    Most Prolog systems provide the predicate <tt>statistics/2</tt>
+    which you can use to take your own measurements. For example, we
+    can define the <i>relation</i> between a goal and the
+    CPU&nbsp;time it takes until it succeeds:
+
+    <pre>
+goal_time(Goal, T) :-
+        statistics(runtime, [T0|_]),
+        Goal,
+        statistics(runtime, [T1|_]),
+        T #= T1 - T0.
+    </pre>
+
+    We can now obtain the CPU&nbsp;time (in milliseconds) of any
+    goal&nbsp;<tt>Goal</tt> via the query:
+
+    <pre>
+?- goal_time(Goal, Time).
+    </pre>
+
+    I highly recommend such tools to measure the performance of your predicates.
+
+
+    <center><h2>Exceptions and Errors</h2></center>
+
+    Prolog supports raising and handling <i>exceptions</i>. As the
+    name implies, this mechanism is useful to
+    handle <i>exceptional</i> situations. Some of these situations are
+    already prescribed in the ISO&nbsp;standard. The most important
+    ones are:
+
+    <ul>
+      <li><b>type&nbsp;error</b>: This exception is raised when a
+        particular <i>type</i> of term is expected, but a different
+        kind of term is present. The ISO&nbsp;standard explicitly
+        defines sets of terms (such as <i>integer</i>, <i>list</i>
+        etc.) for which a type&nbsp;error may be raised.</li>
+
+      <li><b>domain&nbsp;error</b>: This is very similar to a type
+        error: A different <i>kind</i> of term than is present is
+        expected. The difference to a type error is that the kind of
+        term that is expected is <i>not</i> among the predefined types
+        that are defined in the standard.</li>
+
+      <li><b>instantiation&nbsp;error</b>: This exception is raised
+        when a predicate argument is
+        insufficiently <i>instantiated</i>, i.e., a <i>variable</i>
+        occurs where a more specific term is expected.
+      </li>
+    </ul>
+
+    There is a very important semantic difference between these
+    exceptions: Declaratively, a <i>type</i> or <i>domain</i> error
+    can be replaced by silent <i>failure</i>, because no further
+    constraint you add to the (monotonic) program can turn such a
+    situation into success. On the other hand,
+    an <i>instantiation</i>&nbsp;error <i>must&nbsp;not</i> be
+    replaced by silent failure, because there <i>could</i> still be
+    solutions in such cases, and adding further constraints may
+    reveal&nbsp;them.
+
+    <br><br>
+
+    Here are two examples that illustrate these cases:
+
+    <pre>
+?- X #= a.
+ERROR: <b>Domain error</b>: `clpfd_expression' expected, found `a'
+
+?- X in Y.
+ERROR: Arguments are not sufficiently instantiated
+    </pre>
+
+    It is easy to see that adding further constraints can make
+    the <i>second</i> query succeed:
+
+    <pre>
+?- <b>Y = 0..5</b>, X in Y.
+Y = 0..5,
+X in 0..5.
+    </pre>
+
+    However, no additional goal can ever
+    make <tt>X&nbsp;#=&nbsp;a</tt> succeed, and therefore
+    this <i>domain&nbsp;error</i> could also be replaced by failure.
+
+    <br><br>
+
+    In exceptional situations, exceptions are typically more useful
+    than silent failure, because they let you reason about
+    the <i>cause</i> of the problem.
+
+    <br><br>
+
+    You can use the standard&nbsp;predicate <tt>throw/1</tt>
+    to <i>raise</i> an exception, and the standard
+    predicate <tt>catch/3</tt> to handle exceptions.
+
+    <center><h2>Unit Tests</h2></center>
+
+    <i>Unit tests</i> are an extremely important tool to detect
+    regressions in your code.
+
+    <br><br>
+
+    Prolog is eminently well-suited to formulate and run unit tests.
+    Using declarative descriptions and Prolog's built-in backtracking
+    mechanism, you can quickly formulate tests that cover a vast range
+    of possible tests. Essentially, state what <i>ought</i> to hold,
+    and then simply <i>run</i> these queries to test whether
+    it <i>does</i> hold.
+
+    <br><br>
+
+    There is a unit testing framework
+    called <a href="http://www.swi-prolog.org/pldoc/doc_for?object=section(%27packages/plunit.html%27)">PlUnit</a>
+    that is available for SWI-Prolog <i>and</i> for SICStus&nbsp;Prolog.
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>
