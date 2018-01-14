@@ -54,16 +54,23 @@
       arithmetic</a> to
       allow <a href="/prolog/debugging">declarative&nbsp;debugging</a>.
 
-
-    <center><h2>Bitcoin</h2></center>
+    <br><br>
 
     <a href="https://en.wikipedia.org/wiki/Bitcoin">Bitcoin</a> is
-    a <i>cryptocurrency</i>. It uses&nbsp;ECDSA for <i>signing</i>
+    a <i>cryptocurrency</i> that uses&nbsp;ECDSA for <i>signing</i>
     transactions.
 
+    <center><h2>Bitcoinolog</h2></center>
+
     <br><br>
-    A <a href="/prolog">Prolog</a> library for reasoning about
-    Bitcoin <i>addresses</i> is available:&nbsp;<a href="bitcoinolog.pl"><b><tt>bitcoinolog.pl</tt></b></a>
+    <b>Bitcoinolog</b> is a <a href="/prolog">Prolog</a> program for
+    reasoning about Bitcoin <i>addresses</i>:
+    &nbsp;<a href="bitcoinolog.pl"><b><tt>bitcoinolog.pl</tt></b></a>
+
+    <br><br>
+
+    The source code is also available from a public git
+    repository: <a href="https://github.com/triska/bitcoinolog">https://github.com/triska/bitcoinolog</a>
 
     <br><br>
 
@@ -83,10 +90,13 @@
     use <a href="ecclog.pl"><tt>ecclog.pl</tt></a> for the required
     operations over elliptic&nbsp;curves.
 
+    <br><br>
+
+    <b>Video:</b> <a href="https://youtu.be/dJN3m6_kE8o">https://youtu.be/dJN3m6_kE8o</a>
+
     <center><h2>Use cases of Bitcoinolog</h2></center>
 
-    Here are a few use cases
-    of <a href="bitcoinolog.pl"><tt>bitcoinolog.pl</tt></a>:
+    Here are a few use cases Bitcoinolog:
 
     <ol>
       <li><b>Offline Bitcoin wallet creation</b>
@@ -139,10 +149,6 @@ PublicKey = '020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405'
 
     </ol>
 
-    <b>Video:</b> <a href="https://youtu.be/dJN3m6_kE8o">https://youtu.be/dJN3m6_kE8o</a>
-
-    <br><br>
-
     Here is a Prolog query that indefinitely <i>generates</i>
     private&nbsp;keys and corresponding Bitcoin&nbsp;addresses:
 
@@ -173,10 +179,6 @@ address_key(A, B) :-
         B='L4EresJ9xiC7JzbXV3gU7SpUsenqq12ZxonYFYHr6c9GSt3RKyVA'.</b>
 etc.
     </pre>
-
-    The source code of Bitcoinolog is also available from a public git
-    repository: <a href="https://github.com/triska/bitcoinolog"><b>github.com/triska/bitcoinolog</b></a>
-
 
     <br><br><br>
     More about Prolog: <b><a href="/prolog">The Power of Prolog</a></b>
