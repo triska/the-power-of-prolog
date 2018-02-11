@@ -1,0 +1,503 @@
+<html>
+  <head>
+    <title>LetSWICrypt - HTTPS Servers with Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center>
+      <h1>LetSWICrypt - HTTPS Servers with Prolog</h1>
+    </center>
+    <br><br>
+
+
+    <center><h2>Introduction</h2></center>
+
+
+    Prolog is extremely well suited for writing
+    <a href="/prolog/web"><b>web&nbsp;applications</b></a>.
+
+    <br><br>
+
+    This document explains how to set up and run secure
+    (<b>HTTPS</b>) web&nbsp;servers using SWI-Prolog with
+    <i>Let's&nbsp;Encrypt</i> and other certificate authorities.
+
+    <br><br>
+
+    You can download all files from a public git
+    repository: <a href="https://github.com/triska/letswicrypt">https://github.com/triska/letswicrypt</a>
+
+    <br><br>
+
+    SWI-Prolog <b>7.5.8</b> or later ships with everything that is
+    necessary to run HTTPS&nbsp;servers as described in the following.
+
+    <center><h2>Obtaining a certificate</h2></center>
+
+    For the sake of concreteness, assume that we want to set up an
+    HTTPS&nbsp;server that is reachable at <tt>xyz.com</tt> and
+    <tt>www.xyz.com</tt>. These names are chosen also because they are easy to
+    search for and do not occur anywhere else in the configuration files.
+
+    <center><h3>Variant A: Use <i>Let's Encrypt</i></h3></center>
+
+    <a href="https://letsencrypt.org/"><b>Let's Encrypt</b></a> is a
+    free certificate authority&nbsp;(CA).
+
+    <br><br>
+
+    The tool is easy to install and run. Follow the instructions on their
+    page, and then execute the following command on the host machine:
+
+    <pre>
+$ sudo certbot certonly --standalone -d xyz.com -d www.xyz.com
+    </pre>
+
+    <b>Note</b>: This requires that you <i>stop</i> any server that listens on
+    port&nbsp;80 or port&nbsp;443, until the certificate is obtained. There
+    are also other ways to obtain a certificate that allow you to keep
+        existing servers running. See below for more information.
+
+    <br><br>
+
+    After this is completed, you obtain 4 files
+    in <tt>/etc/letsencrypt/live/xyz.com/</tt>:
+
+    <pre>
+/etc/letsencrypt/live/xyz.com/cert.pem
+/etc/letsencrypt/live/xyz.com/chain.pem
+/etc/letsencrypt/live/xyz.com/fullchain.pem
+/etc/letsencrypt/live/xyz.com/privkey.pem
+    </pre>
+
+    We only need two of them:
+
+    <ul>
+      <li><tt>privkey.pem</tt>: the server's private key</li>
+      <li><tt>fullchain.pem</tt>: the certificate and certificate chain.
+      </li>
+    </ul>
+
+    <center><h3>Variant B: Use a different certificate authority</h3></center>
+
+    You can also use a different CA. To do that, you first create a
+    new private key and certificate signing request&nbsp;(CSR). The
+    file [openssl.cnf](openssl.cnf) shows you what is necessary to
+    create a&nbsp;CSR for both <tt>xyz.com</tt>
+    and&nbsp;<tt>www.xyz.com</tt>. The
+    <tt>alt_names</tt>&nbsp;section is relevant to cover both domains:
+
+    <pre>
+[ alt_names ]
+DNS.1 = www.xyz.com
+DNS.2 = xyz.com
+    </pre>
+
+    Using&nbsp;<tt>openssl.cnf</tt>, you can create the key&nbsp;(<tt>server.key</tt>)
+    and CSR&nbsp;(<tt>server.csr</tt>) for example with:
+
+    <pre>
+$ openssl req -out server.csr -new -newkey rsa:2048 -nodes -keyout server.key -config openssl.cnf
+    </pre>
+
+    You can inspect the created CSR with:
+
+    <pre>
+$ openssl req -text -noout -verify -in server.csr
+    </pre>
+
+    To obtain a certificate, you have again two options: Either use a
+    trusted&nbsp;CA (simply supply&nbsp;<tt>server.csr</tt>), or self-sign the
+    key using for example:
+
+    <pre>
+$ openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt -extensions v3_req -extfile openssl.cnf
+    </pre>
+
+    In both cases, the files that are important for the following are:
+
+    <ul>
+      <li><tt>server.key</tt>: the server's private key</li>
+      <li><tt>server.crt</tt>: the certificate and certificate chain.</li>
+    </ul>
+
+    Note that&mdash;up to naming&mdash;this corresponds to the files
+    obtained in Variant&nbsp;A.
+
+    <center><h2>Running an HTTPS server with SWI-Prolog</h2></center>
+
+    In the previous section, we have seen two ways to obtain a private key
+    and a certificate. For clarity, we have used different file names to
+    distinguish the variants. We now assume the following files are
+    available in <tt>/var/www/xyz.com/</tt>, no matter which variant you used to
+    obtain them:
+
+    <ol>
+      <li><tt>server.key</tt>: the server's private key</li>
+      <li><tt>server.crt</tt>: the certificate and certificate chain.</li>
+    </ol>
+
+    <b>Note</b>: You can store the certificate and&nbsp;key in any
+    location, and also <i>leave</i> the files
+    in <tt>/etc/letsencrypt/live/</tt> if you used
+    <i>Let's&nbsp;Encrypt</i> to obtain them. This is because
+    SWI-Prolog reads these files <i>before</i> dropping privileges when
+    starting an HTTPS&nbsp;server.
+
+    <br><br>
+
+    As the name suggests, the private key is meant to be kept
+    <i>private</i>. Therefore, make sure to use suitable file
+    permissions.
+
+    <br><br>
+
+    You can inspect the issued certificate with:
+
+    <pre>
+$ openssl x509 -in server.crt -text -noout
+    </pre>
+
+    <center><h2>Preliminaries: SWI-Prolog web server as Unix daemon</h2></center>
+
+    The file <a href="server.pl"><tt>server.pl</tt></a> contains a very simple web server that
+    is written using SWI-Prolog. In its current form, it simply replies
+    with&nbsp;<tt>Hello!</tt> to any request. In a more realistic scenario, you
+    would of course supply a more suitable definition
+    of&nbsp;<tt>handle_request/1</tt>, so that the server replies with more
+    useful content. Still, this basic server suffices to illustrate the
+    principle for running an HTTPS&nbsp;server with any of the
+    certificates we obtained in the previous steps.
+
+    <br><br>
+
+    First, note that this server uses
+    the <a href="http://eu.swi-prolog.org/pldoc/doc/_SWI_/library/http/http_unix_daemon.pl"><tt>http_unix_daemon</tt>
+    library</a> This library makes it extremely easy to run the
+    web&nbsp;server as a Unix&nbsp;daemon by implicitly augmenting the
+    code to let you configure the server using command
+    line&nbsp;options. If you have an existing web server that you
+    want to turn into a Unix daemon, simply add the following
+    directive at the beginning:
+
+    <pre>
+:- use_module(library(http/http_unix_daemon)).
+    </pre>
+
+    Once you have done this, you can run the server with:
+
+    <pre>
+$ swipl server.pl --port=PORT
+    </pre>
+
+    and it will automatically launch as a daemon process. During
+    development, is is easier to work with the server on the terminal
+    using an interactive Prolog&nbsp;toplevel, which you can enable with:
+
+    <pre>
+$ swipl server.pl --port=PORT <b>--interactive</b>
+    </pre>
+
+    where <tt>PORT</tt> is any free port on your system. Try for
+    example&nbsp;<tt>--port=3041</tt>.
+
+    <br><br>
+
+    To find out more available command line options, use:
+
+    <pre>
+$ swipl server.pl --help
+    </pre>
+
+    <center><h2>Starting a Prolog HTTPS server</h2></center>
+
+    To start an HTTPS server with SWI-Prolog, the following 3 command line
+    options of the Unix daemon library are of particular relevance:
+
+    <ul>
+      <li><tt>--https</tt>: enables HTTPS, using port 443 by default.</li>
+      <li><tt>--keyfile=FILE</tt>: <tt>FILE</tt> contains the server's private key.</li>
+      <li><tt>--certfile=FILE</tt>: <tt>FILE</tt> contains the
+        certificate and certificate chain.</li>
+    </ul>
+
+    So, in our case, we can launch the HTTPS server for example with:
+
+    <pre>
+      $ sudo swipl server.pl --https --user=you --keyfile=/var/www/xyz.com/server.key --certfile=/var/www/xyz.com/server.crt
+    </pre>
+
+    Note that running the server on port 443 requires root privileges. The
+    <tt>--user</tt>&nbsp;option is necessary to drop privileges to the specified
+    user after forking.
+
+    <center><h2>Launching the HTTPS server on system startup</h2></center>
+
+    To launch the HTTPS server on system startup, have a look at the
+    <tt>systemd</tt> sample service
+    file <a href="https.service"><tt>https.service</tt></a>.
+
+    <br><br>
+
+    Adjust the file as necessary, copy it
+    to <tt>/etc/systemd/system</tt> and enable it with
+
+    <pre>
+$ sudo systemctl enable /etc/systemd/system/https.service
+    </pre>
+
+    then start the service with:
+
+    <pre>
+$ sudo systemctl start https.service
+    </pre>
+
+    <center><h2>Making your server more secure</h2></center>
+
+    Once your server is running, use for example
+    <a href="https://www.ssllabs.com/">SSL&nbsp;Labs</a> to assess
+    the quality of its encryption settings.
+
+    <br><br>
+
+    As of 2018, it is possible to obtain an <b>A+</b> rating with
+    SWI-Prolog HTTPS servers, by using:
+
+    <ul>
+      <li>as ciphers (see command line option <tt>--cipherlist</tt>): <tt>EECDH+AESGCM:EDH+AESGCM:EECDH+AES256:EDH+AES256:EECDH+CHACHA20:EDH+CHACHA20</tt></li>
+      <li>the <tt>Strict-Transport-Security</tt> header field, to enable HSTS.</li>
+    </ul>
+
+    For additional security, you can encrypt the server's private key,
+    using for example:
+
+    <pre>
+$ openssl rsa -des -in server.key -out server.enc
+    </pre>
+
+    To use an encrypted key when starting the server, use the
+    <tt>--pwfile=FILE</tt> command line&nbsp;option of the HTTP Unix daemon,
+    where <tt>FILE</tt> stores the password and has suitably restrictive access
+    permissions.
+
+    <center><h2>Renewing the certificate</h2></center>
+
+    Once you have a web server running, you can use <i>Let's
+    Encrypt</i> to obtain and <i>renew</i> your certificate <i>without
+      stopping</i> the server.
+
+    <br><br>
+
+    To use this feature, you must configure your web server to serve any
+    files located in the directory&nbsp;<b><tt>.well-known</tt></b>. With the
+    SWI-Prolog HTTP&nbsp;infrastructure, you can do this by adding the
+    following directives to your&nbsp;server:
+
+    <pre>
+:- use_module(library(http/http_files)).
+:- http_handler(root('.well-known/'), http_reply_from_files('.well-known', []), [prefix]).
+    </pre>
+
+    Restart the server and use the <tt>--webroot</tt> option as in the following
+    example:
+
+    <pre>
+$ sudo certbot certonly <b>--webroot</b> -w /var/www/xyz.com -d xyz.com -d www.xyz.com
+    </pre>
+
+    Please see <tt>man certbot</tt> for further options. For example, using
+    <tt>--logs-dir</tt>, <tt>--config-dir</tt>
+    and <tt>--work-dir</tt>, you can configure paths so that you can
+    run <tt>certbot</tt> <i>without</i> root&nbsp;privileges. In the
+    example above, it is assumed that your web content is located in
+    the directory&nbsp;<tt>/var/www/xyz.com</tt>.
+
+    <br><br>
+
+    In this mode of operation, <i>Let's Encrypt</i> uses the existing web
+    server and file contents to verify that you control the domain.
+
+    <br><br>
+
+    After you have done this, you can renew the certificate any time with:
+
+    <pre>
+$ certbot renew
+    </pre>
+
+    This automatically renews certificates that will expire within
+    30&nbsp;days, again using the existing web server to establish you as
+    the owner of the&nbsp;domain. You can run this command as a cronjob.
+
+    <br><br>
+
+    After your certificate is renewed, you must restart your web server
+    for the change to take&nbsp;effect. Alternatively, you can exchange
+    certificates while the server keeps running, which is described below.
+
+    <br><br>
+
+    <center><h2>Exchanging certificates</h2></center>
+
+    SWI-Prolog makes it possible to <i>exchange</i> certificates while
+    the&nbsp;server <i>keeps&nbsp;running</i>.
+
+    <br><br>
+
+    One way to do this is as follows:
+
+    <ol>
+
+      <li>Start your server <i>without</i> specifying a certificate or
+        key.</li>
+
+      <li>Use the extensible predicate <tt>http:ssl_server_create_hook/3</tt> to add
+        a certificate and key upon launch, while storing the original
+        SSL&nbsp;context. See&nbsp;<tt>ssl_add_certificate_key/4</tt>.</li>
+
+      <li>When necessary, renew the certificate as explained above. Use
+       <tt>ssl_add_certificate_key/4</tt> to add the new certificate to the
+       original SSL&nbsp;context, obtaining a new&nbsp;context that is
+       associated with the updated certificate.</li>
+      <li>Use the extensible predicate <tt>http:ssl_server_open_client_hook/3</tt>
+        to use the new&nbsp;context when negotiating client connections.</li>
+    </ol>
+
+    See
+    the <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=section(%27packages/ssl.html%27)">SSL
+      documentation</a> for more information.
+
+    <br><br>
+
+    Using the original context as a baseline ensures that all command
+    line&nbsp;options are adhered to and copied to new contexts that are
+    created. For example, any specified <i>password</i> is securely retained in
+    contexts and can therefore be used also for newly created&nbsp;keys.
+
+    <br><br>
+
+    Note
+    how <a href="https://www.metalevel.at/prolog/purity"><b>logical
+    purity</b></a> of these predicates allows the thread-safe
+    implementation of a feature that is not available in most other
+    web&nbsp;servers.
+
+    <center><h2>Server Name Indication (SNI)</h2></center>
+
+    To host multiple domains from a single IP address, you need <b>Server
+      Name Indication</b>&nbsp;(SNI). This TLS&nbsp;extension lets you
+    indicate different certificates and keys depending on the
+    <i>host&nbsp;name</i> that the client accesses.
+
+    <br><br>
+
+    The HTTP Unix daemon can be configured to use&nbsp;SNI by providing
+    suitable clauses of the predicate&nbsp;<tt>http:sni_options/2</tt>. The first
+    argument is the *host&nbsp;name*, and the second argument is a list of
+    SSL&nbsp;options for that domain. The most important options&nbsp;are:
+
+    <ul>
+      <li><tt>certificate_file(+File)</tt>: file that contains the <b>certificate</b>
+        and certificate&nbsp;chain</li>
+      <li><tt>key_file(+File)</tt>: file that contains the <b>private key</b>.</li>
+    </ul>
+
+    For example, to specify a certificate and key for&nbsp;<tt>abc.com</tt>
+    and&nbsp;<tt>www.abc.com</tt>, we can&nbsp;use:
+
+    <pre>
+http:sni_options('abc.com', [certificate_file(CertFile),key_file(KeyFile)]) :-
+        CertFile = '/var/www/abc.com/server.crt',
+        KeyFile = '/var/www/abc.com/server.key'.
+http:sni_options('www.abc.com', Options) :-
+        http:sni_options('abc.com', Options).
+    </pre>
+
+    <center><h2>Doing it all manually</h2></center>
+
+    Instead of relying on the Unix daemon library, you can also _manually_
+    start an HTTPS&nbsp;server via <tt>http_server/2</tt>. This gives you total
+    control over all aspects of the server, including those that cannot be
+    specified as command line options. The options for <tt>ssl_context/3</tt> are
+    specified as&nbsp;<tt>ssl(+Options)</tt>.
+
+    <br><br>
+
+    For example:
+
+    <pre>
+:- use_module(library(http/thread_httpd)).
+:- use_module(library(http/http_ssl_plugin)).
+
+https_server(Port, Options) :-
+        http_server(reply,
+                    [ port(Port),
+                      <b>ssl([ certificate_file('/var/www/xyz.com/server.crt'),
+                            key_file('/var/www/xyz.com/server.key')
+                          ])</b>
+                    | Options
+                    ]).
+reply(_) :-
+        format("Content-type: text/plain~n~n"),
+        format("Hello!").
+    </pre>
+
+    Typical use cases do *not* require this. A better way to obtain the
+    same effect is to rely on the HTTP Unix daemon library, and use the
+    available hooks for more fine-grained control of SSL&nbsp;parameters.
+
+    <center><h2>Related topics</h2></center>
+
+    Check out <a href="/proloxy/"><b>Proloxy</b></a>: It is a
+    <i>reverse&nbsp;proxy</i> that is written entirely in SWI-Prolog. Use
+    Proloxy if you want to provide access to different
+    web&nbsp;services under a common umbrella&nbsp;URL.
+
+    <br><br>
+
+    Importantly, you can run Proloxy as an HTTPS&nbsp;server and thus
+    encrypt traffic of all hosted services at once.
+
+    <br><br>
+
+    For more cryptographic functionality of SWI-Prolog, check out
+    <a href="http://eu.swi-prolog.org/pldoc/man?section=crypto"><b><tt>library(crypto)</tt></b></a>.
+    This library provides predicates for reasoning about secure
+    hashes, symmetric and asymmetric encryption,
+    and <b>digital&nbsp;signatures</b>.
+
+    <br><br>
+
+    <center><h2>Acknowledgments</h2></center>
+
+    All this is is made possible thanks to:
+
+    <a href="http://eu.swi-prolog.org"><b>Jan Wielemaker</b></a> for
+    providing the Prolog system that made all this possible in the
+    first place.
+
+    <br><br>
+
+    <a href="https://github.com/thetrime"><b>Matt Lilley</b></a>
+    for <tt>library(ssl)</tt>, the SSL wrapper library that ships with
+    SWI-Prolog. The SWI-Prolog HTTPS server uses this library for
+    secure connections.
+
+    <br><br>
+
+    <a href="https://charlie.ht/"><b>Charlie Hothersall-Thomas</b></a> for
+    implementation advice to enable more secure ciphers
+    in&nbsp;<tt>library(ssl)</tt>.
+
+    <br><br><br>
+    More about Prolog: <b><a href="/prolog">The Power of Prolog</a></b>
+
+    <br><br> In particular: <a href="/prolog/web">Web Applications</a>
+    and <a href="/prolog/cryptography">Cryptography</a>
+
+    <br><br><br>
+    <a href="/"><b>Main page</b></a>
+  </body>
+</html>
