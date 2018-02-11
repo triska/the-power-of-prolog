@@ -1,0 +1,385 @@
+<html>
+  <head>
+    <title>Proloxy - Prolog Reverse Proxy</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center>
+      <h1>Proloxy - Prolog Reverse Proxy</h1>
+    </center>
+    <br><br>
+
+
+    <center><h2>Introduction</h2></center>
+
+    A <a href="https://en.wikipedia.org/wiki/Reverse_proxy">reverse&nbsp;proxy</a>
+    relays requests to different web services. The main advantage
+    is <i>isolation of concerns</i>: You can run different and
+    independent web services and serve them under a common umbrella
+    URL.
+
+    <br><br>
+
+    <center>
+      <object data="proloxy.svg" type="image/svg+xml">
+      </object>
+    </center>
+
+    <i>Proloxy</i> is a reverse proxy that is written in Prolog.
+
+    <br><br>
+
+    <b>Source code:</b> <a href="proloxy.pl"><tt><b>proloxy.pl</b></tt></a>
+
+    <br><br>
+
+    Proloxy requires SWI-Prolog <b>7.5.8</b> or later.
+
+    <center><h2>Configuration</h2></center>
+
+    Proloxy uses an extensible <b>Prolog predicate</b> to relay
+    requests to different web services: For each arriving
+    HTTP&nbsp;request, Proloxy calls the predicate
+    <tt>request_prefix_target(+Request, -Prefix, -Target)</tt>. Its
+    arguments are:
+
+    <ul>
+      <li><tt>Request</tt> is the instantiated
+        <a href="http://eu.swi-prolog.org/pldoc/man?predicate=http_read_request/2">HTTP&nbsp;request</a></li>
+
+      <li><tt>Prefix</tt> is prepended to relative paths in
+        HTTP&nbsp;<i>redirects</i> that the target service emits, so
+        that the next client request is again relayed to the intended
+        target service.</li>
+
+      <li><tt>Target</tt> is the URI of the target service.
+      </li>
+    </ul>
+
+    You configure Proloxy by providing a <b>Prolog&nbsp;file</b> that
+    contains the definition of <tt>request_prefix_target/3</tt> and
+    any additional predicates and directives you need. For each web
+    service you want to make available, add a clause of
+    <tt>request_prefix_target/3</tt> to relate an instantiated
+    HTTP&nbsp;request to a&nbsp;prefix and the desired&nbsp;target.
+    Each clause may use arbitrary Prolog code to analyse the request
+    and form the target.
+
+    <br><br>
+
+    When dispatching an HTTP request, Proloxy considers the clauses of
+    <tt>request_prefix_target/3</tt> in the order they appear in your
+    configuration file and <b>commits</b> to the <b>first clause that
+    succeeds</b>. It relays the request to the computed target, and
+    then sends the target's response to the client.
+
+    <br><br>
+
+    For example, the following clause relays <i>all</i> requests to a
+    local web server on port&nbsp;3031, passing along the original request
+    path. The target server can for example host the site's main page,
+    to be used if no other rules apply:
+
+    <pre>
+request_prefix_target(Request, '', Target) :-
+        memberchk(request_uri(URI), Request),
+        atomic_list_concat(['http://localhost:3031',URI], Target).
+    </pre>
+
+    <a href="config.pl"><b><tt>config.pl</tt></b></a> shows a sample
+    configuration file that uses Prolog rules to dispatch requests
+    to two different web services.
+
+    <center><h2>Virtual hosts</h2></center>
+
+    The rule language is general enough to
+    express <b>virtual&nbsp;hosts</b>. In the case
+    of <i>name-based</i> virtual hosts, this means that you dispatch
+    requests to different web services based on
+    the <i>domain&nbsp;name</i> that is used to access your site.
+
+    <br><br>
+
+    For example, to dispatch all requests of users who access your
+    server via <tt>your-domain.com</tt> to a web server running on
+    port&nbsp;4040 (while leaving the path unchanged), use:
+
+    <pre>
+request_prefix_target(Request, '', Target) :-
+        memberchk(host('your-domain.com'), Request),
+        memberchk(request_uri(URI), Request),
+        atomic_list_concat(['http://localhost:4040',URI], Target).
+    </pre>
+
+    Using this method, you can host multiple domains with a single
+    Proloxy instance, dispatching requests to different underlying
+    services.
+
+    <center><h2>Redirections and other replies</h2></center>
+
+    You can also use the predicates <tt>http_404/2</tt>
+    and <tt>http_redirect/3</tt> from
+    <a href="http://eu.swi-prolog.org/pldoc/man?section=httpdispatch"><tt>library(http/http_dispatch)</tt></a>
+    in your configuration files.
+
+    <br><br>
+
+    For example, the following snippet responds with "HTTP 404
+    not&nbsp;found" if the URI contains <tt>.git</tt>:
+
+    <pre>
+:- use_module(library(http/http_dispatch)).
+
+request_prefix_target(Request, _, _) :-
+        memberchk(request_uri(Path), Request),
+        sub_atom(Path, _, _, _, '.git/'),
+        http_404([], Request).
+    </pre>
+
+    In some cases, it is convenient to respond directly with plain
+    text or HTML&nbsp;content <i>instead</i> of relaying the request
+    to a different web service. If a clause of
+    <tt>request_prefix_target/3</tt> emits any text on standout output,
+    then this output is sent to the client as the
+    HTTP&nbsp;response. Such responses typically start with
+    <tt>Content-type: text/plain</tt> (or&nbsp;<tt>text/html</tt>),
+    followed by two&nbsp;newlines and the body of the reply. In
+    rules that emit output, <tt>Target</tt> must be the
+    atom&nbsp;<tt>-</tt> to avoid relaying the request to a
+    different service.
+
+    Proloxy provides the predicate <tt>output_from_process(+Program,
+      +Args)</tt> to emit process output (from <tt>stdout</tt>
+    and&nbsp;<tt>stderr</tt>) on standard output. For example, we
+    can configure Proloxy to show the system's uptime when the
+    URL&nbsp;<tt>/uptime</tt> is accessed:
+
+    <pre>
+request_prefix_target(Request, _, -) :-
+        memberchk(request_uri('/uptime'), Request),
+        format("Content-type: text/plain; charset=utf-8~n~n"),
+        output_from_process('/usr/bin/uptime', []).
+
+    </pre>
+
+    Auxiliary programs and scripts can be conveniently invoked with
+    this&nbsp;method.
+
+    <center><h2>Relaying header fields</h2></center>
+
+    The extensible predicate <tt>transmit_header_field/1</tt> allows you to
+    relay header fields that the target service emits to the client.
+    The argument is the name of the header field you want to
+    transmit if it exists in the target's response. For example, you
+    can put the following in&nbsp;<tt>config.pl</tt>:
+
+    <pre>
+transmit_header_field(last_modified).
+    </pre>
+
+    The name of the header field is matched case-insensitively and
+    underscore&nbsp;(<tt>_</tt>) matches hyphen&nbsp;(<tt>-</tt>).
+
+    <br><br>
+
+    By default, Proloxy does <i>not</i> relay <i>any</i> response
+    header&nbsp;fields.
+
+    <br><br>
+
+    Here is a recommended configuration:
+
+    <pre>
+transmit_header_field(cache_control).
+transmit_header_field(expires).
+transmit_header_field(last_modified).
+transmit_header_field(pragma).
+    </pre>
+
+
+    Further, the extensible predicate <tt>add_header/1</tt> lets you add custom
+    header fields to the response. An example is:
+
+    <pre>
+add_header(strict_transport_security('max-age=63072000; includeSubdomains')).
+    </pre>
+
+    This enables HTTP Strict Transport Security (HSTS), which is useful
+    when running HTTPS servers.
+
+    <center><h2>Testing the configuration</h2></center>
+
+    Since each configuration file is also a valid Prolog program, you can
+    easily <b>test</b> your configuration. Consulting the Prolog program in
+    SWI-Prolog lets you detect syntax errors and singleton variables in
+    your configuration file. To test whether HTTP requests are dispatched
+    as you intend, query <tt>request_prefix_target/3</tt>. For example:
+
+    <pre>
+$ swipl config.pl
+Welcome to SWI-Prolog (Multi-threaded, 64 bits, Version 7.3.14)
+...
+
+?- once(request_prefix_target(<b>[request_uri(/)]</b>, P, T)).
+P = '',
+T = 'http://localhost:3031/'.
+
+?- once(request_prefix_target(<b>[request_uri('/rits/demo.html')]</b>, P, T)).
+P = '/rits',
+T = 'http://localhost:4040/demo.html'.
+    </pre>
+
+    Note that:
+
+    <ol>
+
+      <li>we are using <tt>once/1</tt> to commit to the <i>first clause that succeeds</i>.</li>
+      <li>we are simulating an actual HTTP request, using a list of header fields.</li>
+      <li>the answers tell us how the given HTTP requests are dispatched.</li>
+    </ol>
+
+    The ability to conveniently test your configuration is a nice
+    property, and a natural consequence of using Prolog as the
+    configuration language. You can also write unit tests for your
+    configuration and therefore easily detect regressions.
+
+    <center><h2>Running Proloxy</h2></center>
+
+    You can run Proloxy as a <b>Unix&nbsp;daemon</b>. See
+    the <a href="http://eu.swi-prolog.org/pldoc/man?section=httpunixdaemon">SWI-Prolog
+      documentation</a> for invocation options.
+
+    <br><br>
+
+    In the following, assume that your proxy rules are stored in the file
+    called <tt>config.pl</tt>.
+
+    To run Proloxy as a Unix daemon on the standard HTTP port&nbsp;(80) as
+    user&nbsp;<tt>web</tt>, use:
+
+    <pre>
+$ sudo swipl config.pl proloxy.pl --user=web
+    </pre>
+
+    To run the process in the foreground and with a Prolog toplevel, use:
+
+    <pre>
+$ sudo swipl config.pl proloxy.pl --user=web <b>--interactive</b>
+    </pre>
+
+    You can also use a different port that does not need root privileges:
+
+    <pre>
+$ swipl config.pl proloxy.pl --interactive <b>--port=3040</b>
+    </pre>
+
+    <center><h2>Launching Proloxy on system startup</h2></center>
+
+    <a href="proloxy.service"><tt><b>proloxy.service</b></tt></a> is a
+    sample <b>systemd</b> unit&nbsp;file that runs Proloxy on system
+    startup. Adapt the paths and options as needed, copy the file
+    to&nbsp;<tt>/etc/systemd/system/</tt> and install it using:
+
+    <pre>
+$ sudo systemctl enable /etc/systemd/system/proloxy.service
+$ sudo systemctl start proloxy.service
+    </pre>
+
+    <center><h2>Security: Run HTTPS servers</h2></center>
+
+    You can run Proloxy as an&nbsp;<b>HTTPS</b> server and thus encrypt
+    traffic for all hosted services at&nbsp;once.
+
+    See <a href="https://github.com/triska/letswicrypt"><b>LetSWICrypt</b></a>
+    for more information.
+
+    A common use case when using HTTPS is to run a second Proloxy
+    instance as a regular HTTP&nbsp;server on port&nbsp;80 to
+    redirect each request for&nbsp;http://*X*
+    to&nbsp;<b>https</b>://*X*. You can do this with the following
+    configuration file for the HTTP&nbsp;server:
+
+    <pre>
+:- use_module(library(http/http_dispatch)).
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Redirect each request X to https://X
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+request_prefix_target(Request, _, _) :-
+        memberchk(request_uri(URI), Request),
+        memberchk(host(Host), Request),
+        atomic_list_concat(['https://',Host,URI], Target),
+        http_redirect(moved, Target, Request).
+    </pre>
+
+    <center><h2>WebSocket connections</h2></center>
+
+    Proloxy supports proxying of WebSocket connections.
+
+    <br><br>
+
+    As an example, consider making
+    <a href="https://github.com/kanaka/noVNC">noVNC</a> available
+    via&nbsp;<tt>/vnc/</tt>, assuming that noVNC listens on
+    port&nbsp;6080. The following clauses accomplish the
+    configuration:
+
+    <pre>
+request_prefix_target(Request, '/vnc', Target) :-
+        memberchk(request_uri(URI), Request),
+        atom_concat('/vnc', Rest, URI),
+        atomic_list_concat(['http://localhost:6080',Rest], Target).
+
+request_prefix_target(Request, '/websockify', Target) :-
+        memberchk(request_uri(URI), Request),
+        atom_concat('/websockify', Rest, URI),
+        atomic_list_concat(['ws://localhost:6080',Rest], Target).
+    </pre>
+
+    WebSocket connections are automatically detected via the
+    <tt>Upgrade: websocket</tt> and other header fields.
+
+    <center><h2>Serving very large files</h2></center>
+
+    In typical use cases, Proloxy relays requests to <i>other</i>
+    web&nbsp;servers, and sends their answers to the client. The overhead
+    is typically negligible, since the other web services usually reside
+    on the same&nbsp;machine.
+
+    <br><br>
+
+    However, if a web server sends very large files in response to some
+    requests, Proloxy may not have enough global&nbsp;stack space to
+    collect the&nbsp;response.
+
+    In such cases, one solution is to configure Proloxy so that such
+    large&nbsp;files are sent directly by Proloxy, without involving a
+    different web&nbsp;service. For example, the following snippet
+    configures Proloxy to directly send any files (such as
+    ISO&nbsp;images) that are located in <tt>/home/web/iso</tt>, and
+    are accessed via&nbsp;<tt>/iso/</tt>.
+
+    <pre>
+:- use_module(library(http/http_dispatch)).
+
+request_prefix_target(Request, '', _) :-
+        memberchk(request_uri(URI), Request),
+        atom_concat('/iso/', Rest, URI),
+        http_safe_file(Rest, []),
+        atom_concat('/home/web/iso', URI, Path),
+        http_reply_file(Path, [unsafe(true)], Request).
+    </pre>
+
+    <br><br><br>
+    More about Prolog: <b><a href="/prolog">The Power of Prolog</a></b>
+
+    <br><br>
+    In particular: <a href="/prolog/web">Web Applications</a>
+
+    <br><br><br>
+    <a href="/"><b>Main page</b></a>
+  </body>
+</html>

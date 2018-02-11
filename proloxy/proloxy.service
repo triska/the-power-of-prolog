@@ -1,0 +1,15 @@
+[Unit]
+Description=Proloxy
+
+[Service]
+UMask=022
+Environment=LANG=en_US.utf8
+Restart=on-failure
+StartLimitInterval=60
+StartLimitBurst=5
+WorkingDirectory=/home/web/proloxy
+ExecStart=/usr/local/bin/swipl config.pl proloxy.pl --no-fork --port=80 --user=web \
+ --pidfile=/var/run/proloxy.pid --workers=16 --syslog=proloxy
+
+[Install]
+WantedBy=multi-user.target
