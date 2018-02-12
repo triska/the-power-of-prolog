@@ -7,7 +7,7 @@
 
    Proloxy needs SWI-Prolog >= 7.5.8.
 
-   Copyright (c) 2015, 2016, 2017 Markus Triska (triska@metalevel.at)
+   Copyright (c) 2015-2018 Markus Triska (triska@metalevel.at)
 
    Permission is hereby granted, free of charge, to any person
    obtaining a copy of this software and associated documentation
@@ -211,5 +211,5 @@ output_from_process(Exec, Args) :-
         catch(close(Stream), error(process_error(_,exit(_)), _), true).
 
 http:http_address -->
-        html(address([a(href('https://github.com/triska/proloxy'),
+        html(address([a(href('https://www.metalevel.at/proloxy/'),
                         'Proloxy')])).
