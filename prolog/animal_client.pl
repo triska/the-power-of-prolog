@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Client/server based animal identification using Pengines.
-   Written 2016 by Markus Triska (triska@metalevel.at)
+   Written 2016, 2018 by Markus Triska (triska@metalevel.at)
 
 
    For more information, see:
@@ -41,3 +41,5 @@ handle(success(_, [animal(A)], false)) :-
 handle(success(ID, [animal(A)], true)) :-
         portray_clause(identified(A)),
         pengine_next(ID, []).
+handle(failure(_)) :-
+        portray_clause(identification_failed).
