@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Client/server based animal identification using Pengines.
-   Written 2016 by Markus Triska (triska@metalevel.at)
+   Written 2016, 2018 by Markus Triska (triska@metalevel.at)
 
    For more information, see:
 
@@ -11,20 +11,22 @@
 
    To try this example:
 
-   1) start the server with:
+     1) start the server with:
 
-      $ swipl animal_server.pl --port=6357 --interactive
+        $ swipl animal_server.pl --port=6357 --interactive
 
-   2) start the client with:
+     2) start the client with:
 
-      $ swipl animal_client.pl
+        $ swipl -g main animal_client.pl
+
+
+   Tested with SWI-Prolog 7.7.9.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- use_module(library(pengines)).
+:- use_module(library(pengines_sandbox)).
 :- use_module(library(http/http_unix_daemon)).
-
-:- initialization http_daemon.
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Main logic: Completely identical to the stand-alone expert system.
