@@ -57,6 +57,9 @@ cases, slight modifications may be necessary to adjust for different
 libraries or small variations. See your Prolog system's manual, or ask
 on&nbsp;Stackoverflow and `comp.lang.prolog` for more information.
 
+See also the
+[Prolog&nbsp;chat](https://chat.stackexchange.com/rooms/74093/prolog).
+
 ## On teaching Prolog
 
 Prolog is an interesting programming language: It has a *pure*
