@@ -56,21 +56,16 @@
 
     <br><br>
 
-    To enable tabling in SWI-Prolog, you need to:
+    To enable tabling in SWI-Prolog, you need to use
+    the <b><tt>table/1</tt></b> directive.
 
-    <ol>
-      <li>Use <tt>library(tabling)</tt> via the directive <tt>:-
-          use_module(library(tabling)).</tt> in your source&nbsp;file.</li>
-      <li>Enable tabling via the <tt>table/1</tt> directive.</li>
-    </ol>
+    <br><br>
 
     For example, to enable tabling
     for <a href="nontermination"><tt>adjacent/2</tt></a>, you can write:
 
     <pre>
-<b>:- use_module(library(tabling)).
-
-:- table adjacent/2.</b>          
+<b>:- table adjacent/2.</b>
 
 adjacent(a, b).
 adjacent(e, f).
@@ -129,12 +124,10 @@ false.
 <b>ERROR: Out of local stack</b>
     </pre>
 
-    We can easily enable tabling by adding the following directives to
+    We can easily enable tabling by adding the following directive to
     the&nbsp;file:
 
     <pre>
-:- use_module(library(tabling)).
-
 :- table fibonacci/2.
     </pre>
 
