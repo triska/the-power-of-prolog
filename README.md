@@ -80,6 +80,19 @@ in Prolog&nbsp;systems. This book explains many of these new features,
 and shows you how you can use them to achieve general and efficient
 Prolog&nbsp;programs.
 
+Currently, new pioneers are arising: The first instructors who use
+this&nbsp;book in their&nbsp;courses! For example:
+
+- As of 2018, Norbert Zeh is using *The Power of Prolog* in
+  [CSCI&nbsp;3136: Principles of Programming
+  Languages](https://web.cs.dal.ca/~nzeh/Teaching/3136/index.html) at
+  Dalhousie&nbsp;University in&nbsp;Canada.
+- As of 2018, Andrej Bauer is using *The Power of Prolog* in his
+  specialist elective course [Principles of Programming
+  Languages](https://ucilnica.fri.uni-lj.si/course/view.php?id=67) at
+  the University of Ljubljana in&nbsp;Slovenia.
+- I hope you are next!
+
 <pre>
 Le message dur:
 <b>Restez purs!</b>
