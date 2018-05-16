@@ -76,14 +76,14 @@
     A <b>logfile</b> records events.
 
 
-    For example, the Prolog <a href="web#server">HTTPS&nbsp;sever</a>
-    that sent you this page keeps a logfile that
-    describes <i>each&nbsp;request</i> it&nbsp;processes.
+    For example, you can configure a
+    Prolog <a href="web#server">HTTPS&nbsp;sever</a> to store
+    information about <i>requests</i> it&nbsp;processes.
 
     <br><br>
 
-    When I locally test the server by fetching the
-    page <a href="/prolog"><tt>/prolog</tt></a>, it writes an entry
+    When you locally test such a server by fetching the
+    page <a href="/prolog"><tt>/prolog</tt></a>, it may write an entry
     similar to the following in its logfile:
 
     <pre>
@@ -100,17 +100,17 @@ request(45, 1491771679.213,
 
     <br><br>
 
-    After processing the request, the server automatically writes an
-    additional entry that describes how the request was processed. For
-    example, in my&nbsp;case, the following entry was&nbsp;added:
+    After processing the request, the server may write an additional
+    entry that describes how the request was processed. For example,
+    it may add:
 
     <pre>
 completed(45, 0.0009790000000000076, 0, 304, not_modified).
     </pre>
 
-    The key point is that this logfile is a series of
-    Prolog&nbsp;<i>facts</i>. Hence, the whole logfile can be easily
-    analyzed <i>using&nbsp;Prolog</i>!
+    The key point is that you can configure the server so that the
+    logfile is a series of Prolog&nbsp;<i>facts</i>. Hence, the whole
+    logfile can be easily analyzed <i>using&nbsp;Prolog</i>!
 
     <br><br>
 
