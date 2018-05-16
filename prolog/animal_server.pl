@@ -20,12 +20,11 @@
         $ swipl -g main animal_client.pl
 
 
-   Tested with SWI-Prolog 7.7.9.
+   Tested with SWI-Prolog 7.7.14.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- use_module(library(pengines)).
-:- use_module(library(pengines_sandbox)).
 :- use_module(library(http/http_unix_daemon)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
