@@ -622,10 +622,17 @@ Second = [...],
 
     <br><br>
 
-    The IV is
-    often called <b>nonce</b>. This is short for "number used once"
-    and emphasizes that for a fixed&nbsp;key, an&nbsp;IV must be used
-    at most <i>once</i>.
+    Ideally, <b>key</b> and <b>IV</b> are <i>randomly</i> chosen, with
+    each key and&nbsp;IV being equally likely.  Reusing the same
+    <i>combination</i> of key and&nbsp;IV typically leaks at least
+    <i>some</i> information about the plaintext.  For example,
+    identical plaintexts will then correspond to identical
+    ciphertexts. For some algorithms, reusing an IV with the same key
+    has disastrous results and can cause the loss of <i>all</i>
+    properties that are otherwise guaranteed.  Especially in such
+    cases, an IV is also called a <b>nonce</b>. This is short for
+    "number used once" and emphasizes that for a fixed&nbsp;key,
+    an&nbsp;IV must be used at most <i>once</i>.
 
     <br><br>
 
@@ -657,9 +664,10 @@ IV = [165, 227, 153, 21, 246, 53, 136, 179, 201|...],
 <b>CipherText = "uç&#x27;þß\026\nåÉ®#º&#x28;î\nâ".</b>
     </pre>
 
-    The <i>key</i> must be kept absolutely <i>secret</i> to retain the
-    confidentiality of the encrypted&nbsp;text. In contrast, the IV can be
-    safely stored and transmitted in plain&nbsp;text. By
+    The <i>key</i> must be kept
+    absolutely <span class="secret"><i>secret</i></span> to retain the
+    confidentiality of the encrypted&nbsp;text. In contrast, the IV
+    can be safely stored and transmitted in plain&nbsp;text. By
     default, <i>padding</i> is used so that input of any length can be
     processed even though this algorithm always operates on blocks
     that contain exactly 16&nbsp;bytes. For this reason, the
