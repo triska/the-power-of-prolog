@@ -277,8 +277,8 @@ sea([N,M,L,R,I]) :-
 implication_chain([], Prev) --&gt; [Prev].
 implication_chain(Vs0, Prev) --&gt; [Prev],
         { select(V, Vs0, Vs) },
-        (   { taut(Prev =< V, 1) } -&gt; implication_chain(Vs, V)
-        ;   { taut(Prev =< ~V, 1) } -&gt; implication_chain(Vs, ~V)
+        (   { taut(Prev =&gt; V, 1) } -&gt; implication_chain(Vs, V)
+        ;   { taut(Prev =&gt; ~V, 1) } -&gt; implication_chain(Vs, ~V)
         ).
     </pre>
 
