@@ -39,7 +39,7 @@
     technique known as <i>memoization</i> in computer&nbsp;science.
 
     <br><br>
-    <center><h2>Tabling</h2></center>
+    <center><h2 id="tabling">Tabling</h2></center>
 
     <b>Tabling</b> is a <i>built-in</i> method to apply memoization to
     Prolog predicates. This means that the underlying Prolog system
@@ -139,7 +139,16 @@ false.
 <b>F = 573147844013817084101</b>.
     </pre>
 
+    Tabling also allows you to
+    use <a href="dcg#leftrecursion">left-recursive&nbsp;DCGs</a> for
+    parsing. For example, you can add the directive:
+
+    <pre>
+:- table tree_nodes//1.
+    </pre>
     
+    to apply tabling to the DCG nonterminal <tt>tree_nodes//1</tt>.
+
     <br><br>
     <center><h2>Doing it manually</h2></center>
 

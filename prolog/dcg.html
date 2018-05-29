@@ -124,7 +124,7 @@ tree_nodes(node(Name, Left, Right)) --&gt;
     terminal&nbsp;<tt>[Name]</tt> in the DCG body.
 
     <br><br>
-    <center><h2>Left recursion</h2></center>
+    <center><h2 id="leftrecursion">Left recursion</h2></center>
 
     Conversely, given a sequence of node names, what are the trees
     that yield this sequence:
@@ -166,6 +166,10 @@ Ns = [a, b, c, d],
 Tree = node(a, nil, node(c, node(b, nil, nil), node(d, nil, nil))) ;</b>
 etc.
     </pre>
+
+    Another option to parse with left-recursive grammars is to use
+    your Prolog system's <a href="memoization#tabling">tabling</a>
+    mechanism.
 
 
     <center><h2 id="semicontext">Semicontext notation</h2></center>
