@@ -278,11 +278,10 @@ false :- a = b.
     <pre>
 hailstone(N, N).
 hailstone(N0, N) :-
-        N0 mod 2 #= 0,
         N0 #= 2*N1,
         hailstone(N1, N).
 hailstone(N0, N) :-
-        N0 mod 2 #= 1,
+        N0 #= 2*_ + 1,
         N1 #= 3*N0 + 1,
         hailstone(N1, N).
     </pre>
@@ -323,18 +322,12 @@ N = 1 .
     <pre>
 ?- hailstone(X, Y).
 X = Y ;
-2*Y#=X,
-X mod 2#=0 ;
-2*_7770#=X,
-X mod 2#=0,
-2*Y#=_7770,
-_7770 mod 2#=0 ;
-2*_8448#=X,
-X mod 2#=0,
-2*_8496#=_8448,
-_8448 mod 2#=0,
-2*Y#=_8496,
-_8496 mod 2#=0 .
+2*Y#=X ;
+2*_6952#=X,
+2*Y#=_6952 ;
+2*_7224#=X,
+2*_7248#=_7224,
+2*Y#=_7248 .
     </pre>
 
     When studying a Prolog predicate, try the most general query to see
