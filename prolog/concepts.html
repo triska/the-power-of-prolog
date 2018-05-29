@@ -21,7 +21,7 @@
     <center><h2>Terms</h2></center>
 
     In Prolog, <i>all data</i>&mdash;including
-    Prolog <i>programs</i>&mdash;is represented by
+    Prolog <i>programs</i>&mdash;are represented by
     Prolog <a href="data#term"><b>terms</b></a>.
 
     <br><br>
@@ -279,7 +279,7 @@ false :- a = b.
 hailstone(N, N).
 hailstone(N0, N) :-
         N0 mod 2 #= 0,
-        N1 #= N0 // 2,
+        N0 #= 2*N1,
         hailstone(N1, N).
 hailstone(N0, N) :-
         N0 mod 2 #= 1,
@@ -323,18 +323,18 @@ N = 1 .
     <pre>
 ?- hailstone(X, Y).
 X = Y ;
-X//2#=Y,
+2*Y#=X,
 X mod 2#=0 ;
-X//2#=_1824,
+2*_7770#=X,
 X mod 2#=0,
-_1824//2#=Y,
-_1824 mod 2#=0 ;
-X//2#=_2254,
+2*Y#=_7770,
+_7770 mod 2#=0 ;
+2*_8448#=X,
 X mod 2#=0,
-_2254//2#=_2302,
-_2254 mod 2#=0,
-_2302//2#=Y,
-_2302 mod 2#=0 .
+2*_8496#=_8448,
+_8448 mod 2#=0,
+2*Y#=_8496,
+_8496 mod 2#=0 .
     </pre>
 
     When studying a Prolog predicate, try the most general query to see

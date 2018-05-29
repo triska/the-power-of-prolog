@@ -156,7 +156,7 @@ hailstone(N, N).
 hailstone(N0, N) :-
         R #= N0 mod 2,
         if_(R = 0,
-            N1 #= N0//2,
+            N0 #= 2*N1,
             N1 #= 3*N0 + 1),
         hailstone(N1, N).
     </pre>
