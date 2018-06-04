@@ -1,0 +1,23 @@
+# These are the instances that are used for benchmarking. This is
+# valid BASH syntax, so it can simply be run if the function "bench"
+# is suitably defined.
+
+bench pigeon 8
+bench pigeon 9
+bench pigeon 10
+
+bench schur 13
+bench schur 14
+bench schur 15
+
+bench langford 6
+bench langford 7
+bench langford 8
+
+bench queens 6
+bench queens 7
+bench queens 8
+
+bench triominoes 5
+bench triominoes 6
+bench triominoes 7

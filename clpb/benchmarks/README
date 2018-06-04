@@ -1,0 +1,34 @@
+This directory contains the benchmarks, shell scripts and data
+formatting to let you verify all results.
+
+Each benchmark file F must provide the predicate F(+N, -Sats), where N
+is the instance size and Sats is the list of clauses.
+
+The benchmark instances are specified in the file "instances".
+
+Run the following to gather all statistics:
+
+    $ ./run_swi.sh ; ./run_sicstus.sh
+
+You obtain Prolog facts that describe all results. For example:
+
+      % start: Sun May 22 09:35:21 CEST 2016
+      % langford 6
+      instance_attributes(swi, langford, 6, num_vars_clauses(45, 18)).
+      failed(swi, langford, 6, sat/1).
+      timing(swi, langford, 6, sat, time(826)).
+      failed(swi, langford, 6, maplist/2).
+      timing(swi, langford, 6, sats, time(823)).
+      tautology(swi, langford, 6, 0).
+      timing(swi, langford, 6, taut, time(829)).
+      % end: Sun May 22 09:35:24 CEST 2016
+
+Copy all these facts into facts.pl and run:
+
+    $ swipl -g latex_table -t halt bench.pl facts.pl
+
+This gives you LaTeX table rows that you can embed in your document.
+
+You can also view an ASCII table on the system terminal with:
+
+    $ swipl -g ascii_table -t halt bench.pl facts.pl
