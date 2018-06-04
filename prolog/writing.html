@@ -13,7 +13,7 @@
 
     <br><br>
     <br><br>
-    <center><h1>Writing Prolog Programs</h1></center>
+    <h1>Writing Prolog Programs</h1>
     <br><br>
 
     The best general advice on <i>writing</i> Prolog code was given by
@@ -35,9 +35,8 @@
     Prolog&nbsp;code.
 
     <br><br>
-    <center><h2>How to begin</h2></center>
+    <h2>How to begin</h2>
 
-    
     Consider a relation like <tt>list_list_together/3</tt> that is
     mentioned in <a href="reading">Reading Prolog&nbsp;Programs</a>.
     How do we come up with such a definition in the first place?
@@ -152,7 +151,7 @@ list_list_together([L|Ls], Bs, [L|Rest]) :-
     See <a href="/tist/"><i>Thinking in&nbsp;States</i></a> for more
     information.
 
-    <center><h2>Naming predicates</h2></center>
+    <h2>Naming predicates</h2>
 
     A good <i>predicate&nbsp;name</i> makes clear what the predicate
     arguments <i>mean</i>.
@@ -198,7 +197,7 @@ list_list_together([L|Ls], Bs, [L|Rest]) :-
     </ul>
 
 
-    <center><h2>Naming variables</h2></center>
+    <h2>Naming variables</h2>
 
     A Prolog <b>variable</b> starts with an uppercase letter <i>or</i>
     with an underscore. The latter rule is useful to know if you are
@@ -245,7 +244,7 @@ Assoc0 &rightarrow; Assoc1 &rightarrow; Assoc2 &rightarrow; ... &rightarrow; Ass
     called&nbsp;<tt>Pred_1</tt>, because it is invoked
     with <i>one</i> additional argument.
 
-    <center><h2>Indenting Prolog code</h2></center>
+    <h2>Indenting Prolog code</h2>
 
     Prolog is a very simple language: Only a few language constructs
     exist, and several ways for indenting them are common.
@@ -261,7 +260,54 @@ Assoc0 &rightarrow; Assoc1 &rightarrow; Assoc2 &rightarrow; ... &rightarrow; Ass
     or <i>between</i> the two goals of a disjunction to more clearly
     distinguish it from a conjunction.
 
-    <center><h2>Further reading</h2></center>
+    <h2>Comments</h2>
+
+    You can use <i>comments</i> in your code to explain important
+    principles and design goals of your programs.
+
+    <br><br>
+
+    Prolog supports two kinds of <i>comments</i>:
+
+    <ul>
+      <li><i>single line comment</i>, starting with <tt>%</tt> and
+        including everything up to (and including) the
+        next <i>newline</i> character</li>
+      <li><i>bracketed comment</i>, which has the form
+
+        <pre>
+/* comment text */
+        </pre>
+
+        A bracketed comment may also include newline characters
+        between the delimiters.
+      </li>
+    </ul>
+
+    By convention, supported <i>modes</i> of predicates are sometimes
+    indicated in comments. Such comments consist of the predicate
+    head, and indicate the supported modes for each argument using a
+    dedicated prefix for each argument. For example, such a comment
+    may read:
+
+    <pre>
+list_list_together(?As, ?Bs, ?Cs)
+    </pre>
+
+    where "<tt>?</tt>" means that the respective argument may be a
+    variable, only partially instantiated <i>or</i> fully instantiated
+    when the predicate is invoked. Other common prefices are
+    "<tt>+</tt>" and "<tt>-</tt>", denoting intended <i>input</i>
+    and <i>output</i> arguments, respectively.
+
+    <br><br>
+
+    Such mode annotations may be augmented with the <i>determinism</i>
+    specifiers <tt>det</tt>, <tt>multi</tt> and <tt>nondet</tt>,
+    indicating whether the predicate succeeds, respectively, exactly
+    once, at least once, or arbitrarily often.
+
+    <h2>Further reading</h2>
 
     Covington et
     al., <a href="https://arxiv.org/pdf/0911.2899.pdf"><i>Coding
