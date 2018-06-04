@@ -67,6 +67,12 @@ natnum(s(N)) :-
     a <i>relation</i> between two natural numbers and
     their&nbsp;<i>sum</i>:
 
+    <div class="box" style="float: right; width: 50%">
+      <b>Exercise</b>: Suppose I replace the goal <tt>nat_nat_sum(M,
+      N, Sum)</tt> by <tt>nat_nat_sum(N, M, Sum).</tt> What are the
+      advantages, and what are the drawbacks of this change, if any?
+    </div>
+
     <pre>
 nat_nat_sum(0, M, M).
 nat_nat_sum(s(N), M, s(Sum)) :-
