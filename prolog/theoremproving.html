@@ -130,8 +130,9 @@ pl_resolvent((As0-Bs0) --&gt; Rs, Clauses, Rs) :-
         Prolog <i>atoms</i> represent propositional variables. This is
         called a <b>ground&nbsp;representation</b> of variables. If we
         use Prolog variables instead, then we can
-        use <b>Boolean&nbsp;constraints</b> as an alternative solution
-        method for showing that the formula is unsatisfiable:
+        use <a href="/clpb/"><b>Boolean&nbsp;constraints</b></a> as an
+        alternative solution method for showing that the formula is
+        unsatisfiable:
 
         <pre>
 ?- sat(P + ~Q), sat(~P + ~S), sat(S + ~Q), sat(Q).
