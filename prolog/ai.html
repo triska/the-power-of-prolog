@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Artificial Intelligence with Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Memoization">
+    <meta name="keywords" content="Prolog,AI,Intelligence">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <h1>Artificial Intelligence with Prolog</h1>
+
+    <h2>Introduction</h2>
+
+    What is <i>intelligence</i>? Various explanations and definitions
+    have been put forward by different researchers.
+    <i>Intelligence</i> has been defined, among many other proposals,
+    as the ability to acquire and apply knowledge, and as the capacity
+    for logical reasoning and self-awareness. It has been related to
+    understanding, solving, planning, and several other concepts and
+    tasks. It has been categorized into different <i>kinds</i> of
+    intelligence, such as <i>emotional</i> intelligence, <i>social</i>
+    intelligence and so on.
+
+
+    <br><br>
+
+    The word stems from the Latin verb <i>intellego</i> "I understand,
+    realize, perceive, see, notice" (among other meanings),
+    from <i>lego</i> "I gather, collect, take, read" (among other meanings).
+
+    <br><br>
+
+    Since no generally accepted definition of <i>intelligence</i> is
+    available, it is even harder to define what <i>artificial</i>
+    intelligence is. Broadly speaking, we can distinguish
+    two different <i>categories</i> of artificial intelligence&nbsp;(AI):
+
+    <ul>
+      <li><b>strong</b> AI: This means a mechanism whose intellectual
+        ability is indistinguishable from that of a human.
+      </li>
+      <li><b>weak</b> AI: This means a mechanism that automates a
+        subset of human abilities.
+      </li>
+    </ul>
+
+    So far, we have seen a lot of progress in <i>weak</i>&nbsp;AI. For
+    example, machines have been built that
+    play <a href="https://en.wikipedia.org/wiki/Deep_Blue_(chess_computer)">chess</a>, <a href="https://en.wikipedia.org/wiki/AlphaGo">Go</a>,
+    <a href="https://en.wikipedia.org/wiki/Watson_(computer)">Jeopardy</a>
+    and many other games even better than the most able humans. Many
+    of us are routinely using partially self-driving trains and
+    subways, and we currently witness the first attempts at
+    self-driving&nbsp;cars.
+
+    <br><br> In contrast, <i>strong</i> AI has remained out of reach.
+    In fact, it has
+    been <a href="https://en.wikipedia.org/wiki/Hubert_Dreyfus%27s_views_on_artificial_intelligence">argued</a>,
+    and <a href="https://en.wikipedia.org/wiki/Chinese_room">further&nbsp;argued</a>,
+    that strong&nbsp;AI is <i>inherently</i> impossible to implement.
+
+    <h2>Approaches</h2>
+
+    Broadly speaking, we distinguish two possible <i>approaches</i>
+    towards implementing&nbsp;AI:
+
+    <ol>
+      <li><b>symbolic</b> approaches:
+        <ul>
+          <li>rule-based <a href="expertsystems">expert&nbsp;systems</a></li>
+          <li><a href="theoremproving">theorem&nbsp;provers</a></li>
+          <li>intelligent forms of <a href="sorting#searching">search</a></li>
+          <li>constraint-based approaches</li>
+          <li>etc.</li>
+        </ul>
+      </li>
+      <li><b>statistical</b> approaches:
+
+        <ul>
+          <li><i>neural&nbsp;nets</i></li>
+          <li><i>machine learning</i>&nbsp;(ML)</li>
+          <li>etc.</li>
+        </ul>
+      </li>
+    </ol>
+
+    Both approaches have been widely known among researchers, and have
+    also been used in practice, for many decades. Prolog is frequently
+    associated with <i>symbolic</i> approaches. Well-known
+    applications of this kind
+    are <a href="/wumpusworld/">Wumpus&nbsp;World</a>, <a href="/zurg/">Escape
+    from Zurg</a> and <a href="/various/conn4/">Connect&nbsp;4</a>.
+    Prolog can of course also implement statistical approaches. For
+    example, check
+    out <a href="https://dtai.cs.kuleuven.be/problog/index.html">ProbLog</a>,
+    <a href="https://github.com/friguzzi/cplint">cplint</a>
+    and <a href="https://www.cs.ubc.ca/~poole/aibook/code/ailog/ailog2.html">AILog&nbsp;2</a>
+    for <i>probabilistic</i> logic programming and reasoning with
+    uncertainties.
+
+    <br><br>
+
+    The approaches have different advantages and drawbacks: A symbolic
+    approach is typically amenable to formal <i>verification</i>. The
+    rules are explicitly available, and you can check whether they are
+    complete, and whether they express what you intend.
+    Using <i>inductive</i> logic programming (ILP), you can even let a
+    program <i>learn</i> rules based on positive and negative
+    examples. See for example
+    the <a href="https://github.com/metagol/metagol">Metagol</a>
+    system. However, not all tasks are amenable to symbolic
+    approaches, because the rules may be <i>too hard to express</i>.
+    For example, it is hard to express rules that determine whether a
+    musical&nbsp;piece is borderline atonal, or whether a photo
+    contains a painting of a flower.
+
+    <br><br>
+
+    On the other hand, statistical approaches have the ability to
+    acquire rules <i>implicitly</i>, based on
+    so-called <i>training-</i>, <i>test-</i>
+    and <i>validation&nbsp;sets</i>. This is convenient, because you
+    do not have to think about the rules yourself, and the machine may
+    derive rules that are too hard for you to encode. Unfortunately,
+    this also comes with significant drawbacks: You can no longer
+    reason about the rules explicitly, and the obtained mechanism may
+    produce colossal outliers that are hard to remedy. For example, it
+    may misclassify the picture of a penguin as a car if you change a
+    single&nbsp;pixel.
+
+    <h2>Prolog and AI</h2>
+
+    Prolog has very strong historic ties with AI. In 1982, Japan
+    started a very ambitious government project called the <b>Fifth
+    Generation Computer System</b>&nbsp;(FGCS) with the goal to create
+    a massively&nbsp;parallel computer, using <i>concurrent
+    logic&nbsp;programming</i> as the software foundation of the
+    project.
+
+    <br><br>
+
+    When I visited Japan, I asked a retired Japanese scientist who had
+    worked on the project why the project had failed. He said: "What
+    do you mean, '<i>failed</i>'? All my colleagues who have worked on
+    the project went on to become <i>professors</i>!" Another
+    researcher told me that the project achieved what was actually
+    intended: a way to input Japanese characters into computers.
+
+    <br><br>
+
+    In my view, a major achievement of the scientists who had worked
+    on this project was that they managed to convince the government
+    to fund an interesting and very&nbsp;ambitious project with
+    large&nbsp;sums.
+
+    <br><br>
+
+    By the end of the FGCS project, commodity hardware had become so
+    powerful that custom-built machines as those constructed by the
+    project were hardly needed anymore.
+
+    <br><br>
+
+    Now, several decades later, is it not time
+    to <i>try&nbsp;again</i>? Is it not time to convince <i>our</i>
+    governments and funding agencies that we want to benefit from the
+    power of Prolog to build applications, and do interesting
+    research?
+
+    <br><br>
+
+    Here are a few ideas:
+
+    <ul>
+      <li>Write a <i>chatbot</i> that answers questions to the administration.</li>
+      <li>Write an application that guides students through solving
+        tasks, so that it can be used in computer-aided education. See <a href="/rits/">RITS</a> for an example.</li>
+      <li>Find a way to <i>formalize legislation</i>, so that
+        questions about laws can be automatically answered. For an
+        example, check out a Prolog formulation of
+        the <a href="https://github.com/bitlaw-jp/the-constitution-of-japan">constitution
+        of Japan</a>,
+        and <a href="https://www.youtube.com/watch?v=YGG3e_1JX7Q">Reasoning
+        with Regulations</a> as instances
+        of <b>smart&nbsp;contracts</b>.
+      </li>
+    </ul>
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

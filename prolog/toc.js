@@ -86,6 +86,9 @@ var toc = new Array(
     { link: "/prolog/memoization",
       title: "Memoization"
     },
+    { link: "/prolog/ai",
+      title: "Artificial Intelligence"
+    },
     { link: "/prolog/horror",
       title: "Horror Stories"
     },
