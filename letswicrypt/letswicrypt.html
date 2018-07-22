@@ -84,7 +84,7 @@ $ sudo certbot certonly --standalone -d xyz.com -d www.xyz.com
 
     You can also use a different CA. To do that, you first create a
     new private key and certificate signing request&nbsp;(CSR). The
-    file [openssl.cnf](openssl.cnf) shows you what is necessary to
+    file <a href="openssl.cnf"><tt>openssl.cnf</tt></a> shows you what is necessary to
     create a&nbsp;CSR for both <tt>xyz.com</tt>
     and&nbsp;<tt>www.xyz.com</tt>. The
     <tt>alt_names</tt>&nbsp;section is relevant to cover both domains:
@@ -395,7 +395,7 @@ $ certbot renew
 
     The HTTP Unix daemon can be configured to use&nbsp;SNI by providing
     suitable clauses of the predicate&nbsp;<tt>http:sni_options/2</tt>. The first
-    argument is the *host&nbsp;name*, and the second argument is a list of
+    argument is the <i>host&nbsp;name</i>, and the second argument is a list of
     SSL&nbsp;options for that domain. The most important options&nbsp;are:
 
     <ul>
@@ -444,7 +444,7 @@ reply(_) :-
         format("Hello!").
     </pre>
 
-    Typical use cases do *not* require this. A better way to obtain the
+    Typical use cases do <i>not</i> require this. A better way to obtain the
     same effect is to rely on the HTTP Unix daemon library, and use the
     available hooks for more fine-grained control of SSL&nbsp;parameters.
 
