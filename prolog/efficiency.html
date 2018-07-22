@@ -132,10 +132,15 @@ label(4),
 
     <ul>
       <li>the <b>global stack</b>, sometimes also called
-        the&nbsp;<i>heap</i> or only
+        the&nbsp;<i>heap</i>, <i>copy&nbsp;stack</i> or only
         the&nbsp;<i>stack</i>. Prolog <i>terms</i> are created and
         stored in this area.</li>
-      <li>the <b>local stack</b>, used for predicate invocations.</li>
+      <li>the <b>local stack</b>, used for predicate invocations. If
+        multiple clause heads match when a predicate is invoked, then
+        the system must internally remember this so that it can later
+        try the alternatives. The system is said to create a
+        <i>choice&nbsp;point</i> to store this information.
+      </li>
       <li>the <b>trail</b>, used to undo bindings on backtracking.</li>
     </ul>
 
@@ -172,7 +177,7 @@ ERROR: Out of global stack
 
     <ul>
     <li id="indexing"><b>argument indexing</b> of clauses to prevent
-      the creation of redundant choicepoints. You can expect any
+      the creation of redundant choice&nbsp;points. You can expect any
       Prolog system to index <i>at&nbsp;least</i> on the outermost
       functor and arity of the <i>first</i> argument of any predicate.
       Modern Prolog systems perform <i>JIT&nbsp;indexing</i> to
@@ -180,7 +185,8 @@ ERROR: Out of global stack
       likely <i>most&nbsp;relevant</i> for performance.</li>
     <li><b>tail call optimization</b> to call predicates without
       consuming local stack space if the call occurs at
-      a <i>tail&nbsp;position</i> and no choice points remain.</li>
+      a <i>tail&nbsp;position</i> and no choice&nbsp;points
+      remain.</li>
     </ul>
 
     Tail <i>recursion</i> optimization is a special case of
@@ -327,8 +333,8 @@ ERROR: Out of global stack
 
     Good performance is often important. However, do not get carried
     away with micro-optimizations. For example, leaving an occasional
-    choice-point is often completely acceptable in user&nbsp;programs.
-    Likewise, reporting redundant solutions is not
+    choice&nbsp;point is often completely acceptable in
+    user&nbsp;programs. Likewise, reporting redundant solutions is not
     inherently&nbsp;bad. For beginners, it is easy to get dragged into
     procedural aspects too early. Do not fall into this&nbsp;trap!
     Instead, focus on those aspects of your programs where your
