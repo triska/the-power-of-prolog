@@ -71,7 +71,7 @@
 
 
     <pre>
-?- sat(A=:=(~A + B)).
+?- sat(A =:= ~A+B).
 <b>A = B, B = 1.</b>
     </pre>
 
@@ -86,7 +86,7 @@
     Translated to Boolean constraints, this corresponds to:
 
     <pre>
-?- sat(A=:=(~A * B)).
+?- sat(A =:= ~A*B).
 <b>A = B, B = 0.</b>
     </pre>
 
@@ -107,7 +107,15 @@
     use:
 
     <pre>
-?- sat(A=:=card([1,2],[~A,~B])).
+?- sat(A =:= card([1,2],[~A,~B])).
+<b>A = 1,
+B = 0.</b>
+    </pre>
+
+    Or, equivalentely:
+
+    <pre>
+?- sat(A =:= ~A + ~B).
 <b>A = 1,
 B = 0.</b>
     </pre>
@@ -122,7 +130,7 @@ B = 0.</b>
     constraints:
 
     <pre>
-?- sat(A=:=(~A * ~B * ~C)), sat(B=:=card([1],[A,B,C])).
+?- sat(A =:= (~A * ~B * ~C)), sat(B =:= card([1],[A,B,C])).
 <b>A = C, C = 0,
 B = 1.</b>
     </pre>
@@ -136,7 +144,7 @@ B = 1.</b>
     We can translate this to Prolog as&nbsp;follows:
 
     <pre>
-?- sat(A=:= ~B), sat(B=:=(A=:=C)).
+?- sat(A =:= ~B), sat(B =:= (A=:=C)).
 <b>C = 0,
 sat(A=\=B).</b>
     </pre>
@@ -179,7 +187,7 @@ solution([A1,A2,A3,A4,A5,A6]) :-
         sat(A1 =:= A2*A3*A4*A5*A6),
         sat(A2 =:= ~(A2+A3+A4+A5+A6)),
         sat(A3 =:= A1*A2),
-        sat(A4 =:= card([1,2,3],[A1,A2,A3])),
+        sat(A4 =:= A1+A2+A3),
         sat(A5 =:= ~(A1+A2+A3+A4)),
         sat(A6 =:= ~(A1+A2+A3+A4+A5)).
     </pre>
