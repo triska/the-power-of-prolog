@@ -135,7 +135,10 @@ label(4),
         the&nbsp;<i>heap</i>, <i>copy&nbsp;stack</i> or only
         the&nbsp;<i>stack</i>. Prolog <i>terms</i> are created and
         stored in this area.</li>
-      <li>the <b>local stack</b>, used for predicate invocations. If
+      <li>the <b>local stack</b>, used for predicate
+        invocations. Stack <i>frames</i>, which are also
+        called <i>environments</i>, are allocated on this stack to
+        remember how to proceed after a predicate is invoked. If
         multiple clause heads match when a predicate is invoked, then
         the system must internally remember this so that it can later
         try the alternatives. The system is said to create a
@@ -275,7 +278,9 @@ ERROR: Out of global stack
     implementation method. Also, many Prolog systems provide built-in
     methods and libraries that let you solve large classes
     of <a href="optimization">combinatorial&nbsp;optimization</a>
-    tasks very efficiently.
+    tasks very efficiently. In practice, the performance of these
+    specialised mechanisms is often far more important than the
+    overall speed of the entire system.
 
     <br><br>
 
