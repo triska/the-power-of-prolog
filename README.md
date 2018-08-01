@@ -91,6 +91,10 @@ this&nbsp;book in their&nbsp;courses! For example:
   specialist elective course [Principles of Programming
   Languages](https://ucilnica.fri.uni-lj.si/course/view.php?id=67) at
   the University of Ljubljana in&nbsp;Slovenia.
+- As of 2018, José A. Alonso Jiménez is using *The Power of Prolog* in
+  his [Seminario de Lógica
+  Computacional](http://www.glc.us.es/~jalonso/SLC2018/index.php5/Documentaci%C3%B3n)
+  at the Universidad de Sevilla in&nbsp;Spain.
 - I hope you are next!
 
 <pre>
