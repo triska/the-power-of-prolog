@@ -179,13 +179,14 @@ ERROR: Out of global stack
     optimizations are:
 
     <ul>
-    <li id="indexing"><b>argument indexing</b> of clauses to prevent
-      the creation of redundant choice&nbsp;points. You can expect any
-      Prolog system to index <i>at&nbsp;least</i> on the outermost
-      functor and arity of the <i>first</i> argument of any predicate.
-      Modern Prolog systems perform <i>JIT&nbsp;indexing</i> to
-      dynamically index those arguments that are
-      likely <i>most&nbsp;relevant</i> for performance.</li>
+    <li id="indexing"><b>argument indexing</b> of clauses to
+      efficiently select matching clauses and to prevent the creation
+      of redundant choice&nbsp;points. You can expect any Prolog
+      system to index <i>at&nbsp;least</i> on the outermost functor
+      and arity of the <i>first</i> argument of any predicate. Modern
+      Prolog systems perform <i>JIT&nbsp;indexing</i> to dynamically
+      index those arguments that are likely <i>most&nbsp;relevant</i>
+      for performance.</li>
     <li><b>tail call optimization</b> to call predicates without
       consuming local stack space if the call occurs at
       a <i>tail&nbsp;position</i> and no choice&nbsp;points
@@ -302,7 +303,7 @@ ERROR: Out of global stack
     Here are a few tips for obtaining efficient Prolog&nbsp;code:
 
     <ol>
-      <li>First, before even thinking about performance, make sure
+      <li>Before even thinking about performance, make sure
         that your predicates <i>describe only the
         intended&nbsp;objects</i>
         and <a href="termination"><i>terminate</i></a> for those cases
@@ -311,6 +312,16 @@ ERROR: Out of global stack
         writing predicates that don't&nbsp;terminate. Use <tt>?-
         Goal, <b>false</b>.</tt> to test universal termination
         of&nbsp;<tt>Goal</tt>.
+      </li>
+
+      <li>Delegate as much of the work as possible to the
+        underlying Prolog&nbsp;engine. For example, if you need
+        efficient look-up in a database, represent your data in such a
+        way that the Prolog system's indexing mechanism solves the
+        task for&nbsp;you. As another example, if you need efficient
+        search and backtracking, using the built-in mechanisms will
+        likely be more efficient than formulating the search
+        <i>within</i> Prolog.
       </li>
 
       <li>Always aim for <a href="data#clean">clean</a>
