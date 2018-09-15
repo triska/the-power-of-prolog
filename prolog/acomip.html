@@ -283,7 +283,7 @@ mi_clause(natnum(s(X)), g(natnum(X)).
     <pre>
 mi3(true).
 mi3((A,B)) :-
-        mi3(B),        % first B, than A
+        mi3(B),        % first B, then A
         mi3(A).
 mi3(g(G)) :-
         mi_clause(G, Body),
