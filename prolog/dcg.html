@@ -154,7 +154,61 @@ tree_nodes(node(Name, Left, Right), [_|Ls0], Ls) --&gt;
         tree_nodes(Right, Ls1, Ls).
     </pre>
 
-    Example:
+    Each respective pair of additional arguments describes a
+    so-called <b>list&nbsp;difference</b>. To understand this method
+    and its associated terminology, consider for example the
+    pair <tt>Ls0</tt> and&nbsp;<tt>Ls1</tt>. We can interpret
+    the <i>difference</i> of these lists as describing the list of
+    elements that are consumed by the first recursive invocation
+    of <tt>tree_nodes//3</tt> in this example. Analogously, the
+    <i>difference</i> of the lists <tt>Ls1</tt> and <tt>Ls</tt> is the
+    list of elements consumed by the second invocation. And the
+    <i>difference</i> between the lists that occur in the head, i.e.,
+    that of <tt>[_|Ls0]</tt> and <tt>Ls</tt>, describes the list of
+    elements that are consumed by the entire second&nbsp;rule.
+
+    <br><br>
+
+    Of course, <i>difference</i> is to be understood in
+    a <i>symbolic</i> sense in these cases, not in an arithmetic
+    sense. For example, the <i>difference</i> between the
+    lists <tt>[A,B,C]</tt> and&nbsp;<tt>[C]</tt>
+    is&nbsp;<tt>[A,B]</tt>, the difference between <tt>[X,Y|Ls]</tt>
+    and&nbsp;<tt>Ls</tt> is&nbsp;<tt>[X,Y]</tt>, and the difference
+    between <tt>Ls</tt> and <tt>Ls</tt> is&nbsp;<tt>[]</tt>. By
+    reasoning about such <i>list&nbsp;differences</i> via argument
+    pairs, we can compose and decompose entire lists by reasoning
+    about their sublists. This powerful method is in fact also the
+    key&nbsp;idea that underlies the
+    common <a href="#implementation">transformation</a> of DCGs to
+    Prolog&nbsp;predicates. In cases where you are using it, consider
+    using DCGs <i>instead</i>. In the present case, we are using list
+    differences explicitly because we are using
+    them <i>within</i>&nbsp;DCGs.
+
+    <br><br>
+
+    In the literature, you will also encounter the
+    term <i>"difference&nbsp;list"</i>. However, this terminology is
+    misleading: We are <i>not</i> talking about&mdash;as the name may
+    suggest&mdash;a special <i>kind</i> of list. The additional
+    arguments are completely
+    ordinary&nbsp;<a href="data#list">lists</a>. It is
+    their <i>differences</i> that matter especially in such cases.
+
+    <br><br>
+
+    When working with list&nbsp;differences, you may be tempted to
+    pass around each pair as a <i>single</i> argument, for example as
+    compound terms like <tt>Ls0-Ls1</tt> or <tt>Ls0/Ls1</tt>. However,
+    this is not advisable, primarily because you will likely run into
+    conflicts with other predicates and DCG&nbsp;expansions, and
+    secondarily because it incurs performance overhead for
+    constructing, decomposing and managing these compound&nbsp;terms.
+
+    <br><br>
+
+    Example query:
 
     <pre>
 ?- Ns = [a,b,c,d], phrase(tree_nodes(Tree, Ns, _), Ns).
@@ -216,7 +270,7 @@ nt2      --&gt; [b].
 <b>false.</b>
     </pre>
 
-    The difference list version <tt>phrase/3</tt> shows what remains
+    The list difference version <tt>phrase/3</tt> shows what remains
     after <tt>nt1//0</tt> succeeds:
 
     <pre>
