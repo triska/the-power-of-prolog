@@ -182,11 +182,11 @@ ERROR: Out of global stack
     <li id="indexing"><b>argument indexing</b> of clauses to
       efficiently select matching clauses and to prevent the creation
       of redundant choice&nbsp;points. You can expect any Prolog
-      system to index <i>at&nbsp;least</i> on the outermost functor
-      and arity of the <i>first</i> argument of any predicate. Modern
-      Prolog systems perform <i>JIT&nbsp;indexing</i> to dynamically
-      index those arguments that are likely <i>most&nbsp;relevant</i>
-      for performance.</li>
+      system to index <i>at&nbsp;least</i> on the principal functor of
+      the <i>first</i> argument of any predicate. Modern Prolog
+      systems perform <i>JIT&nbsp;indexing</i> to dynamically index
+      those arguments that are likely <i>most&nbsp;relevant</i> for
+      performance.</li>
     <li><b>tail call optimization</b> to call predicates without
       consuming local stack space if the call occurs at
       a <i>tail&nbsp;position</i> and no choice&nbsp;points

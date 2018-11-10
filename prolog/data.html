@@ -6,6 +6,7 @@
     <meta name="description" content="Prolog Data Structures">
     <meta name="keywords" content="Prolog,Data Structures">
     <meta name="author" content="Markus Triska">
+    <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="prolog.css">
     <link rel="stylesheet" type="text/css" href="toc.css">
   </head>
@@ -22,26 +23,38 @@
 
     <br><br>
 
-    Terms are defined inductively:
+    Each term is either a <b>variable</b>, an <b>atomic term</b> or
+    a <b>compound&nbsp;term</b>:
 
     <ul>
-      <li>an <b>atom</b> is a term. Examples of atoms
-        are: <tt>x</tt>, <tt>test</tt> and <tt>'quotes and space'</tt>.</li>
+      <li><b>variables</b> start with an uppercase letter or with an
+        underscore&nbsp;(<tt>_</tt>). A single underscore denotes
+        an <i>anonymous&nbsp;variable</i> and can be read as
+        "any&nbsp;term". For example, <tt>X</tt>, <tt>Y</tt>, <tt>_爱</tt> and <tt>Prolog</tt> are variables.
 
-      <li> a <b>variable</b> is a term. Variables start with an
-        uppercase letter or underscore&nbsp;<tt>_</tt>. A single
-        underscore denotes an <i>anonymous&nbsp;variable</i> and can
-        be read as "any&nbsp;term".</li>
+      <li><b>atomic terms</b> are:
+        <ul>
+          <li><b>atoms</b>, such as <tt>x</tt>, <tt>test</tt>
+              and <tt>'quotes and space'</tt>
+          </li>
+          <li><b>integers</b>, such as <tt>42</tt></li>
+          <li>floating point numbers</li>
+          <li>depending on the Prolog&nbsp;system, there are also
+            other kinds of atomic terms, such as complex&nbsp;numbers
+            and rational&nbsp;numbers.</li>
+        </ul>
 
-      <li><b>integers</b> and <b>floating point numbers</b> are terms.
-        Examples: 42 and 42.42. </li>
-
-      <li>a <b>compound term</b> is a term, defined inductively as
+      <li><b>compound terms</b> are defined inductively as
         follows: <i>If</i> <tt>T<sub>1</sub></tt>, <tt>T<sub>2</sub></tt>,
-        ..., <tt>T<sub>n</sub></tt> are
-        terms, <i>then</i> <i>F</i>(<tt>T<sub>1</sub></tt>, <tt>T<sub>2</sub></tt>, ..., <tt>T<sub>n</sub></tt>)
-        is also a term, where <i>F</i> is called the <i>functor</i> of the
-        compound term, and <tt>n</tt> is called the <i>arity</i>. Examples: <tt>f(a)</tt>, <tt>g(f(X))</tt> and <tt>+(a, f(X))</tt>.</li>
+        ..., <tt>T<sub>N</sub></tt> are
+        terms, <i>then</i> <i>F</i>(<tt>T<sub>1</sub></tt>, <tt>T<sub>2</sub></tt>,
+        ..., <tt>T<sub>N</sub></tt>) is also a term, where <i>F</i> is
+        called a <i>functor&nbsp;name</i> and adheres to the same
+        syntax rules as&nbsp;atoms. <i>F/N</i> is called
+        the <i>principal&nbsp;functor</i> of the compound term,
+        and <tt>N</tt> is called the <i>arity</i>.
+        Examples: <tt>f(a)</tt>, <tt>g(f(X))</tt> and <tt>+(a,
+        f(X))</tt>.</li>
     </ul>
 
     All data can be represented in this way. Terms come into existence
@@ -271,17 +284,17 @@
 
     <blockquote>
       Can I <i>distinguish the kind</i> of each component from
-      its <i>outermost functor and arity</i>?
+      its <i>principal functor</i>?
     </blockquote>
 
     If this holds, your representation is called <b>clean</b>. If
-    you <i>cannot</i> distinguish the elements by their outermost
-    functor and arity, your representation is
-    called&nbsp;<b>defaulty</b>, a wordplay combining "default"
-    and&nbsp;"faulty". This is because <i>reasoning</i> about your
-    data will need a "<i>default&nbsp;case</i>", which is applied if
-    everything else fails. In addition, such a representation prevents
-    argument indexing, and is considered
+    you <i>cannot</i> distinguish the elements by their principal
+    functor, your representation is called&nbsp;<b>defaulty</b>, a
+    wordplay combining "default" and&nbsp;"faulty". This is
+    because <i>reasoning</i> about your data will need a
+    "<i>default&nbsp;case</i>", which is applied if everything else
+    fails. In addition, such a representation prevents argument
+    indexing, and is considered
     <i>faulty</i> due to this shortcoming. Always aim to <i>avoid</i>
     defaulty representations! Aim for cleaner representations instead.
 
@@ -306,7 +319,7 @@
     </ul>
 
     The above is a <b>clean</b> representation: It lets us distinguish
-    the kinds of elements by their outermost functor. We can reason
+    the kinds of elements by their principal functor. We can reason
     about such trees in a way that keeps the code very general and
     usable in all directions. Such a representation is also amenable
     to <a href="efficiency#indexing">argument&nbsp;indexing</a>.
