@@ -9,7 +9,7 @@
 :- use_module(library(assoc)).
 :- use_module(library(pio)).
 
-:- initialization(set_prolog_flag(double_quotes, codes)).
+:- set_prolog_flag(double_quotes, codes).
 
 % interpreter
 
