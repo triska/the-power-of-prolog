@@ -233,6 +233,18 @@ $ swipl server.pl --help
     <tt>--user</tt>&nbsp;option is necessary to drop privileges to the specified
     user after forking.
 
+    <br><br>
+
+    We can use <tt>openssl</tt> to try an encrypted connection to the server:
+
+    <pre>
+      $ openssl s_client -connect localhost:443
+    </pre>
+
+    Note that the <tt>s_client</tt> command is
+    intended <i>exclusively</i> for testing purposes!
+
+
     <center><h2>Launching the HTTPS server on system startup</h2></center>
 
     To launch the HTTPS server on system startup, have a look at the
@@ -417,10 +429,11 @@ http:sni_options('www.abc.com', Options) :-
 
     <center><h2>Doing it all manually</h2></center>
 
-    Instead of relying on the Unix daemon library, you can also _manually_
-    start an HTTPS&nbsp;server via <tt>http_server/2</tt>. This gives you total
-    control over all aspects of the server, including those that cannot be
-    specified as command line options. The options for <tt>ssl_context/3</tt> are
+    Instead of relying on the Unix daemon library, you can
+    also <i>manually</i> start an HTTPS&nbsp;server
+    via <tt>http_server/2</tt>. This gives you total control over all
+    aspects of the server, including those that cannot be specified as
+    command line options. The options for <tt>ssl_context/3</tt> are
     specified as&nbsp;<tt>ssl(+Options)</tt>.
 
     <br><br>
