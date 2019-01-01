@@ -86,8 +86,8 @@ f(X, Y) :- g(X), h(Y).
     This is the following Prolog <i>term</i>:
 
     <ul>
-      <li>the <a href="data#term"><i>functor</i></a>
-        is <tt>:-</tt>, and the <i>arity</i> is&nbsp;2.</li>
+      <li>the <a href="data#term"><i>functor&nbsp;name</i></a>
+        is <tt>:-</tt>, and the <i>arity</i> is&nbsp;2</li>
       <li>the first <i>argument</i> of the term is the term <tt>f(X, Y)</tt></li>
       <li>the second argument is the compound term <tt>','(g(X),
           h(Y))</tt>, which in turn again has two arguments.
@@ -95,16 +95,21 @@ f(X, Y) :- g(X), h(Y).
     </ul>
 
     If you are ever unsure about what a term "actually" is,
-    use <tt>write_canonical/1</tt> to obtain a canonical
-    representation:
+    use <tt>write_canonical/1</tt> to obtain the
+    term's <b>canonical&nbsp;form</b>:
 
     <pre>
 ?- write_canonical( <b>(f(X, Y) :- g(X), h(Y))</b> ).
 <b>:-(f(A,B),','(g(A),h(B)))</b>
     </pre>
 
+    In the canonical form, all compound&nbsp;terms are output
+    in <i>functional&nbsp;notation</i>.
+
+    <br><br>
+
     Note that we have used parentheses around the term to properly
-    indicate the single argument of the predicate.
+    indicate the single argument of <tt>write_canonical/1</tt>.
 
     <center><h2>Rewriting Prolog code</h2></center>
 
