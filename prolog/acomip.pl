@@ -1,5 +1,15 @@
-% Written 2005-2016 by Markus Triska (triska@metalevel.at)
-% Public domain code.
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   A Couple of Meta-interpreters in Prolog
+   Written 2005-2019 by Markus Triska (triska@metalevel.at)
+
+   Project page:
+
+                   https://www.metalevel.at/acomip/
+                   ================================
+
+   Public domain code.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 
 :- use_module(library(clpfd)).
 
@@ -212,26 +222,25 @@ as([A|As]) :-
 
 redundant(Functor/Arity, Reds) :-
         functor(Term, Functor, Arity),
-        findall(Term-Body, clause(Term, Body), Defs),
+        findall(Term-Body, mi_clause(Term, Body), Defs),
         setof(Red, Defs^redundant_(Defs, Red), Reds).
 
 redundant_(Defs, Fact) :-
         select(Fact-true, Defs, Rest),
-        once(provable(Fact, Rest)).
+        once(provable(g(Fact), Rest)).
 
 
-provable(true, _) :- !.
-provable((G1,G2), Defs) :- !,
-        provable(G1, Defs),
-        provable(G2, Defs).
-provable(BI, _) :-
-        predicate_property(BI, built_in),
-        !,
-        call(BI).
-provable(Goal, Defs) :-
-        member(Def, Defs),
-        copy_term(Def, Goal-Body),
-        provable(Body, Defs).
+provable(true, _).
+provable((A,B), Defs) :-
+        provable(A, Defs),
+        provable(B, Defs).
+provable(g(Goal), Defs) :-
+        (   predicate_property(Goal, built_in) ->
+            call(Goal)
+        ;   member(Def, Defs),
+            copy_term(Def, Goal-Body),
+            provable(Body, Defs)
+        ).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
