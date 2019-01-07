@@ -93,7 +93,7 @@ this&nbsp;book in their&nbsp;courses! For example:
   the University of Ljubljana in&nbsp;Slovenia.
 - As of 2018, José A. Alonso Jiménez is using *The Power of Prolog* in
   his [Seminario de Lógica
-  Computacional](http://www.glc.us.es/~jalonso/SLC2018/index.php5/Documentaci%C3%B3n)
+  Computacional](https://www.glc.us.es/~jalonso/SLC2018/index.php/Documentaci%C3%B3n)
   at the Universidad de Sevilla in&nbsp;Spain.
 - I hope you are next!
 
