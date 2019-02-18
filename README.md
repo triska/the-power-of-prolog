@@ -95,6 +95,10 @@ this&nbsp;book in their&nbsp;courses! For example:
   his [Seminario de Lógica
   Computacional](https://www.glc.us.es/~jalonso/SLC2018/index.php/Documentaci%C3%B3n)
   at the Universidad de Sevilla in&nbsp;Spain.
+- As of 2019, Adam Dingle is using *The Power of Prolog* in
+  [Non-Procedural
+  Programming](https://ksvi.mff.cuni.cz/~dingle/2019/npp/npp.html) at
+  Univerzita&nbsp;Karlova in the Czech&nbsp;Republic.
 - I hope you are next!
 
 <pre>
