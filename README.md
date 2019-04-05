@@ -99,6 +99,10 @@ this&nbsp;book in their&nbsp;courses! For example:
   [Non-Procedural
   Programming](https://ksvi.mff.cuni.cz/~dingle/2019/npp/npp.html) at
   Univerzita&nbsp;Karlova in the Czech&nbsp;Republic.
+- As of 2019, Dylan Schwesinger is using *The Power of Prolog* in
+  [Artificial
+  Intelligence&nbsp;II](http://csitrd.kutztown.edu/~schwesin/spring19/csc548/index.html)
+  at Kutztown&nbsp;University in the United States of America
 - I hope you are next!
 
 <pre>
