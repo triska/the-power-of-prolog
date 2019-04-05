@@ -299,6 +299,59 @@
     efficient destructive modifications of terms, it is better to
     use <a href="attributedvariables">attributed&nbsp;variables</a>.
 
+
+    <h2 id="type_tests">Type tests</h2>
+
+    There are predicates to test for specific <i>types</i>
+    of&nbsp;terms.
+
+    <br><br>
+
+    Unfortunately, the standard predicates for type testing
+    (<tt>atom/1</tt>, <tt>integer/1</tt>, <tt>compound/1</tt> etc.)
+    are <i>logically flawed</i> because they are not monotonic: If you
+    use these predicates, then <i>generalizing</i> a query may lead
+    to <i>fewer</i> solutions,
+    preventing <a href="debugging">declarative&nbsp;debugging</a>
+    based on logical properties. For example, <tt>atom/1</tt> fails
+    for the most general query, even though it succeeds for
+    more&nbsp;specific queries:
+
+    <pre>
+?-        atom(X).
+<b>false.</b>
+
+?- X = a, atom(X).
+<b>X = a.</b>
+    </pre>
+
+    Therefore, new families of predicates for type testing are now
+    becoming available. They implement type&nbsp;tests with desirable
+    logical properties:
+
+    <ul>
+      <li>the <tt>..._si/1</tt> family of predicates which are like
+        the standard predicates if the arguments
+        are <i>sufficiently&nbsp;instantiated</i></li>
+      <li><tt>must_be/2</tt>, used for <i>input</i> arguments</li>
+      <li><tt>can_be/2</tt>, used for <i>output</i> arguments and general arguments.</li>
+    </ul>
+
+    <br><br>
+
+    The predicates <tt>must_be/2</tt> and <tt>can_be/2</tt> are
+    especially useful for Prolog library
+    authors. The <tt>..._si/1</tt> family of type tests are useful in
+    normal Prolog programs, if you want to explicitly test for
+    specific types without raising <i>type&nbsp;errors</i>.
+
+    <br><br>
+
+    Importantly, all these predicates
+    raise <a href="engineering#errors"><i>instantiation&nbsp;errors</i></a>
+    if the terms that are tested are not sufficiently instantianted to
+    allow a sound&nbsp;decision.
+
     <center><h2 id="clean">Clean vs. defaulty representations</h2></center>
 
     When representing data with Prolog terms, ask yourself the following question:
