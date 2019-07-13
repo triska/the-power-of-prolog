@@ -66,14 +66,15 @@ It is not the <i>skilful</i> poet that bemoans the rigid rules of the sonnet.
     That being said, there <i>are</i> of course ways to modify the
     global state of your programs. However, using them should be
     the <b>exception</b>, not the norm. For example, you can modify
-    the global&nbsp;database using <tt>assertz/1</tt>. The global
-    database is very good for <i>reading</i> information, but quite
-    bad for often <i>modifying</i> the data. This is because the
-    global database performs <i>indexing</i> over its entries, and you
-    pay the price for indexing every time you assert new&nbsp;clauses.
-    In addition, you cannot use this kind of modifications in the
-    other direction. On backtracking, the data will still be there,
-    and running the same code twice may also add the data redundantly.
+    the global&nbsp;database by dynamically asserting clauses
+    with <tt>assertz/1</tt>. The global database is very good
+    for <i>reading</i> information, but quite bad for
+    often <i>modifying</i> the data. This is because the global
+    database performs <i>indexing</i> over its entries, and you pay
+    the price for indexing every time you assert new&nbsp;clauses.  In
+    addition, you cannot use this kind of modifications in other
+    directions. On backtracking, the data will still be there, and
+    running the same code twice may also add the data redundantly.
 
     <br><br>
 

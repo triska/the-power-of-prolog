@@ -3,6 +3,7 @@
     <title>Sudoku with Prolog</title>
     <meta name=viewport content="width=device-width, initial-scale=1">
     <meta name="keywords" content="Sudoku,Prolog,Constraints">
+    <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
@@ -28,7 +29,7 @@
 
     <br><br>
 
-    For example, using <a href="/prolog/clpfd">constraints</a>, a
+    For example, using <a href="/prolog/clpz">CLP(ℤ)&nbsp;constraints</a>, a
     valid Sudoku board can be concisely expressed like this:
 
     <div>
@@ -88,7 +89,7 @@ Rows = [[1, 2, 3, 4, 5, 6, 7, 8|...], [4, 5, 6, 7, 8, 9, 1|...] | ... ] .
     <h2><center>Source file</center></h2>
 
 
-    Prolog source file: <b><a href="sudoku.pl">sudoku.pl</a></b>
+    Prolog source file: <a href="sudoku.pl"><b><tt>sudoku.pl</tt></b></a>
 
     <br><br>
 
@@ -138,7 +139,7 @@ Rows = [[1, 2, 3, 4, 5, 6, 7, 8|...], [4, 5, 6, 7, 8, 9, 1|...] | ... ] .
 
     <br><br> Sample PostScript file, a self-contained saved animation
     for a Sudoku puzzle (open it with "gv" or "gs" to view
-    it): <a href="solved.ps.gz">solved.ps.gz</a>
+    it): <a href="solved.ps.gz"><tt>solved.ps.gz</tt></a>
 
     <br><br>
 
@@ -157,8 +158,7 @@ Rows = [[1, 2, 3, 4, 5, 6, 7, 8|...], [4, 5, 6, 7, 8, 9, 1|...] | ... ] .
 
     <ol>
       
-      <li>a list of <i>labeling options</i> as described in the
-        <a href="http://eu.swi-prolog.org/man/clpfd.html">CLP(FD)&nbsp;documentation</a>.
+      <li>a list of <i>labeling options</i>
       </li>
       <li>a list of 9&nbsp;rows that are to be
         completed to a Sudoku Latin square. Each row is a list of 9
@@ -198,9 +198,13 @@ Rows = [[1, 2, 3, 4, 5, 6, 7, 8|...], [4, 5, 6, 7, 8, 9, 1|...] | ... ] .
         Solutions with Viewers</i></a>.
 
     <br><br>
-    More CLP(FD) examples: <a href="https://github.com/triska/clpfd"><b>https://github.com/triska/clpfd</b></a>
+    More CLP(ℤ) examples: <a href="https://github.com/triska/clpz"><b>https://github.com/triska/clpz</b></a>
 
     <br><br><br>
+
+    More about Prolog: <b><a href="/prolog">The Power of Prolog</a></b>
+
+    <br><br>
 
     <b><a href="/">Main page</a></b>
   </body>

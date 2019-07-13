@@ -1161,8 +1161,15 @@ ZDD = ( X -> Inner ; Inner ), Inner = ( Y -> true ; false )
     for attributed variables. One example would be to duplicate all
     kinds of attributes so that they are available redundantly in all
     data structures that occur anywhere. However, an interface that
-    demands such contortions cannot be taken seriously. In
-    my&nbsp;view, the key&nbsp;questions are:
+    demands such contortions cannot be taken seriously. In addition,
+    and especially when reasoning with decision diagrams, memory is
+    often the primary bottleneck, and we therefore want to avoid
+    copying&nbsp;data also for this&nbsp;reason.
+
+    <br><br>
+
+    In my&nbsp;view, the key&nbsp;questions
+    are:
 
     <ul>
 
