@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Logical Foundations of Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Logical Foundations of Prolog">
+    <meta name="keywords" content="Prolog,Logic,Predicate Logic">
+    <meta name="author" content="Markus Triska">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="prolog.css">
+    <link rel="stylesheet" type="text/css" href="toc.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+    <br><br>
+    <center><h1>Logical Foundations of Prolog</h1></center>
+    <br><br>
+
+
+    <b>Logic</b> is a very broad, interesting and also beautiful
+    topic.
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>Video</i>:</td>
+        <td><a href="videos/logic"><img src="videos/t_logic.png" alt="Logic"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    There is no universally accepted definition for what logic
+    actually is. However, what we can say is that logic is
+    concerened&mdash;at least among other things&mdash;with the
+    properties of, and the relations between:
+
+    <ul>
+
+      <li><b>syntax</b><br>
+
+        This is the formalization of languages according to rules.  It
+      includes for example defining what a formula or a sentence looks
+      like.
+      </li>
+
+      <li><b>semantics</b><br>
+
+        This is assigning <i>meaning</i> to the
+      syntactic constructs of languages. This includes
+      defining how sentences are interpreted, and stating under what
+        conditions they are true.
+      </li>
+
+      <li><b>inferences</b><br> This stems from the Latin
+      verb <i>inferre</i>, which means "to carry forward". An
+      inference <i>rule</i> allows us to derive logical consequences
+      from premises, i.e., to bring premises to conclusions.
+      </li>
+    </ul>
+
+    There are different <i>logics</i>, because changing these
+    components yields different frameworks.
+
+    <br><br>
+
+    Logic and computation are closely related. For example, we can
+    formulate logical statements about computations, and derive
+    logical consequences from them that correspond to <i>results</i>
+    of the computations.
+
+    <br><br>
+
+    It can be argued that programming is a form
+    of <i>theory&nbsp;building</i>. See
+    for example <a href="http://pages.cs.wisc.edu/~remzi/Naur.pdf"><i>Programming
+    as Theory Building</i></a> by Peter Naur.
+
+    <br><br>
+
+    Prolog is based on classical <b>first-order predicate logic</b>.
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>Video</i>:</td>
+        <td><a href="videos/predicate_logic"><img src="videos/t_predicate_logic.png" alt="Predicate Logic"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    In fact, the core of Prolog is restricted to a
+    Turing&nbsp;complete <i>subset</i> of first-order predicate logic
+    called <a href="https://en.wikipedia.org/wiki/Horn_clause"><b>Horn&nbsp;clauses</b></a>.
+
+
+    <table>
+      <tr>
+        <td><i>Video</i>:</td>
+        <td><a href="videos/horn_clauses"><img src="videos/t_horn_clauses.png" alt="Horn Clauses"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    A Prolog program is a sequence of Horn clauses that define what is
+    true, and what follows from what.
+
+    <br><br>
+
+    Internally, Prolog uses a proof method
+    called <a href="https://en.wikipedia.org/wiki/Resolution_(logic)"><b>resolution</b></a>. Resolution
+    is based on the idea of proof by contradiction: To prove a logical
+    consequence of a set of axioms, we assume the opposite of what we
+    want to prove, and show that this contradicts the axioms which we
+    take for granted.
+
+    <br><br>
+
+    Logically, when Prolog answers a query, it tries to find
+    a <i>resolution&nbsp;refutation</i> of the negated query and the
+    set of clauses that constitute a program. When a refutation is
+    found, it means that the query, with the appropriate bindings, is
+    a logical <i>consequence</i> of the program.
+
+    <br><br>
+
+    For Horn clauses, resolution can be implemented very efficiently.
+
+    <br><br>
+
+    Regarded as a theorem prover, Prolog is <i>incomplete</i> in the
+    sense that, in&nbsp;general, not all logical consequences of a
+    theory are found.
+
+    <br><br>
+
+    Even though Prolog itself is incomplete in general, we can use it
+    to implement <i>complete</i> <a href="theoremproving">theorem
+      provers</a>. This is because Prolog is a <i>programming language</i> and
+    can be used to express all known computations.
+
+
+    <br><br><br>
+    <b><a href="/prolog">More about Prolog</a></b>
+
+    <br><br><br>
+
+    <b><a href="/">Main page</a></b>
+    <script src="jquery.js"></script>
+    <script src="toc.js"></script>
+  </body>
+</html>

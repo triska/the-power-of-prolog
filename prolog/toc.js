@@ -8,6 +8,9 @@ var toc = new Array(
     { link: "/prolog/facets",
       title: "Facets of Prolog"
     },
+    { link: "/prolog/logic",
+      title: "Logical Foundations"
+    },
     { link: "/prolog/concepts",
       title: "Basic Concepts"
     },
