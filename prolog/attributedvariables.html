@@ -273,7 +273,7 @@ dissertation&nbsp;[Holzbaur 90].
     following features at our disposal:
 
     <ol>
-      <li>We can <i>attach information</i> to logical variables.</li>
+      <li>We can <i>attach information</i> to variables.</li>
       <li>This information can be taken into account when a variable
         is being <i>unified</i>.</li>
       <li>This information can be <i>displayed in answers</i> on the
@@ -337,7 +337,7 @@ dissertation&nbsp;[Holzbaur 90].
       <tt><b>put_attr(V, Module, Value)</b></tt>:
       <br>
       Associate an arbitrary Prolog&nbsp;<a href="data#term">term</a>
-      <tt>Value</tt> with the logical variable&nbsp;<tt>V</tt> in
+      <tt>Value</tt> with the variable&nbsp;<tt>V</tt> in
       module&nbsp;<tt>Module</tt> (a Prolog&nbsp;<i>atom</i>).
     </div>
 
@@ -517,14 +517,14 @@ m:attr_unify_hook(_, _) :- <b>false</b>.
     We <i>could</i> also use the integers directly instead. However,
     this would risk ending up with a <a href="data#clean">defaulty</a>
     representation, and also prevent us from symbolically
-    distinguishing attributes from logical variables in the code
+    distinguishing attributes from variables in the code
     below.
 
     <br><br>
 
     Second, let us <i>modify</i> the
     involved attributes upon unification. If a unification
-    involves <i>two</i> (or more) logical variables, we must
+    involves <i>two</i> (or more) variables, we must
     state how such a unification affects the involved variables.
 
     <br><br>
