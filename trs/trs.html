@@ -1,0 +1,156 @@
+<html>
+  <head>
+    <title>Prolog implementation of the Knuth-Bendix completion
+    procedure</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="description" content="Leveraging Prolog for Term Rewriting">
+    <meta name="keywords" content="Prolog,Term Rewriting,Knuth-Bendix">
+    <meta name="author" content="Markus Triska">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+
+    <br><br>
+
+    <center>
+      <h1 style="padding: 1cm">Prolog implementation of the
+    Knuth-Bendix completion procedure</h1>
+    </center>
+
+
+    <br><br>
+
+    <b>Prolog code</b>: <a href="trs.pl"><tt><b>trs.pl</b></tt></a>
+
+    <br><br>
+
+    Trimmed to the essence (156 lines of
+    code): <a href="poly.pl"><tt>poly.pl</tt></a>
+
+    <br><br>
+
+
+    <table>
+      <tr>
+        <td><i>Video</i>:</td>
+        <td><a href="/prolog/videos/term_rewriting"><img src="/prolog/videos/t_term_rewriting.png" alt="Term Rewriting"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    These files run with <i>each</i> of the following Prolog systems:
+
+    <ul>
+
+      <li>SICStus Prolog 4.3.2</li>
+
+      <li>SWI-Prolog 7.7.1</li>
+
+      <li>GNU Prolog 1.4.4</li>
+    </ul>
+
+    For most of the mentioned systems, several lines can be removed,
+    For example, in GNU&nbsp;Prolog, it is <i>not</i>&nbsp;necessary
+    to include any libraries, so three directives can be removed.
+
+    <br><br>
+
+    Here is a version for SWI-Prolog, a
+    freely available Prolog&nbsp;system where many predicates are
+    already predefined and even more auxiliary definitions can be
+    omitted: <a href="trs_swi.pl"><tt>trs_swi.pl</tt></a>.
+
+    <br><br>
+
+    Read <a href="/prolog"><i><b>The Power of&nbsp;Prolog</b></i></a>
+    to understand the Prolog language&nbsp;features that are used in
+    this code. In particular, I recommend the following chapters:
+
+    <ul>
+      <li><a href="/prolog/metapredicates">higher-order predicates</a></li>
+      <li><a href="/prolog/dcg">definite clause grammars</a></li>
+      <li><a href="/prolog/clpfd">declarative integer arithmetic</a>.</li>
+    </ul>
+
+    <br><br>
+
+    As an application of term rewriting, consider for example the
+    completion of the <b>group&nbsp;axioms</b>:
+
+    <pre>
+?- <b>Es = [X*(Y*Z)=(X*Y)*Z, e*X=X, i(X)*X=e]</b>,
+   functors_order([*,e,i], Order),
+   completion(Es, Order, [], [], Rs),
+   maplist(portray_clause, Rs).
+    </pre>
+
+    or shorter, using the interface predicate <tt>equations_trs/2</tt>
+    to relate a list of <i>identities</i> to a convergent term
+    rewriting system:
+
+    <pre>
+?- <b>equations_trs</b>([X*(Y*Z)=(X*Y)*Z, e*X=X, i(X)*X=e], Rs),
+   maplist(portray_clause, Rs).
+    </pre>
+
+
+    This yields the following <i>convergent</i>&nbsp;TRS:
+
+    <pre>
+i(B*A)==&gt;i(A)*i(B).
+A*i(A)==&gt;e.
+i(i(A))==&gt;A.
+A*e==&gt;A.
+A*B*C==&gt;A*(B*C).
+i(A)*A==&gt;e.
+e*A==&gt;A.
+i(A)*(A*B)==&gt;B.
+i(e)==&gt;e.
+A*(i(A)*B)==&gt;B.
+    </pre>
+
+    We can use this TRS to reduce&mdash;for example&mdash;the
+    term <i>X*i(X)</i> to its <i>normal&nbsp;form</i>:
+
+    <pre>
+?- normal_form($Rs, X*i(X), NF).
+Gs = ...,
+Rs = ...,
+<b>NF = e</b> .
+    </pre>
+
+    This shows that the left-inverse is also a right-inverse
+    in&nbsp;groups!
+
+    <br><br>
+
+    To <i>decide</i> equality between any two terms
+    in&nbsp;groups, simply reduce both of them to their respective
+    normal forms, and see whether they are identical. This only takes
+    a finite number of&nbsp;steps, since the&nbsp;TRS is convergent
+    and hence <i>terminating</i>.
+
+    <br><br>
+
+    <b>Note</b>: In the above example, <tt>$Rs</tt> <i>reuses</i> the
+    rules&nbsp;<tt>Rs</tt> from the preceding query. If your Prolog
+    toplevel does not provide this feature, please form the
+    conjunction of the two queries instead, using <tt>Rs</tt> directly
+    instead of referencing it with the symbol&nbsp;<tt>$</tt>.
+
+    <br><br>
+
+    Please write
+    to <a href="mailto:triska@metalevel.at">triska@metalevel.at</a> if
+    you have any&nbsp;questions about this&nbsp;code or any other
+    aspects.
+
+    <br><br><br>
+
+    <a href="https://www.metalevel.at"><b>Main page</b></a>
+    <br><br>
+
+  </body>
+</html>
