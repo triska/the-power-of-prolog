@@ -136,16 +136,38 @@
 
     <br><br>
 
-    Regarded as a theorem prover, Prolog is <i>incomplete</i> in the
-    sense that, in&nbsp;general, not all logical consequences of a
-    theory are found.
+    Resolution leaves a lot of freedom in <i>how</i> the search for
+    contradictions is to be performed. Accordingly, Prolog programs
+    can be interpreted with different evaluation strategies. The
+    default execution strategy is called SLDNF&nbsp;resolution:
+    SLD&nbsp;resolution with <i>negation as finite failure</i>.
+    Another popular execution strategy of Prolog programs is called
+    SLG&nbsp;resolution, also known
+    as&nbsp;<a href="memoization#tabling"><i>tabling</i></a>. Other
+    variants include iterative deepening and various heuristics.
+
+    <br><br>
+
+    Regarded as a theorem prover, Prolog with its default execution
+    strategy is <i>incomplete</i> in the sense that, in&nbsp;general,
+    not <i>all</i> logical consequences of a theory are found.
 
     <br><br>
 
     Even though Prolog itself is incomplete in general, we can use it
     to implement <i>complete</i> <a href="theoremproving">theorem
-      provers</a>. This is because Prolog is a <i>programming language</i> and
-    can be used to express all known computations.
+    provers</a>. This is because Prolog is a <i>programming
+    language</i> and can be used to express all known computations. In
+    addition, we can interpret Prolog programs with variants of
+    resolution that are themselves complete.
+
+    <br><br>
+
+    Since Prolog allows us to decouple the <i>logical description</i>
+    of what holds (i.e., the Horn&nbsp;clauses) from <i>how</i> the
+    search for logical consequences is performed, we can
+    write
+    <a href="https://www.doc.ic.ac.uk/~rak/papers/algorithm%20=%20logic%20+%20control.pdf"><i>Algorithm&nbsp;=&nbsp;Logic&nbsp;+&nbsp;Control</i></a>.
 
 
     <br><br><br>
