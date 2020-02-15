@@ -272,7 +272,7 @@
     </blockquote>
 
     In Prolog, a convenient representation of strings is available as
-    lists of <i>characters</i>, which are <i>atoms</i>. This
+    lists of <i>characters</i>, which are one-character <i>atoms</i>. This
     representation is available if you add the following directive to
     your program:
     <br><br>
@@ -289,7 +289,24 @@
 
     Thus, working with strings is reduced to working
     with&nbsp;<a href="#list">lists</a>, which can be easily handled
-    in&nbsp;Prolog.
+    in&nbsp;Prolog and are amenable to built-in mechanisms such
+    as&nbsp;<a href="dcg">DCGs</a>.
+
+    <br><br>
+
+    With a suitable implementation technique, Prolog&nbsp;systems can
+    represent lists of characters very efficiently, making them both
+    convenient and fast to work with.
+
+    <br><br>
+
+    <table>
+      <tr>
+        <td><i>Video</i>:</td>
+        <td><a href="videos/representing_strings"><img src="videos/t_representing_strings.png" alt="Representing Strings"></a>
+        </td>
+      </tr>
+    </table>
 
 
     <center><h2>Arrays?</h2></center>
