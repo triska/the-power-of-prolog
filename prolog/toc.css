@@ -85,7 +85,7 @@ a.navigation {
     display: block;
 }    
 
-.toc-content a:hover, a:focus {
+.toc-content a:hover, .toc-content a:focus {
     background-color: #f1f1f1;
     text-decoration: underline;
 }
