@@ -284,13 +284,37 @@
 
     <pre>
 ?- Cs = "test".
-<b>Cs = [t, e, s, t]</b>.
+<b>Cs = [t,e,s,t]</b>.
     </pre>
 
     Thus, working with strings is reduced to working
     with&nbsp;<a href="#list">lists</a>, which can be easily handled
     in&nbsp;Prolog and are amenable to built-in mechanisms such
     as&nbsp;<a href="dcg">DCGs</a>.
+
+    <br><br>
+
+    Treating strings as lists of characters has a long tradition in
+    Prolog systems, starting with the very first Prolog system,
+    Marseille&nbsp;Prolog. Some Prolog systems opted to represent
+    strings as lists of character&nbsp;<i>codes</i>, i.e., as lists
+    of <i>integers</i> instead&nbsp;of lists of atoms, and these
+    integers represent code&nbsp;points that depend on the used
+    encoding. This behaviour is available if you set the Prolog
+    flag <tt>double_quotes</tt> to <tt>codes</tt>. This is not
+    recommended though, because it renders answers much less readable
+    than using <tt>chars</tt>. Alternatively, you can also set the
+    flag to <tt>atom</tt>, which makes Prolog treat double-quoted
+    strings as
+    <i>atoms</i>. The main drawback of using the value <tt>atom</tt> is
+    that atoms preclude the use of DCGs and other predicates that
+    reason about lists and partial&nbsp;lists.
+
+    <br><br>
+
+    For these reasons, <tt>chars</tt> is the recommended setting, and
+    newer Prolog systems such as Tau&nbsp;Prolog and Scryer&nbsp;Prolog
+    already use this value by default.
 
     <br><br>
 
@@ -308,6 +332,10 @@
       </tr>
     </table>
 
+    <br><br>
+
+    There is thus hope that more Prolog systems will
+    use <tt>chars</tt> as the default value in the future.
 
     <center><h2>Arrays?</h2></center>
 
