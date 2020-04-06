@@ -3,7 +3,7 @@
 ## Introduction to modern Prolog
 
 Prolog is a **programming language** that is rooted in
-formal&nbsp;logic. It supports *backtracking* and *unification*
+formal&nbsp;logic. It supports *search* and *unification*
 as built-in features. Prolog allows us to elegantly&nbsp;solve
 many&nbsp;tasks with short and general programs.
 
