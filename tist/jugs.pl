@@ -1,4 +1,6 @@
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
+:- use_module(library(dcgs)).
+:- use_module(library(lists)).
 
 jug_capacity(a, 8).
 jug_capacity(b, 5).
@@ -19,4 +21,6 @@ moves(Jugs0) --> [from_to(From,To)],
         moves([jug(From,FromFill),jug(To,ToFill)|Jugs]).
 
 %?- length(Ms, _), phrase(moves([jug(a,8),jug(b,0),jug(c,0)]), Ms).
-%@ Ms = [from_to(a,b),from_to(b,c),from_to(c,a),from_to(b,c),from_to(a,b),from_to(b,c),from_to(c,a)] .
+%@    Ms = [from_to(a,b),from_to(b,c),from_to(c,a),from_to(b,c),from_to(a,b),from_to(b,c),from_to(c,a)]
+%@ ;  ...
+
