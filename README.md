@@ -52,10 +52,11 @@ Ulrich&nbsp;Neumerkel in Vienna. A collection of
 formed the first chapter.
 
 You can run most of the examples with any popular Prolog system, such
-as GNU&nbsp;Prolog, SICStus&nbsp;Prolog, YAP and&nbsp;SWI. In some
-cases, slight modifications may be necessary to adjust for different
-libraries or small variations. See your Prolog system's manual, or ask
-on&nbsp;Stackoverflow and `comp.lang.prolog` for more information.
+as Scryer&nbsp;Prolog, GNU&nbsp;Prolog, SICStus&nbsp;Prolog, YAP
+and&nbsp;SWI. In some cases, slight modifications may be necessary to
+adjust for different libraries or small variations. See your Prolog
+system's manual, or ask on&nbsp;Stackoverflow and `comp.lang.prolog`
+for more information.
 
 See also the
 [Prolog&nbsp;chat](https://chat.stackexchange.com/rooms/74093/prolog).
