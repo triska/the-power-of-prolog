@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    A Couple of Meta-interpreters in Prolog
-   Written 2005-2019 by Markus Triska (triska@metalevel.at)
+   Written 2005-2020 by Markus Triska (triska@metalevel.at)
 
    Project page:
 
@@ -8,10 +8,16 @@
                    ================================
 
    Public domain code.
+
+   Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
+:- use_module(library(dcgs)).
+:- use_module(library(lists)).
+
+:- dynamic(natnum/1).
 
 natnum(0).
 natnum(s(X)) :-
@@ -28,10 +34,12 @@ mi1(G) :-
         clause(G, Body),
         mi1(Body).
 
-%complicated_clause(A) :-
-%       goal1(A),
-%       goal2(A),
-%       goal3(A).
+
+%% :- dynamic(complicated_clause/1).
+%% complicated_clause(A) :-
+%%       goal1(A),
+%%       goal2(A),
+%%       goal3(A).
 
 mi_clause(Goal, Body) :-
         clause(Goal, Body0),
@@ -111,6 +119,8 @@ body_list(G) -->
         { G \= (_,_) },
         [G].
 
+:- dynamic(always_infinite/0).
+
 always_infinite :- always_infinite.
 
 mi_list1([]).
@@ -167,9 +177,13 @@ mi_id(Goal) :-
         length(_, N),
         mi_limit(Goal, N).
 
+:- dynamic(edge/2).
+
 edge(a, b).
 edge(b, a).
 edge(b, c).
+
+:- dynamic(path/3).
 
 path(A, A, []).
 path(A, C, [e(A,B)|Es]) :-
@@ -178,6 +192,7 @@ path(A, C, [e(A,B)|Es]) :-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+:- dynamic(occ/2).
 
 occ(X, f(X)).
 
@@ -193,6 +208,8 @@ mi_occ(g(G)) :-
         mi_occ(Body).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+:- dynamic(mi_circ/1).
 
 mi_circ(true).
 mi_circ((A,B)) :-
@@ -211,6 +228,8 @@ mi_circ(G) :-
         mi_circ(Body).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+:- dynamic(as/1).
 
 as([]).
 as([a]).   % redundant
@@ -348,7 +367,9 @@ ack(ack(A,B,C), [A = s(M), B = s(N), ack(A,N,Res1), ack(M,Res1,C)]).
 % Unification over abstract parity domain {zero, one, even, odd}
 
 unify(X, Y) :-
-        must_be(ground, Y),
+        (   ground(Y) -> true
+        ;   throw(error(instantiation_error, _))
+        ),
         (   Y = 0 -> X = zero
         ;   abstract_natnum(Y) -> X = Y
         ;   Y = s(T) ->
@@ -375,6 +396,11 @@ ack_fixpoint(Ds) :-
 
 body_permutation(Head-Body0, Head-Body) :-
         permutation(Body0, Body).
+
+permutation([], []).
+permutation([X|Xs], Ys) :-
+        permutation(Xs, Yss),
+        select(X, Ys, Yss).
 
 ack_fixpoint(Clauses, Ds0, Ds) :-
         ack_derive(Clauses, Ds0, Ds1),

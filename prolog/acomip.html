@@ -61,10 +61,9 @@ natnum(s(X)) :-
 
     <pre>
 ?- Goal = natnum(X), Goal.
-Goal = natnum(0),
-X = 0 ;
-Goal = natnum(s(0)),
-X = s(0) .
+   Goal = natnum(0), X = 0
+;  Goal = natnum(s(0)), X = s(0)
+;  ...
     </pre>
 
     You can make the call explicit using the built-in <b><a href="/prolog/metapredicates#call">call/1</a></b>
@@ -103,10 +102,8 @@ natnum(0) :- true.
 
     <pre>
 ?- clause(natnum(Z), Body).
-Z = 0,
-Body = true ;
-Z = s(_G969),
-Body = natnum(_G969).
+   Z = 0, Body = true
+;  Z = s(_A), Body = natnum(_A).
     </pre>
 
     The two solutions found on backtracking correspond to the two
@@ -171,9 +168,10 @@ mi1(Goal) :-
 
     <pre>
 ?- mi1(natnum(X)).
-X = 0 ;
-X = s(0) ;
-X = s(s(0)) .
+   X = 0
+;  X = s(0)
+;  X = s(s(0))
+;  ...
     </pre>
 
     <center><h3>Using a clean representation</h3></center>
@@ -231,7 +229,7 @@ mi2(g(G)) :-
 
     In addition to being shorter and <i>cleaner</i>, this version is
     typically more efficient (no choice-points due to first-argument
-    indexing, and less inferences due to less tests):
+    indexing, and fewer inferences due to fewer tests):
 
     <pre>
 ?- integer_natnum(10^5, T), time(mi1(natnum(T))).
@@ -408,9 +406,10 @@ mi_list3([G0|Gs0]) :-
 
     <pre>
 ?- mi_list3([natnum(X)]).
-X = 0 ;
-X = s(0) ;
-X = s(s(0)) .
+   X = 0
+;  X = s(0)
+;  X = s(s(0))
+;  ...
     </pre>
 
     <center><h3>A meta-circular MI</h3></center>
@@ -441,9 +440,10 @@ mi_circ(G) :-
 
     <pre>
 ?- mi_circ(mi_circ(natnum(X))).
-X = 0 ;
-X = s(0) ;
-X = s(s(0)) .
+   X = 0
+;  X = s(0)
+;  X = s(s(0))
+;  ...
     </pre>
 
     <center><h3 id="reasoning">Reasoning about programs</h3></center>
@@ -656,12 +656,10 @@ mi_tree(g(G), TBody => G) :-
 
     <pre>
 ?- mi_tree(g(natnum(X)), T).
-X = 0,
-T = (true=>natnum(0)) ;
-X = s(0),
-T = ((true=>natnum(0))=>natnum(s(0))) ;
-X = s(s(0)),
-T = (((true=>natnum(0))=>natnum(s(0)))=>natnum(s(s(0)))) .
+   T = true=>natnum(0), X = 0
+;  T = (true=>natnum(0))=>natnum(s(0)), X = s(0)
+;  T = ((true=>natnum(0))=>natnum(s(0)))=>natnum(s(s(0))), X = s(s(0))
+;  ...
     </pre>
     <br>
 
@@ -691,10 +689,10 @@ mi_limit(g(G), N0, N) :-
 
     <pre>
 ?- mi_limit(g(natnum(X)), 3).
-X = 0 ;
-X = s(0) ;
-X = s(s(0)) ;
-false.
+   X = 0
+;  X = s(0)
+;  X = s(s(0))
+;  false.
     </pre>
 
     As expected, the number of solutions coincides with the maximal
@@ -729,7 +727,8 @@ path(A, C, [e(A,B)|Es]) :-
 
 
 ?- mi_id(g(path(a, c, Es))).
-<b>Es = [e(a, b), e(b, c)] .</b>
+   <b>Es = [e(a,b),e(b,c)]</b>
+;  ...
     </pre>
 
     In contrast to depth-first search, iterative deepening finds a
@@ -780,7 +779,7 @@ mi_occ(g(G)) :-
 
     <pre>
 ?- mi_occ(g(occ(A,A))).
-false.
+   false.
     </pre>
 
     You can use an MI similar to this one to reify the <i>binding
@@ -811,21 +810,18 @@ expr(A+B) --> expr(A), [(+)], expr(B).
 
     <pre>
 ?- phrase(expr(E), Ss).
-E = 0,
-Ss = [0] ;
-E = 1,
-Ss = [1] ;
-E = 0+0,
-Ss = [0, +, 0] .
+   E = 0, Ss = [0]
+;  E = 1, Ss = [1]
+;  E = 0+0, Ss = [0,+,0]
+;  ...
     </pre>
 
     However, parsing ground strings leads to problems:
 
     <pre>
 ?- phrase(expr(E), [1,+,1]).
-
-E = 1+1 ;
-<b>ERROR: Out of local stack</b>
+   E = 1+1
+;  <b>ERROR: Out of local stack</b>
     </pre>
 
     We first convert the grammar into a more suitable representation:
@@ -875,9 +871,9 @@ mi_dcg_([G|Gs], Rest0, Rest, Ts0, Ts) :-
 
     <pre>
 ?- mi_dcg(expr(E), [1,+,1,+,1]).
-E = 1+ (1+1) ;
-E = 1+1+1 ;
-false.
+   E = 1+(1+1)
+;  E = 1+1+1
+;  false.
     </pre>
 
     <br><br>
