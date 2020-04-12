@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Turing Machine in Prolog.
-   Copyright (C) 2017 Markus Triska (triska@metalevel.at)
+   Copyright (C) 2017-2020 Markus Triska (triska@metalevel.at)
 
    This example demonstrates one way to describe the workings of a
    Turing machine, using a logic programming language like Prolog.
@@ -77,6 +77,9 @@
    This program shows that Prolog is a Turing complete language.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+:- use_module(library(dcgs)).
+:- use_module(library(lists)).
+
 turing(Name, Tape0, Tape) :-
         phrase(turing_(s(q0), Name), [[]-Tape0], [Ls-Rs]),
         reverse(Ls, Ls1),
@@ -108,8 +111,8 @@ right_symbol_rest([Symbol|Rest], Symbol, Rest).
    Sample query:
 
    ?- turing(plus1, [1,1,1], Ts).
-   %@ Ts = [1, 1, 1, 1] ;
-   %@ false.
+   %@    Ts = [1,1,1,1]
+   %@ ;  false.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 tm(plus1, q0, 1, s(q0), 1, right).
@@ -120,12 +123,14 @@ tm(plus1, q0, b, final, 1, stay).
    This machine is a Beavy Beaver candidate with 5 states (where
    the final state is not counted).
 
-   Sample query:
+   Sample interaction:
 
-   ?- turing(bb5, [], Ts), include(=(1), Ts, Ones), length(Ones, L).
-   %@ Ts = [1, 1, b, 1, 1, 1, b, 1, 1|...],
-   %@ Ones = [1, 1, 1, 1, 1, 1, 1, 1, 1|...],
-   %@ L = 501 .
+   ?- use_module(library(reif)).   % for tfilter/3
+   %@    true.
+
+   ?- turing(bb5, [], Ts), tfilter(=(1), Ts, Ones), length(Ones, L).
+   %@    L = 501, Ones = [1,1,1,1,...], Ts = [1,1,b,1,1,1,b,1,1,1,b,...]
+   %@ ;  false.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 tm(bb5, q0, b, s(1), 1, right).
