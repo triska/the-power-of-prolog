@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Reason about Term Rewriting Systems.
-   Written 2015-2018 by Markus Triska (triska@metalevel.at)
+   Written 2015-2020 by Markus Triska (triska@metalevel.at)
    Public domain code.
 
    Motivating example
@@ -64,29 +64,17 @@
       X = NF .
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   Compatibility definitions.
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+:- use_module(library(clpz)).
+:- use_module(library(lists)).
+:- use_module(library(dcgs)).
+:- use_module(library(pairs)).
+:- use_module(library(iso_ext)).
+:- use_module(library(format)).
 
-:- use_module(library(clpfd)).  % for SICStus, SWI
-:- use_module(library(lists)).  % for SICStus
-:- use_module(library(terms)).  % for SICStus
-
-pairs_keys_values([], [], []).  % for SICStus, GNU
-pairs_keys_values([A-B|ABs], [A|As], [B|Bs]) :-
-        pairs_keys_values(ABs, As, Bs).
-
-forall(Pred, Goal) :-           % for SICStus
-        \+ ( Pred, \+ Goal ).
-
-foldl(Goal_3, Ls, A0, A) :-     % for SICStus, GNU
-        foldl_(Ls, Goal_3, A0, A).
-
-foldl_([], _, A, A).
-foldl_([L|Ls], G_3, A0, A) :-
-        call(G_3, L, A0, A1),
-        foldl_(Ls, G_3, A1, A).
-
+permutation([], []).
+permutation([X|Xs], Ys) :-
+        permutation(Xs, Yss),
+        select(X, Ys, Yss).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Variables in equations and TRS are represented by Prolog variables.
@@ -198,11 +186,17 @@ ord(Fs, F1, F2, Ord) :-
               nth0(N2, Fs, F2))),
         compare(Ord, N1, N2).
 
+nth0(0, [E|_], E).
+nth0(N0, [_|Es], E) :-
+        N0 #> 0,
+        N1 #= N0 - 1,
+        nth0(N1, Es, E).
+
 lex(Cmp, Xs, Ys, Ord) :- lex_(Xs, Ys, Cmp, Ord).
 
 lex_([], [], _, =).
 lex_([X|Xs], [Y|Ys], Cmp, Ord) :-
-        ord_call(Cmp, X, Y, Ord0),
+        call(Cmp, X, Y, Ord0),
         (   Ord0 == (=) -> lex_(Xs, Ys, Cmp, Ord)
         ;   Ord = Ord0
         ).
@@ -221,7 +215,7 @@ subtract_element(Cmp, Y, Xs0, Xs) :- subtract_first(Xs0, Y, Cmp, Xs).
 
 subtract_first([], _, _, []).
 subtract_first([X|Xs], Y, Cmp, Rs) :-
-        (   ord_call(Cmp, X, Y, =) -> Rs = Xs
+        (   call(Cmp, X, Y, =) -> Rs = Xs
         ;   Rs = [X|Rest],
             subtract_first(Xs, Y, Cmp, Rest)
         ).
@@ -231,7 +225,7 @@ mul(Cmp, Ms, Ns, Ord) :-
         multiset_diff(Cmp, Ms, Ns, MNs),
         (   NMs == [], MNs == [] -> Ord = (=)
         ;   forall(member(N, NMs),
-                   (   member(M, MNs), ord_call(Cmp, M, N, >))) -> Ord = (>)
+                   (   member(M, MNs), call(Cmp, M, N, >))) -> Ord = (>)
         ;   Ord = (<)
         ).
 
@@ -259,7 +253,7 @@ rpo(Fs, Stats, S, T, Ord) :-
                 ;   Ord0 == (=) ->
                     (   forall(member(Ti, Ts), rpo(Fs, Stats, S, Ti, >)) ->
                         memberchk(F-Stat, Stats),
-                        ord_call(Stat, rpo(Fs, Stats), Ss, Ts, Ord)
+                        call(Stat, rpo(Fs, Stats), Ss, Ts, Ord)
                     ;   Ord = (<)
                     )
                 ;   Ord0 == (<) -> Ord = (<)
@@ -267,15 +261,6 @@ rpo(Fs, Stats, S, T, Ord) :-
             ;   Ord = (>)
             )
         ).
-
-% explicit meta-call to detect safety in SWISH
-% ord_call/[4,5] can be replaced by call/[4,5] when SWISH improves.
-
-ord_call(ord(Fs), X, Y, Ord) :- ord(Fs, X, Y, Ord).
-ord_call(rpo(Fs,Stats), X, Y, Ord) :- rpo(Fs, Stats, X, Y, Ord).
-
-ord_call(lex, Cmp, X, Y, Ord) :- lex(Cmp, X, Y, Ord).
-ord_call(mul, Cmp, X, Y, Ord) :- mul(Cmp, X, Y, Ord).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Huet / Knuth-Bendix Completion
@@ -307,8 +292,8 @@ orient([S0=T0|Es0], Cmp, Ss0, Ss, Rs0, Rs) :-
         append(Rs0, Ss0, Rules),
         maplist(normal_form(Rules), [S0,T0], [S,T]),
         (   S == T -> orient(Es0, Cmp, Ss0, Ss, Rs0, Rs)
-        ;   (   ord_call(Cmp, S, T, >) -> Rule = (S ==> T)
-            ;   ord_call(Cmp, T, S, >) -> Rule = (T ==> S)
+        ;   (   call(Cmp, S, T, >) -> Rule = (S ==> T)
+            ;   call(Cmp, T, S, >) -> Rule = (T ==> S)
             ;   false /* identity cannot be oriented */
             ),
             foldl(simpler(Rule, Rules), Ss0, Es0-[], Es1-Ss1),
@@ -439,6 +424,6 @@ orient(A=B, A==>B).
 
 ?- Es = [X*X = X^2, (X+Y)^2 = X^2 + 2*X*Y + Y^2],
    equations_order(Es, Cmp),
-   call_with_inference_limit(equations_trs(Cmp, Es, Rs), 10_000, !).
+   call_with_inference_limit(equations_trs(Cmp, Es, Rs), 10000, !).
 */
 
