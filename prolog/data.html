@@ -306,9 +306,12 @@
     than using <tt>chars</tt>. Alternatively, you can also set the
     flag to <tt>atom</tt>, which makes Prolog treat double-quoted
     strings as
-    <i>atoms</i>. The main drawback of using the value <tt>atom</tt> is
-    that atoms preclude the use of DCGs and other predicates that
-    reason about lists and partial&nbsp;lists.
+    <i>atoms</i>. The main drawback of using the value <tt>atom</tt>
+    is that atoms preclude the use of DCGs and other predicates that
+    reason about lists and partial&nbsp;lists. In addition, since
+    atoms cannot be <i>partially</i> instantiated, your code will
+    become <i>moded</i>: This means that it can only be used in a
+    proper subset of all conceivable directions.
 
     <br><br>
 
