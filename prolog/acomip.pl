@@ -16,6 +16,7 @@
 :- use_module(library(clpz)).
 :- use_module(library(dcgs)).
 :- use_module(library(lists)).
+:- use_module(library(time)).
 
 :- dynamic(natnum/1).
 
@@ -54,6 +55,8 @@ defaulty_better(G, g(G)) :-
         G \= (_,_).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+:- dynamic(natnum_clean/1).
 
 natnum_clean(0).
 natnum_clean(s(X)) :-
