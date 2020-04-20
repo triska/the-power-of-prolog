@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Presprover -- Prove formulas of Presburger arithmetic
-  Copyright (C) 2005, 2014 Markus Triska triska@metalevel.at
+  Copyright (C) 2005, 2014, 2020 Markus Triska triska@metalevel.at
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -118,8 +118,16 @@
                        solution/1
                       ]).
 
-:- use_module(library(clpfd)).
+:- op(750, yfx, /\).
+:- op(751, yfx, \/).
+:- op(760, xfy, ==>).
 
+:- use_module(library(clpz)).
+:- use_module(library(dcgs)).
+:- use_module(library(pairs)).
+:- use_module(library(assoc)).
+:- use_module(library(lists)).
+:- use_module(library(format)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    An automaton is represented as:
@@ -521,7 +529,7 @@ aut_complement(Aut, Complement) :-
             list_delete(QFs, Qs, CFinals0),
             exclude(pseudo_final_state(QFs,CompleteDelta), CFinals0, CFinals1),
             (   exists_path(Q0, Delta) -> CFinals = CFinals1
-            ;   delete(CFinals1, Q0, CFinals)
+            ;   exclude(=(Q0), CFinals1, CFinals)
             ),
             Complement = aut(Qs,CFinals,Q0,CompleteDelta)
         ).
@@ -651,7 +659,8 @@ distinct_states(A, B, DA, Same0) :-
 distinct_states_(A, B, DA, Same0) :-
         state_nexts(A, DA, NextsA),
         state_nexts(B, DA, NextsB),
-        (   member(W-P, NextsA) *->
+        (   NextsA = [_|_] ->
+            member(W-P, NextsA),
             (   member(W-Q, NextsB) ->
                 P \== Q,
                 (   get_assoc(P-Q, Same0, false)
@@ -757,26 +766,27 @@ coeff_negative(V-C0, V-C) :- C #= -C0.
 
 sumup(Ls0, Ls) :-
         keysort(Ls0, Ls1),
-        var_group_pairs_by_key(Ls1, Groups0),
+        group_pairs_by_key(Ls1, Groups0),
         maplist(sumup_second, Groups0, Ls2),
         exclude(second_is(0), Ls2, Ls).
 
-% Like group_pairs_by_key/2, working around a (previous) limitation in
-% library(pairs) that prevents variables as keys. No longer necessary
-% as of SWI 7.1.25, and should be removed in a few months.
+exclude(_, [], []).
+exclude(P, [A|As], Bs0) :-
+        (   call(P, A) ->
+            Bs = Bs0
+        ;   Bs0 = [A|Bs]
+        ),
+        exclude(P, As, Bs).
 
-var_group_pairs_by_key([], []).
-var_group_pairs_by_key([M-N|T0], [M-[N|TN]|T]) :-
-	same_key(M, T0, TN, T1),
-	var_group_pairs_by_key(T1, T).
+include(_, [], []).
+include(P, [A|As], Bs0) :-
+        (   call(P, A) ->
+            Bs0 = [A|Bs]
+        ;   Bs0 = Bs
+        ),
+        include(P, As, Bs).
 
-same_key(M0, [M-N|T0], [N|TN], T) :-
-	M0 == M, !,
-	same_key(M, T0, TN, T).
-same_key(_, L, [], L).
-
-
-sumup_second(V-Cs, V-C) :- sumlist(Cs, C).
+sumup_second(V-Cs, V-C) :- sum_list(Cs, C).
 
 pvar(V) :- var(V), !.
 pvar(V) :- atom(V).
@@ -849,7 +859,7 @@ nf_quantified(_ =< _)       --> [].
    list_to_set/2 on the list of all variables. This is more reliable
    than sort/2, since the relative (term-)order of logical variables
    may change (for example, due to garbage collection or stack
-   shifting) during program execution in future SWI versions.
+   shifting) during program execution in future Scryer versions.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 nf_free_variables(NF, Vs) :-
@@ -1114,8 +1124,8 @@ test(t3, (test_aut(1, A1), test_aut(2, A2),
 test(t4, (test_aut(1, A1), test_aut(3, A3),
           aut_intersection(A1,A3,Int), empty_automaton(Int))).
 
-test(t5, forall(member(T, [1,2,3]),
-                (   test_eq(T, Cs, Sum),
+test(t5, \+ (member(T, [1,2,3]),
+             \+ (   test_eq(T, Cs, Sum),
                     eq_automaton(Cs, Sum, Aut),
                     \+ empty_automaton(Aut)))).
 
@@ -1173,7 +1183,7 @@ run_tests(_).
 
 do_test(ID, N, Test) :-
         format("~w (~w)... ", [ID,N]),
-        (   call(Test) -> writeln(ok)
+        (   call(Test) -> portray_clause(ok)
         ;   throw(test_failed(Test))
         ).
 
@@ -1183,6 +1193,10 @@ run :-
         run_tests(N),
         false.
 
+
+%?- presprover:run_tests(1).
+
+%?- presprover:run(1).
 
 %:- presprover:run.
 

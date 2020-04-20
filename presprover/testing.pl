@@ -1,3 +1,6 @@
+:- use_module(library(dcgs)).
+:- use_module(library(lists)).
+
 :- use_module(presprover).
 
 %?- length(Ls, 4), prestmt([x,y,z], Expr, Ls, _), writeln(Expr), false.
@@ -15,7 +18,7 @@ run(N) :-
         (   myvalid(S1) ->
             statement(N, Vs, S2),
             syntax_ok(S2),
-            must_hold(myvalid(S2 => S1)),
+            must_hold(myvalid(S2 ==> S1)),
             (   myvalid(S2) ->
                 must_hold(myvalid(S1 /\ S2)),
                 must_hold(myvalid(not(not(S1) \/ not(S2))))
@@ -53,7 +56,7 @@ statement(Limit, Vs, S) :-
 prestmt(Vs, Expr) --> prexpr(Vs, Expr).
 prestmt(Vs, A /\ B) --> [_], prestmt(Vs, A), prestmt(Vs, B).
 prestmt(Vs, A \/ B) --> [_], prestmt(Vs, A), prestmt(Vs, B).
-prestmt(Vs, A => B) --> [_], prestmt(Vs, A), prestmt(Vs, B).
+prestmt(Vs, A ==> B) --> [_], prestmt(Vs, A), prestmt(Vs, B).
 prestmt(Vs, not(A)) --> [_], prestmt(Vs, A).
 prestmt(Vs, exists(V, A)) --> [_], { member(V, Vs) }, prestmt(Vs, A).
 prestmt(Vs, forall(V, A)) --> [_], { member(V, Vs) }, prestmt(Vs, A).
