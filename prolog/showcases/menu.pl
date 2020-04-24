@@ -3,11 +3,13 @@
    ===============
 
    Written August 2016 by Markus Triska (triska@metalevel.at).
-   Public domain code.
+   Public domain code. Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-% chars are so nice!
-:- set_prolog_flag(double_quotes, chars).
+:- use_module(library(format)).
+:- use_module(library(dcgs)).
+:- use_module(library(lists)).
+:- use_module(library(charsio)).  % for get_single_char/1
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    There are two kinds of elements in a menu:
@@ -50,17 +52,6 @@ menu(menu('Main', _,
                 [option(optK, k),
                  option(optL, l)])])).
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   Pure formatting. See the DCG Primer for more information:
-
-      https://www.metalevel.at/prolog/dcg
-      ===================================
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-format_(F, Args) --> call(format__(F, Args)).
-
-format__(F, Args, Cs0, Cs) :- format(chars(Cs0, Cs), F, Args).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Pure conversion of a menu to a list of characters that display it.
@@ -74,14 +65,13 @@ format__(F, Args, Cs0, Cs) :- format(chars(Cs0, Cs), F, Args).
    Sample use:
 
    ?- menu(M), menu_to_chars(M, Cs).
-   %@ M = ...
-   %@ Cs = [o, p, t, 'A', ' ', '(', a, ')', ' '|...].
+   %@    Cs = "optA (a)   Submenu  ...", ...
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 menu_to_chars(menu(_,_,Subs), Chars) :-
         phrase(format_menu(Subs), Chars).
 menu_to_chars(option(Title,_), Chars) :-
-        format(chars(Chars), "~w", [Title]).
+        phrase(format_("~w", [Title]), Chars).
 
 format_menu([]) --> [].
 format_menu([M|Ms]) --> format_menu_(Ms, M).
@@ -179,7 +169,7 @@ run :-
 
 interaction(M0, Hs0) :-
         display_menu(M0),
-        single_char(C),
+        get_single_char(C),
         (   C = (^) ->
             (   Hs0 = [Prev|Hs] ->
                 interaction(Prev, Hs)
@@ -190,10 +180,6 @@ interaction(M0, Hs0) :-
         ;   format("no entry found for \"~w\" -- please try again\n", [C]),
             interaction(M0, Hs0)
         ).
-
-single_char(C) :-
-        get_single_char(C0),
-        char_code(C, C0).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Sample run:
