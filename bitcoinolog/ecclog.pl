@@ -2,6 +2,7 @@
    ECClog: Elliptic Curve Cryptography with Prolog.
 
    Written June 2017 by Markus Triska (triska@metalevel.at)
+   Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- module(ecclog, [ecc_name_curve/2,
@@ -9,7 +10,8 @@
                    ecc_curve_order/2,
                    ecc_curve_scalar_mult/4]).
 
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
+:- use_module(library(arithmetic)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Sample use: Encryption and decryption of shared secret S.
@@ -95,7 +97,7 @@ ecc_curve_generator(curve(_,_,_,G,_,_), G).
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 ecc_curve_scalar_mult(Curve, K, Q, R) :-
-        Upper #= msb(K),
+        msb(K, Upper),
         scalar_multiplication(Curve, K, Upper, ml(null,Q)-R),
         must_be_on_curve(Curve, R).
 
