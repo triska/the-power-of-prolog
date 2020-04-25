@@ -21,7 +21,9 @@ $ cat fac.txt
 (2) interpret & compile file "fac.txt"
 ======================================================================
 
-$ swipl -g "run_file('fac.txt')" interp.pl
+$ scryer-prolog  interp.pl
+?- run_file('fac.txt').
+
 
         tokens:
 

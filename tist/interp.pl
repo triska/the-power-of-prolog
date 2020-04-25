@@ -2,14 +2,16 @@
    Interpreter and compiler for a simple imperative language.
 
    Written May 2006 by Markus Triska (triska@metalevel.at)
-   Public domain code.
+   Public domain code. Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
 :- use_module(library(assoc)).
 :- use_module(library(pio)).
-
-:- set_prolog_flag(double_quotes, codes).
+:- use_module(library(dcgs)).
+:- use_module(library(lists)).
+:- use_module(library(format)).
+:- use_module(library(charsio)).
 
 % interpreter
 
@@ -278,8 +280,8 @@ tok(=) --> "=".
 
 tok(ID_or_KW) -->
         ident(Cs),
-        { name(I, Cs), ( keyword(I) -> ID_or_KW = I ; ID_or_KW = id(I) ) }.
-tok(num(N)) --> number(Cs), { name(N, Cs) }.
+        { atom_chars(I, Cs), ( keyword(I) -> ID_or_KW = I ; ID_or_KW = id(I) ) }.
+tok(num(N)) --> number(Cs), { number_chars(N, Cs) }.
 
 ident([C|Cs]) --> letter(C), identr(Cs).
 
@@ -290,9 +292,9 @@ identr([])     --> [].
 number([C|Cs]) --> digit(C), number(Cs).
 number([C])    --> digit(C).
 
-letter(C)  --> [C], { between(0'A, 0'Z, C) ; between(0'a, 0'z, C)}.
-digit(C)   --> [C], { between(0'0, 0'9, C) }.
-whitespace --> [C], {C =< 0' }. % close ' for syntax highlighting
+letter(C)  --> [C], { char_type(C, alpha) }.
+digit(C)   --> [C], { char_type(C, decimal_digit) }.
+whitespace --> [C], { char_type(C, whitespace) }.
 
 
 keyword(K) :- memberchk(K, [if,else,while,return,print]).
@@ -410,16 +412,16 @@ run_file(File) :-
                 % is_program(AST), % type check
                 format("\nAST:\n\n~w\n", [AST]),
                 ast_vminstrs(AST, VMs),
-                format("\n\nVM code:\n\n"),
+                format("\n\nVM code:\n\n", []),
                 foldl(display_vminstr, VMs, 0, _),
                 phrase(vminstrs_ints(VMs), Ints),
                 format("\nintcode:\n\n~w\n\n", [Ints]),
-                format("program output:\n\n"),
+                format("program output:\n\n", []),
                 run(AST),
                 halt
-            ;   format("syntax error\n")
+            ;   format("syntax error\n", [])
             )
-        ;   format("lexical error")
+        ;   format("lexical error", [])
         ).
 
 
