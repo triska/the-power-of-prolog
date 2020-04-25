@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Interpreter for AL(Z) programs.
-   Written 2006, 2015 Markus Triska triska@metalevel.at
-   Public domain code.
+   Written 2006, 2015, 2020 Markus Triska triska@metalevel.at
+   Public domain code. Tested with Scryer Prolog.
 
    AL(Z) means "Assignment Language over Integers". AL(Z) is a simple
    programming language that supports variable assignments, loops and
@@ -16,21 +16,29 @@
 
       ?- step('your_file').
 
-   For running an AL(Z) program, use:
+   To run an AL(Z) program, use:
 
       ?- run('your_file').
 
-   See the following page for more information:
 
-   https://www.metalevel.at/alzint/
+   Project page:
+
+       https://www.metalevel.at/alzint/
+       ================================
+
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- module(alzint, [run/1,
                    step/1]).
 
 :- use_module(library(assoc)).
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
 :- use_module(library(pio)).
+:- use_module(library(lists)).
+:- use_module(library(format)).
+:- use_module(library(dcgs)).
+:- use_module(library(charsio)). % for get_single_char/1
+:- use_module(library(dif)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Main interpreter loop.
@@ -63,12 +71,12 @@ step([S0|Ss0], Prog, Undo0, Env0, Env) :-
         ;   Choice = u ->
             (   Undo0 = [Us-UEs|Undo1] ->
                 step(Us, Prog, Undo1, UEs, Env)
-            ;   format("\nnothing to undo\n\n"),
+            ;   format("\nnothing to undo\n\n", []),
                 step([S|Ss], Prog, Undo0, Env0, Env)
             )
         ;   Choice = q -> halt
         ;   Choice = r -> run([S|Ss], Prog, Env0, Env)
-        ;   format("invalid choice\n\n"),
+        ;   format("invalid choice\n\n", []),
             step([S|Ss], Prog, Undo0, Env0, Env)
         ).
 
@@ -87,16 +95,15 @@ print_dashes :- format("~`-t~70|~n", []).
 unfold_seqs([S|Ss]) -->
         (   { S = stm(_,sequence(A,B)) } ->
             unfold_seqs([A,B|Ss])
-        ;   [S|Ss]
+        ;   list([S|Ss])
         ).
 
 question(Prog, stm(Current,_), Env0, Choice) :-
         display_program(Prog, Current),
         print_env(Env0),
         print_dashes,
-        format("(c)ontinue (u)ndo (r)un (q)uit: "),
-        get_single_char(Code),
-        atom_chars(Choice, [Code]),
+        format("(c)ontinue (u)ndo (r)un (q)uit: ", []),
+        get_single_char(Choice),
         nl,
         print_dashes.
 
@@ -192,12 +199,12 @@ token(lop(or), _)  --> "||".
 
 token(t(N,Token), N) -->
         ident(Cs),
-        { atom_codes(I, Cs),
+        { atom_chars(I, Cs),
           (   keyword(I) -> Token = I
           ;   Token = id(I)
           )
         }.
-token(num(N), _) --> number(Cs), { name(N, Cs) }.
+token(num(N), _) --> number(Cs), { number_chars(N, Cs) }.
 
 ident([C|Cs]) --> letter(C), identr(Cs).
 
@@ -208,13 +215,13 @@ identr([])     --> [].
 number([C|Cs]) --> digit(C), number(Cs).
 number([C])    --> digit(C).
 
-letter(C)  --> [C], { code_type(C, alpha) }.
+letter(C)  --> [C], { char_type(C, alpha) }.
 
-digit(C)   --> [C], { code_type(C, digit) }.
+digit(C)   --> [C], { char_type(C, decimal_digit) }.
 
-whitespace --> [C], { code_type(C, space), C #\= 10 }.
+whitespace --> [C], { char_type(C, whitespace), dif(C, '\n') }.
 
-newline    --> [10].
+newline    --> ['\n'].
 
 keyword(K) :- member(K, [if,then,else,begin,end,while,do,'I']).
 
@@ -308,7 +315,7 @@ env_get_var(Env, Name, Value) :- get_assoc(Name, Env, Value).
 
 print_env(Env) :-
         assoc_to_list(Env, Ls),
-        format("     "),
+        format("     ", []),
         maplist(print_pair, Ls),
         nl.
 
@@ -325,36 +332,39 @@ lines([L|Ls]) -->
         lines(Ls1).
 
 upto_nl([], [], []).
-upto_nl([10|Ls], [], Ls) :- !.
+upto_nl(['\n'|Ls], [], Ls) :- !.
 upto_nl([L|Ls], [L|Rest], Ls1) :- upto_nl(Ls, Rest, Ls1).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Use library(pio) to read from a file.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-codes([])     --> [].
-codes([C|Cs]) --> [C], codes(Cs).
+list([])     --> [].
+list([L|Ls]) --> [L], list(Ls).
 
 run(File, Option) :-
-        phrase_from_file(codes(Codes), File),
-        (   lex_analysis(Codes, Tokens) ->
+        phrase_from_file(list(Chars), File),
+        run_(Chars, Option).
+
+run_(Chars, Option) :-
+        (   lex_analysis(Chars, Tokens) ->
             % format("\n\ntokens:\n\n~w\n", [Tokens]),
             (   syn_analysis(Tokens, Tree, Env0) ->
                 nl,nl,
                 % format("\nAST:\n\n~w\n", [Tree]),
                 % print_env(Env0),
                 Tree = stm(First,_),
-                phrase(lines(Codes), Lines),
+                phrase(lines(Chars), Lines),
                 length(Drop, First),
                 append(Drop, Program, Lines),
                 interpret(Option, [Tree], prog(Program,First), Env0, Env),
                 nl,
                 print_env(Env),
                 nl, nl
-            ;   format("syntax error\n")
+            ;   format("syntax error\n", [])
             ),
             halt
-        ;   format("lexical error"),
+        ;   format("lexical error", []),
             halt
         ).
 
@@ -366,3 +376,20 @@ step(File) :- run(File, step).
 
 run(File) :- run(File, run).
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+?- alzint:run_("begin x <- 3; if x + y < 19 then x <- x + 19 else x <- y + y end", step).
+
+
+?- alzint:run_("I(x) = 10
+                I(f) = 1
+
+                while (x >= 2) do
+                  begin
+                   f <- f * x
+                  ;
+                   x <- x - 1
+                  end
+",
+   step).
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

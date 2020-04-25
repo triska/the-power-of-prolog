@@ -17,7 +17,7 @@
 
     <br><br>
 
-    You need <a href="http://eu.swi-prolog.org">SWI Prolog</a> to run
+    You need <a href="https://github.com/mthom/scryer-prolog">Scryer Prolog</a> to run
     it.
 
     <br><br>
@@ -40,13 +40,13 @@
     To run an AL(Z) program with Alzint, use <tt>run(+File)</tt>:
 
     <pre>
-      swipl -g "run('ex1.txt')" alzint.pl
+      ?- run('ex1.txt').
     </pre>
 
     For single-stepping, use <tt>step(+File)</tt>:
 
     <pre>
-      swipl -g "step('ex1.txt')" alzint.pl
+      ?- step('ex1.txt').
     </pre>
 
     When single-stepping through an AL(Z) program, you press:
