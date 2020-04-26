@@ -513,8 +513,9 @@ badlist(Ls) --&gt; Ls.
 
     <center><h2>Reading from files</h2></center>
 
-    In Scryer Prolog and SWI-Prolog, DCGs can be transparently applied to files
-    using Ulrich Neumerkel's <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/swi/pio.pl"><b>library(pio)</b></a>.
+    In Scryer Prolog, SICStus Prolog and SWI-Prolog, DCGs can be
+    transparently applied to files using Ulrich
+    Neumerkel's <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/sicstus/pio.pl"><b><tt>library(pio)</tt></b></a>.
     When you need to process input from files, first write a DCG that
     describes the input. This lets you test the DCG in a pure way
     using&nbsp;<tt>phrase/2</tt>, and then apply the DCG to files too
@@ -594,10 +595,10 @@ false.</b>
     Pure input via <tt>library(pio)</tt> can be implemented in such a
     way that it uses memory efficiently when parsing files: First,
     file contents can be very compactly represented in memory if your
-    Prolog supports an
+    Prolog system supports an
     <a href="data#string">efficient representation</a> of lists of
     characters. Second, file contents that are no longer relevant for
-    parsing can be reclaimed automatically if your Prolog systems
+    parsing can be reclaimed automatically if your Prolog system
     satisfies the properties outlined
     in <a href="https://www.complang.tuwien.ac.at/ulrich/papers/PDF/2008-ciclops.pdf"><i>Precise
     Garbage Collection in Prolog</i></a>.
