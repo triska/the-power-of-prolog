@@ -513,7 +513,7 @@ badlist(Ls) --&gt; Ls.
 
     <center><h2>Reading from files</h2></center>
 
-    In SWI-Prolog, DCGs can be transparently applied to files
+    In Scryer Prolog and SWI-Prolog, DCGs can be transparently applied to files
     using Ulrich Neumerkel's <a href="http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/swi/pio.pl"><b>library(pio)</b></a>.
     When you need to process input from files, first write a DCG that
     describes the input. This lets you test the DCG in a pure way
@@ -590,9 +590,21 @@ false.</b>
     and&nbsp;<tt>t</tt>.
 
     <br><br>
-    <tt>library(pio)</tt> uses memory efficiently when parsing files:
-    Parts that are no longer relevant do not consume additional
-    memory. For this reason, <tt>library(pio)</tt> is well-suited
+
+    Pure input via <tt>library(pio)</tt> can be implemented in such a
+    way that it uses memory efficiently when parsing files: First,
+    file contents can be very compactly represented in memory if your
+    Prolog supports an
+    <a href="data#string">efficient representation</a> of lists of
+    characters. Second, file contents that are no longer relevant for
+    parsing can be reclaimed automatically if your Prolog systems
+    satisfies the properties outlined
+    in <a href="https://www.complang.tuwien.ac.at/ulrich/papers/PDF/2008-ciclops.pdf"><i>Precise
+    Garbage Collection in Prolog</i></a>.
+
+    <br><br>
+
+    For these reasons, <tt>library(pio)</tt> is well-suited
     also for parsing large files.
 
     <br><br>
@@ -604,10 +616,11 @@ false.</b>
     can do this by ordering the DCG&nbsp;rules accordingly. For
     example, the following DCG describes a list of whitespace
     characters in such a way that the longest such sequence is the
-    first solution:
+    first solution, using <tt>char_type/2</tt>
+    from <a href="https://github.com/mthom/scryer-prolog/blob/master/src/prolog/lib/charsio.pl"><tt>library(charsio)</tt></a> for character classification:
 
     <pre>
-ws --&gt; [W], { char_type(W, space) }, ws.
+ws --&gt; [W], { char_type(W, whitespace) }, ws.
 ws --&gt; [].
     </pre>
 
@@ -670,7 +683,7 @@ eos([], []).</pre>
 
     <br><br>
 
-    You can use these definitions to obtain the contents of a file as
+    We can use these definitions to obtain the contents of a file as
     a list of lines for further reasoning:
 
     <pre>
@@ -691,24 +704,16 @@ eos([], []).</pre>
     
     <center><h2 id="output">Describing output</h2></center>
 
-    The following definitions are useful for describing more complex
-    output with DCGs. They define the
-    nonterminal&nbsp;<tt>format_//2</tt>, which you can use
-    in&nbsp;DCGs like the well-known predicate&nbsp;<tt>format/2</tt>.
-    However, instead of <i>writing</i> output to the terminal, the DCG
-    nonterminal&nbsp;<tt>format_//2</tt>
-    declaratively <i>describes</i> a list of characters:
+    DCGs are also useful for describing <i>output</i>, because output
+    is a list of characters.
+    In <a href="https://github.com/mthom/scryer-prolog/blob/master/src/prolog/lib/format.pl"><tt>library(format)</tt></a>,
+    Scryer Prolog provides the nonterminal <tt>format_//2</tt> to
+    declaratively describe output based on a <i>format&nbsp;string</i>
+    that defines the layout of specified arguments.
 
-    <div>
-      <pre class="box">
-format_(Format, Args) --&gt; call(format_chars(Format,Args)).
+    <br><br>
 
-format_chars(Format, Args, Cs0, Cs) :-
-        format(chars(Cs0,Cs), Format, Args).</pre>
-    </div>
-
-    Using these definitions, we can for example describe a table with
-    a DCG:
+    For example, we can describe a <i>table</i> with a <tt>format_//2</tt>:
 
     <pre>
 table --&gt;
@@ -726,11 +731,11 @@ row(Ls) --&gt; format_("~t~w~7+~t~w~7+~t~w~7+~n", Ls).
     </pre>
 
     An important advantage of this declarative way to describe output
-    is that you can write <i>test cases</i> and reason about it: It is
-    quite hard to reason about output that only appears on the system
-    terminal, with no other tangible manifestation. In contrast, it is
-    easy to state properties that must hold about a list of
-    characters.
+    is that we can write <i>test&nbsp;cases</i> and reason about it:
+    It is quite hard to reason about output that only appears on the
+    system terminal, with no other tangible manifestation. In
+    contrast, it is easy to state properties that must hold about a
+    list of characters.
 
     <br><br>
 
@@ -746,19 +751,20 @@ Ts = [' ', ' ', ' ', t, h, i, s, ' ', ' '|...].
 
     <center><h2 id="implementation">Implementation</h2></center>
 
-    To see how DCGs are internally implemented in SWI-Prolog, you can
-    use <tt>listing//1</tt>. For example, to see the actual source
-    code for <tt>num_leaves_//1</tt>:
+    To see how DCGs are internally implemented in Scryer Prolog, we
+    can use <tt>listing//1</tt> from <tt>library(format)</tt>. For
+    example, to see the actual source code
+    for <tt>num_leaves_//1</tt>:
 
     <pre>
 ?- listing(num_leaves_//1).
-<b>num_leaves_(nil, A, D) :-
-     state(C, B, A, E),
-     B#=C+1,
-     D=E.
-num_leaves_(node(_, A, C), B, E) :-
-     num_leaves_(A, B, D),
-     num_leaves_(C, D, E).</b>
+num_leaves_(nil,A,B) :-
+   state(C,D,A,E),
+   D#=C+1,
+   E=B.
+num_leaves_(node(A,B,C),D,E) :-
+   num_leaves_(B,D,F),
+   num_leaves_(C,F,E).
     </pre>
 
     We see that internally, the two DCG rules
