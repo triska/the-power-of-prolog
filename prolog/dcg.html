@@ -753,19 +753,20 @@ Ts = [' ', ' ', ' ', t, h, i, s, ' ', ' '|...].
     <center><h2 id="implementation">Implementation</h2></center>
 
     To see how DCGs are internally implemented in Scryer Prolog, we
-    can use <tt>listing//1</tt> from <tt>library(format)</tt>. For
-    example, to see the actual source code
-    for <tt>num_leaves_//1</tt>:
+    can use <tt>listing/1</tt> from <tt>library(format)</tt>. For
+    example, to see the actual source code of <tt>num_leaves_//1</tt>,
+    we declare the nonterminal dynamic via the <tt>dynamic/1</tt>
+    directive, and use:
 
     <pre>
 ?- listing(num_leaves_//1).
-num_leaves_(nil,A,B) :-
+<b>num_leaves_(nil,A,B) :-
    state(C,D,A,E),
    D#=C+1,
    E=B.
 num_leaves_(node(A,B,C),D,E) :-
    num_leaves_(B,D,F),
-   num_leaves_(C,F,E).
+   num_leaves_(C,F,E).</b>
     </pre>
 
     We see that internally, the two DCG rules
