@@ -160,7 +160,7 @@ f(X, Y) :- g(X), h(Y).
 
     <br><br>
 
-    In SWI-Prolog, <a href="clpfd">integer arithmetic</a> serves
+    In Scryer Prolog, <a href="clpfd">integer arithmetic</a> serves
     as an example of <i>goal</i> expansion. For instance, consider the
     following Prolog rule whose body consists of a single&nbsp;goal:
 
@@ -168,25 +168,28 @@ f(X, Y) :- g(X), h(Y).
 integer_successor(I0, I) :- <b>I #= I0 + 1</b>.
     </pre>
 
-    To see how this is automatically expanded, use <tt>listing/2</tt>:
+    To see how this is automatically expanded, declare the predicate
+    dynamic via the <tt>dynamic/1</tt> directive, and
+    use <tt>listing/1</tt> from <tt>library(format)</tt>:
 
     <pre>
-?- <b>listing(integer_successor/2)</b>.
-integer_successor(B, A) :-
-        (   integer(A)
-        ->  (   integer(B)
-            ->  A=:=B+1
-            ;   C=A,
-                clpfd:clpfd_equal(C, B+1)
-            )
-        ;   integer(B)
-        ->  (   var(A)
-            ->  A is B+1
-            ;   C is B+1,
-                clpfd:clpfd_equal(A, C)
-            )
-        ;   clpfd:clpfd_equal(A, B+1)
-        ).
+<b>?- listing(integer_successor/2).</b>
+integer_successor(A,B) :-
+   (  integer(B) ->
+      (  integer(A) ->
+         B=:=A+1
+      ;  C is B,
+         clpz:clpz_equal(C,A+1)
+      )
+   ;  (  integer(A) ->
+         (  var(B) ->
+            B is A+1
+         ;  C is A+1,
+            clpz:clpz_equal(B,C)
+         )
+      ;  clpz:clpz_equal(B,A+1)
+      )
+   ).
     </pre>
 
     This example illustrates that low-level integer arithmetic is
