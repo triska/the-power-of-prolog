@@ -4,7 +4,10 @@
     Public domain code.        https://www.metalevel.at/lisprolog/
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-:- set_prolog_flag(double_quotes, chars).
+:- use_module(library(charsio)).
+:- use_module(library(dcgs)).
+:- use_module(library(lists)).
+:- use_module(library(assoc)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Parsing. See     https://www.metalevel.at/prolog/dcg      for more.
@@ -18,7 +21,7 @@ expressions([E|Es]) -->
     expressions(Es).
 expressions([]) --> [].
 
-ws --> [W], { char_type(W, space) }, ws.
+ws --> [W], { char_type(W, whitespace) }, ws.
 ws --> [].
 
 % A number N is represented as n(N), a symbol S as s(S).
@@ -31,7 +34,7 @@ expression([s(quote),Q]) --> "'", expression(Q).
 number([D|Ds]) --> digit(D), number(Ds).
 number([D])    --> digit(D).
 
-digit(D) --> [D], { char_type(D, digit) }.
+digit(D) --> [D], { char_type(D, decimal_digit) }.
 
 symbol([A|As]) -->
     [A],
@@ -157,3 +160,5 @@ bind_arguments([], [], Bs, Bs).
 bind_arguments([A|As], [V|Vs], Bs0, Bs) :-
     put_assoc(A, Bs0, V, Bs1),
     bind_arguments(As, Vs, Bs1, Bs).
+
+last(Ls, L) :- reverse(Ls, [L|_]).

@@ -63,7 +63,7 @@
     <br><br>
 
     Therefore, here is a bit <i>beyond</i> this simplistic
-    approach: <b><a href="lisprolog.pl">lisprolog.pl</a></b>
+    approach: <b><a href="lisprolog.pl"><tt>lisprolog.pl</tt></a></b>
 
     <br><br>
 
@@ -72,7 +72,7 @@
 
     <br><br>
 
-    These <b>160 lines of Prolog code</b> implement Option&nbsp;2:
+    These <b>165 lines of Prolog code</b> implement Option&nbsp;2:
     They give you an <i>interpreter</i> for a simple
     Lisp, <i>including</i> a parser to let you write Lisp code in its
     natural form.
@@ -101,7 +101,7 @@
 
     (append '(a b) '(3 4 5))", Vs).
 
-<b>Vs = [append, [a, b, 3, 4, 5]].</b>
+<b>   Vs = [append,[a,b,3,4,5]].</b>
     </pre>
 
     <br>
@@ -136,8 +136,8 @@ Vs = [fib, 46368].</b>
 
     (fib 250)", Vs)).
 
-<b>% 39,882 inferences, 0.010 CPU in 0.013 seconds (80% CPU, 3988200 Lips)
-Vs = [fib, fib1, 7896325826131730509282738943634332893686268675876375].</b>
+<b>   % CPU time: 0.222 seconds
+   Vs = [fib,fib1,7896325826131730509282738943634332893686268675876375]</b>
     </pre>
 
     <br>
@@ -155,8 +155,8 @@ Vs = [fib, fib1, 7896325826131730509282738943634332893686268675876375].</b>
 
     (fib 350)", Vs)).
 
-<b>% 34,233 inferences, 0.010 CPU in 0.010 seconds (98% CPU, 3423300 Lips)
-Vs = [fib, 6254449428820551641549772190170184190608177514674331726439961915653414425].</b>
+<b>   % CPU time: 0.230 seconds
+   Vs = [fib,6254449428820551641549772190170184190608177514674331726439961915653414425]</b>
     </pre>
 
     <br>
@@ -173,7 +173,7 @@ Vs = [fib, 625444942882055164154977219017018419060817751467433172643996191565341
 
     (map 'plus1 '(1 2 3))", Vs).
 
-<b>Vs = [map, plus1, [2, 3, 4]].</b>
+<b>   Vs = [map,plus1,[2,3,4]]</b>
     </pre>
     <br>
     If you are interested in interpreters, check
