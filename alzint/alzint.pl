@@ -327,13 +327,14 @@ print_pair(Var-Value) :- format("~w = ~w   ", [Var,Value]).
 
 lines([]) --> [].
 lines([L|Ls]) -->
-        { upto_nl([L|Ls], Line, Ls1) },
+        { phrase(upto_nl(Line), [L|Ls], Rest) },
         [Line],
-        lines(Ls1).
+        lines(Rest).
 
-upto_nl([], [], []).
-upto_nl(['\n'|Ls], [], Ls) :- !.
-upto_nl([L|Ls], [L|Rest], Ls1) :- upto_nl(Ls, Rest, Ls1).
+upto_nl([])     --> "\n", !.
+upto_nl([L|Ls]) --> [L], !, upto_nl(Ls).
+upto_nl([])     --> [].
+
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Use library(pio) to read from a file.
