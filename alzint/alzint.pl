@@ -380,15 +380,15 @@ run(File) :- run(File, run).
 ?- alzint:run_("begin x <- 3; if x + y < 19 then x <- x + 19 else x <- y + y end", step).
 
 
-?- alzint:run_("I(x) = 10
-                I(f) = 1
-
-                while (x >= 2) do
-                  begin
-                   f <- f * x
-                  ;
-                   x <- x - 1
-                  end
+?- alzint:run_("I(x) = 10\n
+                I(f) = 1\n
+\n
+                while (x >= 2) do\n
+                  begin\n
+                   f <- f * x\n
+                  ;\n
+                   x <- x - 1\n
+                  end\n
 ",
    step).
 
