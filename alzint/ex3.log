@@ -1,4 +1,4 @@
-$ swipl -g "run('ex3.txt')" alzint.pl
+$ scryer-prolog -g "run('ex3.txt')" alzint.pl
 
  ==>  while (x >= 2) do
         begin
