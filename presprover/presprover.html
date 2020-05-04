@@ -29,12 +29,12 @@
     <br><br>
 
     To try it,
-    download <a href="http://eu.swi-prolog.org">SWI-Prolog</a> &gt;=
-    6.0 and execute:
+    download <a href="https://github.com/mthom/scryer-prolog">Scryer Prolog</a>
+    and run:
     <br><br>
 
     <pre>
-      $ swipl presprover.pl
+      $ scryer-prolog presprover.pl
     </pre>
 
 
@@ -44,13 +44,13 @@
 
     <pre>
       ?- valid(exists(x, x > 0)).
-      true.
+         true.
 
       ?- valid(forall(x, exists(y, 3*x + y > 2))).
-      true.
+         true.
 
       ?- valid(2*y + 3*x = 30 /\ x = 0 ==> y = 15).
-      true.
+         true.
     </pre>
 
     Please see the source file for more information.
