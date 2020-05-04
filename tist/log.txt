@@ -21,8 +21,7 @@ $ cat fac.txt
 (2) interpret & compile file "fac.txt"
 ======================================================================
 
-$ scryer-prolog  interp.pl
-?- run_file('fac.txt').
+$ scryer-prolog -g "run_file('fac.txt')" interp.pl
 
 
         tokens:
