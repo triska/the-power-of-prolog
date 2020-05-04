@@ -67,17 +67,17 @@ blocks([N1,N2,N3|Ns1], [N4,N5,N6|Ns2], [N7,N8,N9|Ns3]) :-
     Sudoku&nbsp;boards:
 
     <pre>
-?- sudoku(Rows), maplist(label, Rows), maplist(portray_clause, Rows).
-<b>[1, 2, 3, 4, 5, 6, 7, 8, 9].
-[4, 5, 6, 7, 8, 9, 1, 2, 3].
-[7, 8, 9, 1, 2, 3, 4, 5, 6].
-[2, 1, 4, 3, 6, 5, 8, 9, 7].
-[3, 6, 5, 8, 9, 7, 2, 1, 4].
-[8, 9, 7, 2, 1, 4, 3, 6, 5].
-[5, 3, 1, 6, 4, 2, 9, 7, 8].
-[6, 4, 2, 9, 7, 8, 5, 3, 1].
-[9, 7, 8, 5, 3, 1, 6, 4, 2].</b>
-Rows = [[1, 2, 3, 4, 5, 6, 7, 8|...], [4, 5, 6, 7, 8, 9, 1|...] | ... ] .
+      ?- sudoku(Rows), maplist(label, Rows), maplist(portray_clause, Rows).
+      <b>[1,2,3,4,5,6,7,8,9].
+      [4,5,6,7,8,9,1,2,3].
+      [7,8,9,1,2,3,4,5,6].
+      [2,1,4,3,6,5,8,9,7].
+      [3,6,5,8,9,7,2,1,4].
+      [8,9,7,2,1,4,3,6,5].
+      [5,3,1,6,4,2,9,7,8].
+      [6,4,2,9,7,8,5,3,1].
+      [9,7,8,5,3,1,6,4,2].</b>
+         Rows = [[1,2,3,4,5,6,7,8,9]|...]
     </pre>
 
     A <i>partial</i> instantiation of the rows turns this into
@@ -103,11 +103,11 @@ Rows = [[1, 2, 3, 4, 5, 6, 7, 8|...], [4, 5, 6, 7, 8, 9, 1|...] | ... ] .
       <li>sample Sudoku instances, available is <tt>problem/2</tt>.</li>
     </ul>
 
-    You can try it with SWI-Prolog:
+    You can try it with Scryer Prolog:
 
     
     <pre>
-      $ swipl sudoku.pl
+      $ scryer-prolog sudoku.pl
     </pre>
 
     Sample query and answer:
@@ -117,16 +117,16 @@ Rows = [[1, 2, 3, 4, 5, 6, 7, 8|...], [4, 5, 6, 7, 8, 9, 1|...] | ... ] .
          sudoku(Rows),
          maplist(labeling([ff]), Rows),
          maplist(portray_clause, Rows).
-      <b>[1, 5, 6, 8, 9, 4, 3, 2, 7].
-      [9, 2, 8, 7, 3, 1, 4, 5, 6].
-      [4, 7, 3, 2, 6, 5, 9, 1, 8].
-      [3, 6, 2, 4, 1, 7, 8, 9, 5].
-      [7, 8, 9, 3, 5, 2, 6, 4, 1].
-      [5, 1, 4, 9, 8, 6, 2, 7, 3].
-      [8, 3, 1, 5, 4, 9, 7, 6, 2].
-      [6, 9, 7, 1, 2, 3, 5, 8, 4].
-      [2, 4, 5, 6, 7, 8, 1, 3, 9].</b>
-      Rows = [[1, 5, 6, 8, 9, 4, 3, 2|...], ...]
+      <b>[1,5,6,8,9,4,3,2,7].
+      [9,2,8,7,3,1,4,5,6].
+      [4,7,3,2,6,5,9,1,8].
+      [3,6,2,4,1,7,8,9,5].
+      [7,8,9,3,5,2,6,4,1].
+      [5,1,4,9,8,6,2,7,3].
+      [8,3,1,5,4,9,7,6,2].
+      [6,9,7,1,2,3,5,8,4].
+      [2,4,5,6,7,8,1,3,9].</b>
+         Rows = [[1,5,6,8,9,4,3,2,7]|...]
     </pre>
 
     <br>
@@ -143,15 +143,12 @@ Rows = [[1, 2, 3, 4, 5, 6, 7, 8|...], [4, 5, 6, 7, 8, 9, 1|...] | ... ] .
 
     <br><br>
 
-    Here are a few example queries that you can try,
+    Here is a shell command that you can try,
     using <tt>show/2</tt> to animate the search:
 
     <pre>
-      ?- problem(1, Rows), show([], Rows).
-
-      ?- problem(3, Rows), show([ff], Rows).
-
-      ?- show([], Rows).
+      $ scryer-prolog -g 'problem(1,Rows),show([ff],Rows)' sudoku.pl | \
+           gs -dNOPROMPT -g680x680 -dGraphicsAlphaBits=2 -r150 -q
     </pre>
 
     The arguments of <tt>show/2</tt> are:

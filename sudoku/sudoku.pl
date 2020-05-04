@@ -3,10 +3,15 @@
    https://www.metalevel.at/sudoku/
 
    Written Feb. 2008 by Markus Triska  (triska@metalevel.at)
-   Public domain code.
+   Public domain code. Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
+:- use_module(library(lists)).
+:- use_module(library(format)).
+:- use_module(library(dcgs)).
+:- use_module(library(freeze)).
+:- use_module(library(charsio)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Constraint posting
@@ -65,7 +70,7 @@ postscript -->
              dup rectfill grestore } bind def \
         1 1 10 { gsave dup 1 moveto 10 lineto stroke grestore } for \
         1 1 10 { gsave dup 1 exch moveto 10 exch lineto stroke grestore } for \
-        1 3 9 { 1 3 9 { 1 index gsave translate 0.05 setlinewidth
+        1 3 9 { 1 3 9 { 1 index gsave translate 0.05 setlinewidth \
              0 0 3 3 rectstroke grestore } for pop } for\n".
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,13 +79,14 @@ postscript -->
 
 show(Options, Rows) :-
         sudoku(Rows),
-        open(pipe('gs -dNOPROMPT -g680x680 -dGraphicsAlphaBits=2 -r150 -q'),
-             write, Out, [buffer(false)]),
-        tell(Out),
         phrase(postscript, Ps),
-        format(Ps),
+        format("~s", [Ps]),
         append(Rows, Vs),
-        call_cleanup((animate(Rows),labeling(Options, Vs)), close(Out)).
+        animate(Rows),
+        labeling(Options, Vs),
+        get_single_char(_),
+        false.
+show(_, _) :- halt.
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Sample problems.
@@ -123,21 +129,29 @@ problem(3, P) :-
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Examples:
 
-   ?- problem(1, Rows), sudoku(Rows),
-      maplist(labeling([ff]), Rows), maplist(portray_clause, Rows).
-   [1, 5, 6, 8, 9, 4, 3, 2, 7].
-   [9, 2, 8, 7, 3, 1, 4, 5, 6].
-   [4, 7, 3, 2, 6, 5, 9, 1, 8].
-   [3, 6, 2, 4, 1, 7, 8, 9, 5].
-   [7, 8, 9, 3, 5, 2, 6, 4, 1].
-   [5, 1, 4, 9, 8, 6, 2, 7, 3].
-   [8, 3, 1, 5, 4, 9, 7, 6, 2].
-   [6, 9, 7, 1, 2, 3, 5, 8, 4].
-   [2, 4, 5, 6, 7, 8, 1, 3, 9].
-   Rows = [[1, 5, 6, 8, 9, 4, 3, 2|...], ...]
+   ?- use_module(library(time)).
+      true.
+
+   ?- time((problem(1, Rows), sudoku(Rows),
+      maplist(labeling([ff]), Rows), maplist(portray_clause, Rows))).
+   [1,5,6,8,9,4,3,2,7].
+   [9,2,8,7,3,1,4,5,6].
+   [4,7,3,2,6,5,9,1,8].
+   [3,6,2,4,1,7,8,9,5].
+   [7,8,9,3,5,2,6,4,1].
+   [5,1,4,9,8,6,2,7,3].
+   [8,3,1,5,4,9,7,6,2].
+   [6,9,7,1,2,3,5,8,4].
+   [2,4,5,6,7,8,1,3,9].
+      % CPU time: 8.585 seconds
 
    ?- show([ff], Rows).
 
-   ?- problem(3, Rows), show([ff], Rows).
+   ?- problem(1, Rows), show([ff], Rows).
+
+   Shell command:
+
+   $ scryer-prolog -g 'problem(3,Rows),show([ff],Rows)' sudoku.pl | \
+        gs -dNOPROMPT -g680x680 -dGraphicsAlphaBits=2 -r150 -q
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
