@@ -1,5 +1,6 @@
-:- use_module(library(clpfd)).
-:- use_module(reif).
+:- use_module(library(clpz)).
+:- use_module(library(reif)).
+
 
 hailstone(N, N).
 hailstone(N0, N) :-
@@ -33,15 +34,13 @@ c_eq(<, false).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- hailstone(3, N).
-N = 3 ;
-N = 10 ;
-N = 5 ;
-N = 16 ;
-N = 8 ;
-N = 4 ;
-N = 2 ;
-N = 1 ;
-N = 4 ;
-N = 2 ;
-N = 1 .
+   N = 3
+;  N = 10
+;  N = 5
+;  N = 16
+;  N = 8
+;  N = 4
+;  N = 2
+;  N = 1
+;  ...
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

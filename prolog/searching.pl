@@ -1,5 +1,11 @@
-:- use_module(library(clpfd)).
-:- use_module(reif).
+:- use_module(library(clpz)).
+:- use_module(library(reif)).
+:- use_module(library(dcgs)).
+:- use_module(library(lists)).
+:- use_module(library(dif)).
+:- use_module(library(format)).
+:- use_module(library(time)).
+:- use_module(library(pairs)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- tpartition(=(3), [1,2,3], Is, Os).
@@ -10,40 +16,51 @@
 %@ Os = [1, 2].
 
 ?- k_n(3, Adjs).
-Adjs = [1-[2, 3], 2-[1, 3], 3-[1, 2]] .
+   Adjs = [1-[2,3],2-[1,3],3-[1,2]]
+;  false.
+
 
 ?- k_n(3, Adjs),
    reachable(Adjs, [], 1, To).
 
 ?- k_n(3, Adjs),
    setof(To, reachable(Adjs, [], 1, To), Tos).
-Adjs = [1-[2, 3], 2-[1, 3], 3-[1, 2]],
-Tos = [1, 2, 3] .
+   Adjs = [1-[2,3],2-[1,3],3-[1,2]], Tos = [1,2,3]
+;  false.
 
 ?- length(_, N), portray_clause(N),
    k_n(N, Adjs),
    time(setof(To, reachable(Adjs, [], 1, To), Tos)),
    false.
 %@ 0.
-%@ % 17 inferences, 0.000 CPU in 0.000 seconds (80% CPU, 708333 Lips)
+%@    % CPU time: 0.000 seconds
+%@    % CPU time: 0.000 seconds
 %@ 1.
-%@ % 19 inferences, 0.000 CPU in 0.000 seconds (52% CPU, 1055556 Lips)
+%@    % CPU time: 0.000 seconds
+%@    % CPU time: 0.000 seconds
 %@ 2.
-%@ % 63 inferences, 0.000 CPU in 0.000 seconds (78% CPU, 1968750 Lips)
+%@    % CPU time: 0.000 seconds
+%@    % CPU time: 0.000 seconds
 %@ 3.
-%@ % 357 inferences, 0.000 CPU in 0.000 seconds (93% CPU, 5100000 Lips)
+%@    % CPU time: 0.000 seconds
+%@    % CPU time: 0.001 seconds
 %@ 4.
-%@ % 2,203 inferences, 0.000 CPU in 0.000 seconds (98% CPU, 7467797 Lips)
+%@    % CPU time: 0.002 seconds
+%@    % CPU time: 0.003 seconds
 %@ 5.
-%@ % 14,775 inferences, 0.002 CPU in 0.002 seconds (100% CPU, 8773753 Lips)
+%@    % CPU time: 0.016 seconds
+%@    % CPU time: 0.017 seconds
 %@ 6.
-%@ % 110,079 inferences, 0.012 CPU in 0.012 seconds (98% CPU, 9334266 Lips)
+%@    % CPU time: 0.108 seconds
+%@    % CPU time: 0.109 seconds
 %@ 7.
-%@ % 914,953 inferences, 0.093 CPU in 0.098 seconds (95% CPU, 9816460 Lips)
+%@    % CPU time: 0.831 seconds
+%@    % CPU time: 0.832 seconds
 %@ 8.
-%@ % 8,446,107 inferences, 0.823 CPU in 0.837 seconds (98% CPU, 10265329 Lips)
-%@ 9.
-%@ % 85,982,043 inferences, 8.086 CPU in 8.135 seconds (99% CPU, 10633230 Lips)
+%@    % CPU time: 7.348 seconds
+%@    % CPU time: 7.353 seconds
+
+
 
 ?- length(_, N), portray_clause(N),
    k_n(N, Adjs),
@@ -54,8 +71,10 @@ Tos = [1, 2, 3] .
 
 ?- k_n(9, Adjs),
    time(warshall(Adjs, [1], Tos)).
-%@ % 322 inferences, 0.000 CPU in 0.000 seconds (93% CPU, 4735294 Lips)
-Tos = [1, 2, 3, 4, 5, 6, 7, 8, 9] .
+%@    % CPU time: 0.000 seconds
+%@    Adjs = [1-[2,3,4,5,6,7,8,9],2-[1,3,4,5,6,7,8,...],3-[1,2,4,5,6,7,...],4-[1,2,3,5,6,...],5-[1,2,3,4,...],6-[1,2,3,...],7-[1,2,...],8-[1,...],9-[...]], Tos = [1,2,3,4,5,6,7,8,9]
+%@ ;  % CPU time: 0.003 seconds
+%@    false.
 
 ?- k_n(6, Adjs),
    pairs_keys(Adjs, Ks),
@@ -75,9 +94,8 @@ Tos = [1, 2, 3, 4, 5, 6, 7, 8, 9] .
 %@ 4 -- 5;
 %@ 4 -- 6;
 %@ 5 -- 6;
-%@ Adjs = [1-[2, 3, 4, 5, 6], 2-[1, 3, 4, 5, 6], 3-[1, 2, 4, 5, 6], 4-[1, 2, 3, 5|...], 5-[1, 2, 3|...], 6-[1, 2|...]],
-%@ Ks = [1, 2, 3, 4, 5, 6] .
-
+%@    Adjs = [1-[2,3,4,5,6],2-[1,3,4,5,6],3-[1,2,4,5,6],4-[1,2,3,5,6],5-[1,2,3,4,...],6-[1,2,3,...]], Ks = [1,2,3,4,5,6]
+%@ ;  false.
 
 
 ?- k_n(3, Adjs),
@@ -139,6 +157,6 @@ adjs(Nodes, Node, Node-As) :-
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- k_n(3, As).
-%@ As = [1-[2, 3], 2-[1, 3], 3-[1, 2]] ;
-%@ false.
+%@    As = [1-[2,3],2-[1,3],3-[1,2]]
+%@ ;  false.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

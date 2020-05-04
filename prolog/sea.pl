@@ -1,4 +1,6 @@
 :- use_module(library(clpb)).
+:- use_module(library(lists)).
+:- use_module(library(dcgs)).
 
 sea([N,M,L,R,I]) :-
         sat(M =< N),   % statement 1

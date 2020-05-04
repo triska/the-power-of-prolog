@@ -1,3 +1,8 @@
+
+:- use_module(library(reif)).
+:- use_module(library(dcgs)).
+:- use_module(library(format)).
+
 /*
   Initial version
 
@@ -128,7 +133,6 @@ state0_state(S0, S), [S] --> [S0].
   http://www.complang.tuwien.ac.at/ulrich/Prolog-inedit/swi/reif.pl
 
 */
-:- use_module(reif).
 
 condition_truth(is_true(Q), Truth, Known0, Known) :-
         if_(known_(Q,Truth,Known0),

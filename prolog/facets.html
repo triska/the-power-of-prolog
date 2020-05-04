@@ -142,7 +142,7 @@ list_length([_|Ls], N) :-
 
     <pre>
 ?- list_length([a,b,c], L).
-L = 3.
+   L = 3.
     </pre>
 
     However, this <i>imperative</i> reading does not do justice to
@@ -153,8 +153,8 @@ L = 3.
 
     <pre>
 ?- list_length(Ls, 3).
-Ls = [_G1007, _G1087, _G1167] ;
-false.
+   Ls = [_A,_B,_C]
+;  false.
     </pre>
 
     Using the <b>most general query</b>, we can even ask for all
@@ -162,10 +162,11 @@ false.
 
     <pre>
 ?- list_length(Ls, L).
-Ls = [], L = 0 ;
-Ls = [_2130], L = 1 ;
-Ls = [_2130, _2668], L = 2 ;
-etc.
+   Ls = [], L = 0
+;  Ls = [_A], L = 1
+;  Ls = [_A,_B], L = 2
+;  Ls = [_A,_B,_C], L = 3
+;  ...
     </pre>
 
     We say that the relation is usable in different <i>modes</i>.

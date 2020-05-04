@@ -1,12 +1,11 @@
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
+:- use_module(library(lists)).
+:- use_module(library(pairs)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- solution(Pairs, Water, Zebra, Vs), label(Vs).
-Pairs = [3-england, 4-spain, 2-ukraine, 1-norway, 5-japan],
-Water = 1,
-Zebra = 5,
-Vs = [3, 5, 1, 2, 4, 3, 4, 2, 1|...] ;
-false.
+   Pairs = [3-england,4-spain,2-ukraine,1-norway,5-japan], Water = 1, Zebra = 5, Vs = [3,5,1,2,4,3,4,2,Water,Zebra|...]
+;  false.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 solution(Pairs, Water, Zebra, Vs) :-
