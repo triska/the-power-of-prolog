@@ -44,7 +44,7 @@ td { padding: 0.3cm }
 
     In the programming language <b>Prolog</b>, it is easy to
     describe <b>solutions</b> of this task
-    using <a href="/prolog/clpfd">CLP(FD) constraints</a> which are
+    using <a href="/prolog/clpz">CLP(&#x2124;) constraints</a> which are
     commonly used
     for <a href="/prolog/optimization">combinatorial&nbsp;tasks</a>:
 
@@ -89,25 +89,25 @@ safe_queens([Q|Qs], Q0, D0) :-
 
     <br>
 
-    You can use <a href="http://eu.swi-prolog.org">SWI-Prolog</a> &gt;
-    5.6.50 to try&nbsp;it. Start it with:
+    You can
+    use <a href="https://github.com/mthom/scryer-prolog">Scryer
+    Prolog</a> to try&nbsp;it. Start it with:
 
     <pre>
-      $ swipl queens.pl
+      $ scryer-prolog queens.pl
     </pre>
 
     You can then run queries like:
 
     <pre>
       <b>?- N = 8, n_queens(N, Qs), labeling([ff], Qs).</b>
-      Qs = [1, 5, 8, 6, 3, 7, 2, 4] .
+         N = 8, Qs = [1,5,8,6,3,7,2,4]
+      ;  ...
 
       <b>?- N = 20, n_queens(N, Qs), labeling([ff], Qs).</b>
-      Qs = [1, 3, 5, 14, 17, 4, 16, 7, 12, 18, 15, 19, 6, 10, 20, 11, 8, 2, 13, 9] .
+         N = 20, Qs = [1,3,5,14,17,4,16,7,12,18|...]
+      ;  ...
 
-      <b>?- N = 100, time((n_queens(N,Qs),labeling([ff],Qs))).</b>
-      % 2,304,144 inferences, 0.553 CPU in 0.555 seconds (100% CPU, 4168963 Lips)
-      Qs = [1, 3, 5, 57, 59, 4, 64, 7, 58|...] .
     </pre>
 
     The <i>n</i>-th integer in the list denotes the row of the queen
@@ -123,26 +123,18 @@ safe_queens([Q|Qs], Q0, D0) :-
 
     <br><br>
 
-    Here are a few example queries that you can try:
+    Here is an example shell command you can try:
 
     <pre>
-      <b>?- show(4, [], Qs).</b>
-
-      <b>?- show(N, [], Qs).</b>
-
-      <b>?- show(50, [ff], Qs).</b>
+   $ scryer-prolog -g 'show(20,[ff])' queens.pl | \
+     gs -dNOPROMPT -g680x680 -dGraphicsAlphaBits=2 -r144 -q
     </pre>
 
-    The arguments of the predicate <tt>show/3</tt> are:
+    The arguments of the predicate <tt>show/2</tt> are:
 
     <ol>
       <li>the number of queens</li>
-      <li>a list of labeling options as described in the
-        <a href="http://eu.swi-prolog.org/man/clpfd.html">CLP(FD) documentation</a></li>
-      <li>a list of row numbers, one for
-        each column, such that the queens in these positions do not attack
-        each other.
-      </li>
+      <li>a list of <i>labeling options</i>.</li>
     </ol>
 
     As a side-effect, you see an animation of the
@@ -161,13 +153,6 @@ safe_queens([Q|Qs], Q0, D0) :-
 
     Here is a picture of a finished animation:
 
-    <pre>
-      <b>?- show(8, [ff], Qs).</b>
-      Qs = [1, 5, 8, 6, 3, 7, 2, 4] ;
-      Qs = [1, 6, 8, 3, 7, 4, 2, 5] ;
-      ...
-      Qs = [3, 5, 2, 8, 1, 7, 4, 6] .
-    </pre>
 
     <br><br>
     <center>
@@ -178,10 +163,6 @@ safe_queens([Q|Qs], Q0, D0) :-
 
 
     Example with 100 queens:
-    <pre>
-      <b>?- show(100, [ff], Qs).</b>
-      Qs = [1, 3, 5, 57, 59, 4, 64, 7, 58|...] .
-    </pre>
 
     <br><br>
     <center>
@@ -211,7 +192,7 @@ safe_queens([Q|Qs], Q0, D0) :-
     Solutions with Viewers</i></a>.
 
     <br><br>
-    More CLP(FD) examples: <a href="https://github.com/triska/clpfd"><b>https://github.com/triska/clpfd</b></a>
+    More CLP(&#x2124;) examples: <a href="https://github.com/triska/clpz"><b>https://github.com/triska/clpz</b></a>
 
     <br><br><br>
     More about Prolog: <b><a href="/prolog">The Power of Prolog</a></b>
