@@ -316,17 +316,18 @@ hailstone(N0, N) :-
 
     <pre>
 ?- hailstone(3, N).
-N = 3 ;
-N = 10 ;
-N = 5 ;
-N = 16 ;
-N = 8 ;
-N = 4 ;
-N = 2 ;
-N = 1 ;
-N = 4 ;
-N = 2 ;
-N = 1 .
+   N = 3
+;  N = 10
+;  N = 5
+;  N = 16
+;  N = 8
+;  N = 4
+;  N = 2
+;  N = 1
+;  N = 4
+;  N = 2
+;  N = 1
+;  ...
     </pre>
 
     This <b>program</b> illustrates that a sequence of actions can be modeled
@@ -341,13 +342,11 @@ N = 1 .
 
     <pre>
 ?- hailstone(X, Y).
-X = Y ;
-2*Y#=X ;
-2*_6952#=X,
-2*Y#=_6952 ;
-2*_7224#=X,
-2*_7248#=_7224,
-2*Y#=_7248 .
+   X = Y
+;  clpz:(2*Y#=X)
+;  clpz:(2*Y#=_A), clpz:(2*_A#=X)
+;  clpz:(2*_A#=X), clpz:(2*Y#=_B), clpz:(2*_B#=_A)
+;  ...
     </pre>
 
     When studying a Prolog predicate, try the most general query to see

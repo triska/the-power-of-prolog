@@ -107,21 +107,20 @@ fibonacci(N, F) :-
 
     <pre>
 ?- fibonacci(N, F).
-N = 0,
-F = 1 ;
-N = F, F = 1 ;
-N = F, F = 2 ;
-N = F, F = 3 ;
-N = 4,
-F = 5 .
+   N = 0, F = 1
+;  N = 1, F = 1
+;  N = 2, F = 2
+;  N = 3, F = 3
+;  N = 4, F = 5
+;  ...
     </pre>
 
     It can also be used for more specific queries:
 
     <pre>
 ?- fibonacci(17, F).
-F = 2584 ;
-false.
+   F = 2584
+;  false.
     </pre>
 
     However, the computation runs out of stack or takes too long for

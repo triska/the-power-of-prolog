@@ -180,8 +180,7 @@ horror_factorial(N, F) :-
 
     <pre>
 ?- horror_factorial(N, F).
-<b>N = 0,
-F = 1</b>.
+<b>   N = 0, F = 1.</b>
     </pre>
 
     The version without <tt>!/0</tt> is almost as horrendous:
@@ -199,9 +198,8 @@ horror_factorial(N, F) :-
 
     <pre>
 ?- horror_factorial(N, F).
-N = 0,
-F = 1 ;
-<b>ERROR: >/2: Arguments are not sufficiently instantiated</b>
+   N = 0, F = 1
+;  <b>caught: error(instantiation_error,'(is)'/2)</b>
     </pre>
 
     If you accept this, you are
@@ -247,12 +245,11 @@ n_factorial(N, F) :-
 
     <pre>
 ?- n_factorial(N, F).
-<b>N = 0,
-F = 1 ;
-N = F, F = 1 ;
-N = F, F = 2 ;
-N = 3,
-F = 6</b> .
+<b>   N = 0, F = 1
+;  N = 1, F = 1
+;  N = 2, F = 2
+;  N = 3, F = 6
+;  ...</b>
     </pre>
 
     That's quite good: A few simple changes have led to a quite

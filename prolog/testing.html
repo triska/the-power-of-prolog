@@ -49,10 +49,10 @@ list_length([_|Ls], N) :-
 
     <pre>
 ?- list_length(Ls, _).
-Ls = [] ;
-Ls = [_G1010] ;
-Ls = [_G1010, _G1271] ;
-etc.
+   Ls = []
+;  Ls = [_A]
+;  Ls = [_A,_B]
+;  ...
     </pre>
 
     Nevertheless, the program is <i><b>wrong</b></i>!
@@ -149,9 +149,10 @@ etc.
 
     <pre>
 ?- A #\= B, length(Ls, A), list_length(Ls, B).
-A = 1,
-B = 2,
-Ls = [_G1219] .
+   A = 1, B = 2, Ls = [_A]
+;  A = 2, B = 4, Ls = [_A,_B]
+;  A = 3, B = 6, Ls = [_A,_B,_C]
+;  ...
     </pre>
 
     Of course, in most cases we do <i>not</i> have a reference
@@ -170,9 +171,8 @@ Ls = [_G1219] .
 
     <pre>
 ?- list_length(Ls, N), list_length([_|Ls], N1), N1 #\= N + 1.
-Ls = [],
-N = 0,
-N1 = 2 .
+   Ls = [], N = 0, N1 = 2
+;  ...
     </pre>
 
     So there it is: From this solution, we <i>know</i> that either the
