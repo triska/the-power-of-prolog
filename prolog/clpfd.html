@@ -123,11 +123,15 @@ nat_nat_sum(s(N), M, s(Sum)) :-
     Instead, we use
     <a href="concepts#builtin">built-in&nbsp;predicates</a> to reason
     about <i>numbers</i> in Prolog. In the case of <b>integers</b>,
-    these predicates are known as <b>CLP(FD)&nbsp;constraints</b>.
-    CLP(FD) stands for <i>Constraint Logic Programming</i>
+    these predicates are known as <b>CLP(FD)&nbsp;constraints</b>, and
+    in more recent systems also
+    as <b>CLP(&#x2124;)&nbsp;constraints</b>. CLP(FD) stands
+    for <i>Constraint Logic Programming</i>
     over <i>Finite&nbsp;Domains</i> and reminds us of the fact that in
     reality, we can only represent a <i>finite</i> subset of integers
-    on actual&nbsp;machines.
+    on actual&nbsp;machines. &#x2124; denotes the <i>integers</i>
+    and indicates that these constraints are designed for reasoning
+    about all integers.
 
     <br><br>
 
@@ -141,22 +145,16 @@ nat_nat_sum(s(N), M, s(Sum)) :-
 
     <br><br>
 
-    If your Prolog systems provides CLP(FD) constraints as a library,
+    If your Prolog systems provides these constraints as a library,
     adjust your initialization file so that this library is
     automatically available in all your programs. For example, in
-    SICStus Prolog, you can put the following directive in your
-    initialization file:
+    Scryer&nbsp;Prolog, you can put the following directive in your
+    <tt>~/.scryerrc</tt> initialization file:
 
     <div>
       <pre class="box">
-:- use_module(library(clpfd)).</pre>
+:- use_module(library(clpz)).</pre>
     </div>
-
-    For SICStus Prolog, also consider
-    using&nbsp;<a href="https://github.com/triska/clpz"><b>CLP(&#x2124;)</b></a>,
-    which is a generalization of&nbsp;CLP(FD).
-
-    <br><br>
 
     It is highly advisable to make CLP(FD) or CLP(&#x2124;) constraints
     automatically available in all your programs, since almost all
@@ -327,19 +325,19 @@ list_length([_|Ls], Length) :-
 
     <pre>
 ?- list_length(Ls, Length).
-<b>Ls = [],
-Length = 0 ;
-Ls = [_1716],
-Length = 1 ;
-Ls = [_42, _150],
-Length = 2</b> .
+<b>   Ls = [], Length = 0
+;  Ls = [_A], Length = 1
+;  Ls = [_A,_B], Length = 2
+;  Ls = [_A,_B,_C], Length = 3
+;  ...</b>
     </pre>
 
     It can also be used in a different direction. For example:
 
     <pre>
 ?- list_length(Ls, 3).
-<b>Ls = [_898, _1064, _1230]</b> .
+<b>   Ls = [_A,_B,_C]</b>
+;  ...
     </pre>
 
     Note though that this does not terminate:
@@ -431,9 +429,10 @@ Y in 0..2.
 
     <pre>
 ?- V in 0..2, indomain(V).
-V = 0 ;
-V = 1 ;
-V = 2.
+   V = 0
+;  V = 1
+;  V = 2
+;  false.
     </pre>
 
 
@@ -443,10 +442,11 @@ V = 2.
 
     <pre>
 ?- [X,Y] ins 0..1, label([X,Y]).
-X = Y, Y = 0 ;
-X = 0, Y = 1 ;
-X = 1, Y = 0 ;
-X = Y, Y = 1.
+   X = 0, Y = 0
+;  X = 0, Y = 1
+;  X = 1, Y = 0
+;  X = 1, Y = 1
+;  false.
     </pre>
 
     If <tt>label/1</tt> were not available, you could define it like this:
@@ -575,6 +575,22 @@ Z in 0..1.
     In practice, <tt>all_distinct/1</tt> is
     typically <i>fast&nbsp;enough</i> and is preferable due to its
     much stronger&nbsp;propagation.
+
+    <br><br>
+
+    We can generalize this observation: There is a trade-off
+    between <i>strength</i> and <i>efficiency</i> of constraint
+    propagation. And further, when reasoning about integers, there
+    are <i>inherent</i> limits to the strength of constraint
+    propagation: It follows from
+    <a href="https://en.wikipedia.org/wiki/Diophantine_set#Matiyasevich's_theorem">Matiyasevich's&nbsp;theorem</a>
+    that constraint solving over integers is <i>not&nbsp;decidable</i>
+    in general. This means that there is no computational method that
+    always&nbsp;terminates and always correctly decides whether a set
+    of integer equations has a solution. Therefore, in
+    general, <i>search</i>&mdash;for example
+    via <a href="#labeling">labeling</a>&mdash;must be used to find
+    concrete solutions, or to detect that none exists.
 
     <br><br><br>
     <center><h2>Legacy predicates</h2></center>
