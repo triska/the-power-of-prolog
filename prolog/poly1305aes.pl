@@ -4,11 +4,7 @@
    "The Poly1305-AES message-authentication code".
 
    Written Sept. 2017 by Markus Triska (triska@metalevel.at)
-   Public domain code.
-
-   This program requires SWI-Prolog 7.5.15 or greater, compiled with
-   support for large integers. CLP(FD) constraints are used for
-   declarative integer arithmetic that works in all directions.
+   Public domain code. Tested with Scryer Prolog.
 
    More information about cryptography with Prolog is available from:
 
@@ -17,7 +13,8 @@
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
+:- use_module(library(lists)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    The relation between a message Ms, a key Rs, the output Ss of a keyed
@@ -60,22 +57,26 @@ rest_chunks([R|Rs], Cs0, Cs) :- reverse([[R|Rs]|Cs0], Cs).
    Declarative integer arithmetic is used to make this relation usable
    in all directions. For more information about this approach, see:
 
-                https://www.metalevel.at/prolog/clpfd
-                =====================================
+                https://www.metalevel.at/prolog/clpz
+                ====================================
 
    Examples:
 
        ?- little_endian_integer([0,1], I).
-       %@ I = 256.
+          I = 256
+       ;  false.
 
        ?- little_endian_integer([1,2,3], I).
-       %@ I = 197121.
+          I = 197121
+       ;  false.
 
        ?- little_endian_integer(Ls, 300).
-       %@ Ls = [44, 1] ;
-       %@ Ls = [44, 1, 0] ;
-       %@ Ls = [44, 1, 0, 0] ;
-       %@ Ls = [44, 1, 0, 0, 0] .
+          Ls = [44,1]
+       ;  Ls = [44,1,0]
+       ;  Ls = [44,1,0,0]
+       ;  Ls = [44,1,0,0,0]
+       ;  Ls = [44,1,0,0,0,0]
+       ;  ...
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 little_endian_integer(Ls, I) :-
@@ -89,43 +90,37 @@ little_endian_(E, P0-I0, P-I) :-
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Test cases from Daniel J. Bernstein's paper, Appendix B. In these
    examples, the keyed function F is AES_k(n), where n is the nonce.
-   The expected result of AES encryption is also verified, using
-   crypto_data_encrypt/6 from library(crypto). This requires
-   SWI-Prolog 7.5.15 or greater.
 
    Examples:
 
+       ?- use_module(library(time)).
+          true.
+
        ?- time(verification(1)).
-       %@ verifying(example-1).
-       %@ verified(aes).
-       %@ verified(poly1305).
-       %@ % 19,159 inferences, 0.003 CPU in 0.003 seconds
-       %@ true.
+       verifying(example-1).
+       verified(poly1305).
+          % CPU time: 0.298 seconds
+          true
 
        ?- verification(_).
-       %@ verifying(example-1).
-       %@ verified(aes).
-       %@ verified(poly1305).
-       %@ true ;
-       %@ verifying(example-2).
-       %@ verified(aes).
-       %@ verified(poly1305).
-       %@ true ;
-       %@ etc.
+       verifying(example-1).
+       verified(poly1305).
+          true
+       ;  verifying(example-2).
+       verified(poly1305).
+       true
+       ;  ...
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- use_module(library(crypto)).
+:- use_module(library(format)).
 
 verification(N) :-
         example_parameters(N, Params),
         portray_clause(verifying(example-N)),
         maplist(parameter_bytes(Params), [m,r,k,n,aes,poly1305],
-                                         [Ms,Rs,Ks,Ns,As,Ps]),
+                                         [Ms,Rs,_,_,As,Ps]),
         length(IVs, 16), maplist(=(0), IVs),
-        crypto_data_encrypt(Ns, 'aes-128-cbc', Ks, IVs, As0, [encoding(octet),
-                                                              padding(none)]),
-        string_codes(As0, As1),
-        must_be_equal(aes, As, As1),
         message_r_s_poly1305(Ms, Rs, As, Ps1),
         must_be_equal(poly1305, Ps, Ps1).
 
@@ -142,27 +137,27 @@ parameter_bytes(Params, Param, Bs) :-
         memberchk(Param=P, Params),
         hex_bytes(P, Bs).
 
-example_parameters(1, [m = 'f3f6',
-                       r = '851fc40c3467ac0be05cc20404f3f700',
-                       k = 'ec074c835580741701425b623235add6',
-                       n = 'fb447350c4e868c52ac3275cf9d4327e',
-                       aes = '580b3b0f9447bb1e69d095b5928b6dbc',
-                       poly1305 = 'f4c633c3044fc145f84f335cb81953de']).
-example_parameters(2, [m = '',
-                       r = 'a0f3080000f46400d0c7e9076c834403',
-                       k = '75deaa25c09f208e1dc4ce6b5cad3fbf',
-                       n = '61ee09218d29b0aaed7e154a2c5509cc',
-                       aes = 'dd3fab2251f11ac759f0887129cc2ee7',
-                       poly1305 = 'dd3fab2251f11ac759f0887129cc2ee7']).
-example_parameters(3, [m = '663cea190ffb83d89593f3f476b6bc24d7e679107ea26adb8caf6652d0656136',
-                       r = '48443d0bb0d21109c89a100b5ce2c208',
-                       k = '6acb5f61a7176dd320c5c1eb2edcdc74',
-                       n = 'ae212a55399729595dea458bc621ff0e',
-                       aes = '83149c69b561dd88298a1798b10716ef',
-                       poly1305 = '0ee1c16bb73f0f4fd19881753c01cdbe']).
-example_parameters(4, [m = 'ab0812724a7f1e342742cbed374d94d136c6b8795d45b3819830f2c04491faf0990c62e48b8018b2c3e4a0fa3134cb67fa83e158c994d961c4cb21095c1bf9',
-                       r = '12976a08c4426d0ce8a82407c4f48207',
-                       k = 'e1a5668a4d5b66a5f68cc5424ed5982d',
-                       n = '9ae831e743978d3a23527c7128149e3a',
-                       aes = '80f8c20aa71202d1e29179cbcb555a57',
-                       poly1305 ='5154ad0d2cb26e01274fc51148491f1b']).
+example_parameters(1, [m = "f3f6",
+                       r = "851fc40c3467ac0be05cc20404f3f700",
+                       k = "ec074c835580741701425b623235add6",
+                       n = "fb447350c4e868c52ac3275cf9d4327e",
+                       aes = "580b3b0f9447bb1e69d095b5928b6dbc",
+                       poly1305 = "f4c633c3044fc145f84f335cb81953de"]).
+example_parameters(2, [m = "",
+                       r = "a0f3080000f46400d0c7e9076c834403",
+                       k = "75deaa25c09f208e1dc4ce6b5cad3fbf",
+                       n = "61ee09218d29b0aaed7e154a2c5509cc",
+                       aes = "dd3fab2251f11ac759f0887129cc2ee7",
+                       poly1305 = "dd3fab2251f11ac759f0887129cc2ee7"]).
+example_parameters(3, [m = "663cea190ffb83d89593f3f476b6bc24d7e679107ea26adb8caf6652d0656136",
+                       r = "48443d0bb0d21109c89a100b5ce2c208",
+                       k = "6acb5f61a7176dd320c5c1eb2edcdc74",
+                       n = "ae212a55399729595dea458bc621ff0e",
+                       aes = "83149c69b561dd88298a1798b10716ef",
+                       poly1305 = "0ee1c16bb73f0f4fd19881753c01cdbe"]).
+example_parameters(4, [m = "ab0812724a7f1e342742cbed374d94d136c6b8795d45b3819830f2c04491faf0990c62e48b8018b2c3e4a0fa3134cb67fa83e158c994d961c4cb21095c1bf9",
+                       r = "12976a08c4426d0ce8a82407c4f48207",
+                       k = "e1a5668a4d5b66a5f68cc5424ed5982d",
+                       n = "9ae831e743978d3a23527c7128149e3a",
+                       aes = "80f8c20aa71202d1e29179cbcb555a57",
+                       poly1305 ="5154ad0d2cb26e01274fc51148491f1b"]).
