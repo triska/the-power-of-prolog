@@ -21,14 +21,14 @@ This book is *self-hosting*: It includes an HTTP&nbsp;server that lets
 you browse most of the content locally. When you access files that are
 *not* locally available, it redirects to their online&nbsp;versions.
 
-To run it, you need SWI-Prolog&ge;**7.5.10**. To spawn the server on
-port&nbsp;5053, use for example:
+To run it, you need [Scryer&nbsp;Prolog](https://github.com/mthom/scryer-prolog).
+To spawn the server on port&nbsp;6012, use for example:
 
-    $ swipl main.pl --port=5053
+    $ scryer-prolog -g "server(6012)" server.pl
 
 Then, direct your browser to:
 
-   http://localhost:5053/prolog
+   http://localhost:6012/prolog
 
 If you are new to Prolog, read the chapters in&nbsp;order for a
 self-contained exposition of many important language features. If you
