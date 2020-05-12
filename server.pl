@@ -30,6 +30,7 @@
 :- use_module(library(charsio)).
 :- use_module(library(dcgs)).
 :- use_module(library(iso_ext)).
+:- use_module(library(dif)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- server(6012).
@@ -40,7 +41,7 @@
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 server(Port) :-
-        socket_server_open(Port, Socket),
+        socket_server_open('127.0.0.1':Port, Socket),
         accept_loop(Socket).
 
 
@@ -59,7 +60,8 @@ request_response(Stream) :-
             append("GET /", Rest, Chars),
             phrase(path(Path), Rest, _),
             format("request is for ~q~n", [Path]),
-            (   path_file(Path, FileChars),
+            (   dif(Path, ""),
+                path_file(Path, FileChars),
                 path_segments(Path, Segments),
                 \+ member("..", Segments),
                 atom_chars(File, FileChars),
@@ -124,7 +126,7 @@ read_line(Stream, Chars) :-
         get_byte(Stream, Byte),
         Byte >= 0,
         atom_codes(Char, [Byte]),
-        (   (   Char == '\r' ; Char == '\n' ) ->
+        (   member(Char, "\r\n") ->
             Chars = []
         ;   Chars = [Char|Rest],
             read_line(Stream, Rest)
