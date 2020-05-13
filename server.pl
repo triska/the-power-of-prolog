@@ -31,6 +31,7 @@
 :- use_module(library(dcgs)).
 :- use_module(library(iso_ext)).
 :- use_module(library(dif)).
+:- use_module(library(reif)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- server(6012).
@@ -63,7 +64,7 @@ request_response(Stream) :-
             (   dif(Path, ""),
                 path_file(Path, FileChars),
                 path_segments(Path, Segments),
-                \+ member("..", Segments),
+                memberd_t("..", Segments, false),
                 atom_chars(File, FileChars),
                 exists_file(File) ->
                 format("sending ~q~n", [File]),
@@ -77,7 +78,9 @@ request_response(Stream) :-
                 portray_clause(rs(Rs)),
                 chars_to_bytes(Rs, Response)
             ),
-            maplist(put_byte(Stream), Response)
+            catch(maplist(put_byte(Stream), Response),
+                  Err,
+                  portray_clause(caught(Err)))
         ;   true
         ).
 
