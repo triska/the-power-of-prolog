@@ -1,13 +1,14 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Bitcoinolog: Reason about Bitcoin addresses with Prolog.
 
-   Written June 2017 by Markus Triska (triska@metalevel.at)
+   Written 2017-2020 by Markus Triska (triska@metalevel.at)
 
    For more information, visit:
 
                 https://www.metalevel.at/bitcoinolog/
                 =====================================
 
+   Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- module(bitcoinolog, [new_private_key/1,
@@ -18,8 +19,13 @@
                         base58check_to_integer/2
                        ]).
 
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
 :- use_module(library(crypto)).
+:- use_module(library(dcgs)).
+:- use_module(library(error)).
+:- use_module(library(format)).
+:- use_module(library(lists)).
+:- use_module(library(between)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Sample use: Offline generation of Bitcoin addresses.
@@ -28,16 +34,14 @@
           new_private_key(PrivateKey),
           private_key_to_public_key(PrivateKey, PublicKey),
           public_key_to_address(PublicKey, Address),
-          portray_clause(Address),
+          format:portray_clause(Address),
           false.
-   %@ '1AYUzFLgcP7GVNDZBjeqQBFzSMCnWfZGhK'.
-   %@ '1CZxoz3HdWKsyK4eoPt6Mk2jZspKWBb5aU'.
-   %@ '1Jt784mbe1LWvyQTMNw2kHaiLcs9yNvncq'.
-   %@ '1A2N7Sf2Hu8JWSQ21rkT1NWtzPptbH65JP'.
+   "142zbV8APtULexQai6NtrcSZxV9MoPwPPR".
+   "13wh2Bhhc3B7M2k1ybWtSywBftrQ7Wm2wY".
+   "1JxcrPifBFTUjZzYeFuPsWoaaZd5VR9yc".
+   "12GDcpqLvgJiyPJRMqDFoZXvmx5LTn9uaK".
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-:- set_prolog_flag(double_quotes, chars).
 
 bitcoin_curve(Curve) :-
         crypto_name_curve(secp256k1, Curve).
@@ -63,7 +67,9 @@ new_private_key(Key) :-
         bitcoin_curve(Curve),
         crypto_curve_order(Curve, Order),
         Upper #= Order - 1,
-        must_be(between(1,Upper), Key).
+        (   between(1, Upper, Key) -> true
+        ;   domain_error(inadmissible_key, Key, new_private_key/1)
+        ).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    A public key is a point on the curve, with coordinates (X,Y). In
@@ -89,7 +95,7 @@ private_key_to_public_key(PrivateKey, PublicKey) :-
         Rem #= Y mod 2,
         zcompare(Cmp, 0, Rem),
         cmp0_prefix(Cmp, Prefix),
-        format(atom(PublicKey), '~w~|~`0t~16r~64+', [Prefix,X]).
+        phrase(format_("~w~|~`0t~16r~64+", [Prefix,X]), PublicKey).
 
 cmp0_prefix(=, '02').
 cmp0_prefix(<, '03').
@@ -104,7 +110,7 @@ cmp0_prefix(<, '03').
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 private_key_to_wif(PrivateKey0, WIF) :-
-        format(atom(PrivateKey), "80~|~`0t~16r~64+01", [PrivateKey0]),
+        phrase(format_("80~|~`0t~16r~64+01", [PrivateKey0]), PrivateKey),
         % Twice perform SHA-256 on the hex encoding of the private key.
         hex_algorithm_hash(PrivateKey, sha256, HashPrivateKey1),
         hex_algorithm_hash(HashPrivateKey1, sha256, HashPrivateKey2),
@@ -130,7 +136,7 @@ public_key_to_address(PublicKey, Address) :-
         hex_algorithm_hash(HashPublicKey, ripemd160, RIPEMD160),
         % 4. Add version byte in front of RIPEMD-160.
         %    0x00 denotes Main Network.
-        atom_concat('00', RIPEMD160, ExtendedRIPE),
+        append("00", RIPEMD160, ExtendedRIPE),
         % 5. Perform SHA-256 on the extended RIPEMD-160 result.
         hex_algorithm_hash(ExtendedRIPE, sha256, SHA256_1),
         % 6. Perform SHA-256 on the previous result.
@@ -152,8 +158,7 @@ public_key_to_address(PublicKey, Address) :-
 
 hex_algorithm_hash(Hex, Algorithm, Hash) :-
         hex_bytes(Hex, Bytes),
-        crypto_data_hash(Bytes, Hash, [algorithm(Algorithm),
-                                       encoding(octet)]).
+        crypto_data_hash(Bytes, Hash, [algorithm(Algorithm)]).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Base58Check format.
@@ -169,8 +174,7 @@ hex_to_base58check(Hex, Base58Check) :-
         phrase(base58check(Integer), Bs0),
         reverse(Bs0, Bs),
         hex_bytes(Hex, Bytes),
-        once(phrase(leading_zeroes(Bytes), Zs, Bs)),
-        atomic_list_concat(Zs, Base58Check).
+        once(phrase(leading_zeroes(Bytes), Base58Check, Bs)).
 
 leading_zeroes([0|Rest]) --> ['1'], leading_zeroes(Rest).
 leading_zeroes([D|_]) --> { D #\= 0 }.

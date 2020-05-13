@@ -74,12 +74,12 @@
 
     <br><br>
 
-    You need SWI-Prolog <b>7.5.10</b> or&nbsp;later to run it.
+    You need Scryer Prolog to run it.
 
     <br><br>
 
     Bitcoinolog
-    uses <a href="http://eu.swi-prolog.org/pldoc/man?section=crypto"><b><tt>library(crypto)</tt></b></a>
+    uses <a href="https://github.com/mthom/scryer-prolog/blob/master/src/prolog/lib/crypto.pl"><b><tt>library(crypto)</tt></b></a>
     to compute various hashes, and to reason about
     the <i>named</i>&nbsp;curve&nbsp;<a href="https://en.bitcoin.it/wiki/Secp256k1"><tt>secp256k1</tt></a>,
     which is used by Bitcoin.
@@ -120,7 +120,7 @@
 ?- new_private_key(PrivateKey),
    private_key_to_public_key(PrivateKey, PublicKey).
 <b>PrivateKey = 87443244391001342896527975361878627920717378785443876955045552084285386647786,
-PublicKey = '020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405'.</b>
+PublicKey = "020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405".</b>
         </pre>
 
         Note that in ECDSA, a private key is an <i>integer</i>, and
@@ -139,8 +139,8 @@ PublicKey = '020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405'
         corresponding <i>address</i>:
 
         <pre>
-?- public_key_to_address('020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405', Address).
-<b>Address = '1FVRX63gUDxkQ25C7ivMa27C9nT1DUafmD'.</b>
+?- public_key_to_address("020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405", Address).
+<b>Address = "1FVRX63gUDxkQ25C7ivMa27C9nT1DUafmD".</b>
         </pre>
       </li>
 
@@ -154,7 +154,7 @@ PublicKey = '020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405'
 
         <pre>
 ?- private_key_to_wif(87443244391001342896527975361878627920717378785443876955045552084285386647786, WIF).
-<b>WIF = 'L3hWTxRVjB9qzgdWQwcgWtSJZMzNnNvnWvajHstPuSPwzx2H4sbp'.</b>
+<b>WIF = "L3hWTxRVjB9qzgdWQwcgWtSJZMzNnNvnWvajHstPuSPwzx2H4sbp".</b>
         </pre>
       </li>
 
@@ -169,7 +169,7 @@ PublicKey = '020766fd4ffbbfa2086a96b335ba6eff24b58e4819936f8dc9d4002dabc9b11405'
     private_key_to_wif(PrivateKey, WIF),
     private_key_to_public_key(PrivateKey, PublicKey),
     public_key_to_address(PublicKey, Address),
-    portray_clause((address_key(A, K) :- A=Address, K=WIF)),
+    format:portray_clause((address_key(A, K) :- A=Address, K=WIF)),
     false.
     </pre>
 
@@ -177,17 +177,17 @@ It yields output like:
 
     <pre>
 <b>address_key(A, B) :-
-        A='1Fo9WojzYwhfjqQKQDWQyehxWyMJVhySBA',
-        B='Ky91qbBbHnrozFkJRFBA6KQG8hzctWPRKGWd3kRxX1ajVKEzmrSp'.
+        A="1Fo9WojzYwhfjqQKQDWQyehxWyMJVhySBA",
+        B="Ky91qbBbHnrozFkJRFBA6KQG8hzctWPRKGWd3kRxX1ajVKEzmrSp".
 address_key(A, B) :-
-        A='1HQXkmyUPnhXdzk1gacXzCLx3mV6843ncN',
-        B='L3yC2Bf2Ko3nLW61vkhqJia18QkTJb3KGxQJ6fWSNa4o7x71JNXU'.
+        A="1HQXkmyUPnhXdzk1gacXzCLx3mV6843ncN",
+        B="L3yC2Bf2Ko3nLW61vkhqJia18QkTJb3KGxQJ6fWSNa4o7x71JNXU".
 address_key(A, B) :-
-        A='1FMuyjrVi7DUDFrThZNcNkBG8bq1YNfqiG',
-        B='Kxmburb4FiNQHnaWf6e8mTDJUnCaUzuXaHM5TeeKiTjpT2bPCNBR'.
+        A="1FMuyjrVi7DUDFrThZNcNkBG8bq1YNfqiG",
+        B="Kxmburb4FiNQHnaWf6e8mTDJUnCaUzuXaHM5TeeKiTjpT2bPCNBR".
 address_key(A, B) :-
-        A='1FeQG4oBfWA3HCaiEKyeaGWQRLazwzmaUy',
-        B='L4EresJ9xiC7JzbXV3gU7SpUsenqq12ZxonYFYHr6c9GSt3RKyVA'.</b>
+        A="1FeQG4oBfWA3HCaiEKyeaGWQRLazwzmaUy",
+        B="L4EresJ9xiC7JzbXV3gU7SpUsenqq12ZxonYFYHr6c9GSt3RKyVA".</b>
 etc.
     </pre>
 
