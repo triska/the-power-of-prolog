@@ -193,8 +193,7 @@ base58check_(<, I0) --> [Char],
         base58check(I).
 
 base58check_to_integer(B58, Integer) :-
-        atom_chars(B58, Chars0),
-        reverse(Chars0, Chars),
+        reverse(B58, Chars),
         foldl(pow58, Chars, 0-0, Integer-_).
 
 pow58(Char, N0-I0, N-I) :-
