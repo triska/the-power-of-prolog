@@ -645,7 +645,7 @@ Second = [...],
     <pre>
 ?- crypto_n_random_bytes(32, <span class="secret">Ks</span>),
    crypto_n_random_bytes(12, IV),
-   crypto_data_encrypt(<span class="secret"><b>test</b></span>, 'chacha20-poly1305', <span class="secret">Ks</span>, IV, CipherText, [<b>tag(Ts)</b>]).
+   crypto_data_encrypt(<span class="secret"><b>"test"</b></span>, 'chacha20-poly1305', <span class="secret">Ks</span>, IV, CipherText, [<b>tag(Ts)</b>]).
     </pre>
 
     In response, we get the encrypted text, and a 128-bit <i>tag</i> which
