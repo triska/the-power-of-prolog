@@ -205,8 +205,8 @@
     Here is an example (click on the hash to expand it):
 
     <pre>
-?- crypto_data_hash("Hello world!", Hash, [algorithm(sha512)]).
-<b>   Hash = "<span class="hex">f6cde2a0f819314cdde55fc227d8d7dae3d28cc556222a0a8ad66d91ccad4aad6094f517a2182360c9aacf6a3dc323162cb6fd8cdffedb0fe038f55e85ffb5b6</span>".</b>
+?- crypto_data_hash("Hello world!", Hash, [algorithm(blake2s256)]).
+<b>   Hash = "<span class="hex">c63813a8f804abece06213a46acd04a2d738c8e7a58fbf94bfe066a9c7f89197</span>".</b>
     </pre>
 
     We can use <tt>hex_bytes/2</tt> to convert such hex-encoded values
@@ -214,8 +214,8 @@
     between 0&nbsp;and&nbsp;255. For example:
 
     <pre>
-?- hex_bytes("<span class="hex">f6cde2a0f819314cdde55fc227d8d7dae3d28cc556222a0a8ad66d91ccad4aad6094f517a2182360c9aacf6a3dc323162cb6fd8cdffedb0fe038f55e85ffb5b6</span>", Bytes).
-<b>   Bytes = [246,205,226,160,248,25,49,76,221,229|...]</b>.
+?- hex_bytes("<span class="hex">c63813a8f804abece06213a46acd04a2d738c8e7a58fbf94bfe066a9c7f89197</span>", Bytes).
+<b>   Bytes = [198,56,19,168,248,4,171,236,224,98|...]</b>.
     </pre>
 
     <i>Security of default algorithms</i> is an important design
@@ -937,9 +937,6 @@ var hex_consts = [
 
 ["c0535e4be2b79ffd93291305436bf889314e4a3faec05ecffcbb7df31ad9e51a",
  "c0535...e51a"],
-
-["f6cde2a0f819314cdde55fc227d8d7dae3d28cc556222a0a8ad66d91ccad4aad6094f517a2182360c9aacf6a3dc323162cb6fd8cdffedb0fe038f55e85ffb5b6",
- "f6cd...b5b6"],
 
 ["c63813a8f804abece06213a46acd04a2d738c8e7a58fbf94bfe066a9c7f89197",
  "c638...9197"],
