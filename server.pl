@@ -31,6 +31,7 @@
 :- use_module(library(dcgs)).
 :- use_module(library(iso_ext)).
 :- use_module(library(dif)).
+:- use_module(library(pio)).
 :- use_module(library(reif)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,11 +69,9 @@ request_response(Stream) :-
                 atom_chars(File, FileChars),
                 exists_file(File) ->
                 format("sending ~q~n", [File]),
-                file_to_bytes(File, Bytes),
-                phrase(http_header(Bytes), Hs0),
-                portray_clause(header(Hs0)),
-                chars_to_bytes(Hs0, Hs),
-                append(Hs, Bytes, Response)
+                phrase_from_file(list(FileContents), File, [type(binary)]),
+                phrase(http_header(FileContents), Response0, FileContents),
+                chars_to_bytes(Response0, Response)
             ;   append("https://www.metalevel.at/", Path, Redirect),
                 see_other_chars(Redirect, Rs),
                 portray_clause(rs(Rs)),
@@ -135,20 +134,11 @@ read_line(Stream, Chars) :-
             read_line(Stream, Rest)
         ).
 
-%?- file_to_bytes('server.pl', Bs).
-%@    Bs = [47,42,32,45,32,45,32,45,32,45|...].
+%?- phrase_from_file(list(Cs), 'server.pl', [type(binary)]).
+%@   Cs = "/* - - - - - - - -  ..."
 
-file_to_bytes(File, Bytes) :-
-        setup_call_cleanup(open(File, read, Stream, [type(binary)]),
-                           stream_to_bytes(Stream, Bytes),
-                           close(Stream)).
-
-stream_to_bytes(Stream, Bytes) :-
-        get_byte(Stream, Byte),
-        (   Byte == -1 -> Bytes = []
-        ;   Bytes = [Byte|Rest],
-            stream_to_bytes(Stream, Rest)
-        ).
+list([]) --> [].
+list([L|Ls]) --> [L], list(Ls).
 
 exists_file(File) :-
         catch(open(File, read, S, []), error(existence_error(_,_),_), Err = true),
