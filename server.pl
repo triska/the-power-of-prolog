@@ -145,12 +145,12 @@ path_segments(Path, Segments) :-
         ).
 
 path_file("prolog", "prolog/prolog.html").
-path_file(Path, Path).
 path_file(Path, HTML) :- append(Path, ".html", HTML).
 path_file(Path, File) :-
         path_segments(Path, Segments),
         append(_, [Last,[]], Segments),
         phrase(format_("~s~s.html", [Path,Last]), File).
+path_file(Path, Path).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- exists_file(none).
