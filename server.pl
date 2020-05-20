@@ -60,7 +60,7 @@ request_response(Stream) :-
         (   read_line(Stream, Chars) ->
             format("got line: ~w~n", [Chars]),
             append("GET /", Rest, Chars),
-            phrase(path(Path), Rest, _),
+            append(Path, [' '|_], Rest),
             format("request is for ~q~n", [Path]),
             (   dif(Path, ""),
                 path_file(Path, FileChars),
@@ -110,19 +110,6 @@ http_header(Bytes) -->
         { length(Bytes, L) },
         format_("~d", [L]),
         "\r\n\r\n".
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-?- append("GET /", Rest, "GET /test.html HTTP/1.1"),
-   phrase(path(File), Rest, _).
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-path([F|Fs]) --> [F],
-        (   { char_type(F, alnum) }
-        ;   { member(F, "./_") }
-        ),
-        !,
-        path(Fs).
-path([]) --> [].
 
 read_line(Stream, Chars) :-
         get_byte(Stream, Byte),
