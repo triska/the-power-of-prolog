@@ -114,7 +114,7 @@ http_header(Bytes) -->
 read_line(Stream, Chars) :-
         get_byte(Stream, Byte),
         Byte >= 0,
-        atom_codes(Char, [Byte]),
+        char_code(Char, Byte),
         (   member(Char, "\r\n") ->
             Chars = []
         ;   Chars = [Char|Rest],
