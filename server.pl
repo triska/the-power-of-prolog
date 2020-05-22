@@ -70,22 +70,16 @@ request_response(Stream) :-
                 exists_file(File) ->
                 format("sending ~q~n", [File]),
                 phrase_from_file(list(FileContents), File, [type(binary)]),
-                phrase(http_header(FileContents), Response0, FileContents),
-                chars_to_bytes(Response0, Response)
+                phrase(http_header(FileContents), Response, FileContents)
             ;   append("https://www.metalevel.at/", Path, Redirect),
-                see_other_chars(Redirect, Rs),
-                portray_clause(rs(Rs)),
-                chars_to_bytes(Rs, Response)
+                see_other_chars(Redirect, Response),
+                portray_clause(rs(Response))
             ),
-            catch(maplist(put_byte(Stream), Response),
+            catch(format(Stream, "~s", [Response]),
                   Err,
                   portray_clause(caught(Err)))
         ;   true
         ).
-
-chars_to_bytes(Chars, Bytes) :-
-        atom_chars(A, Chars),
-        atom_codes(A, Bytes).
 
 see_other_chars(Link, Chars) :-
         phrase(see_other_page(Link), Ps),
