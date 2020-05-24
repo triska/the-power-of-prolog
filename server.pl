@@ -132,7 +132,7 @@ exists_file(File) :-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 path_segments(Path, Segments) :-
-        (   append(Front, ['/'|Ps], Path) ->
+        (   append(Front, [/|Ps], Path) ->
             Segments = [Front|Rest],
             path_segments(Ps, Rest)
         ;   Segments = [Path]
