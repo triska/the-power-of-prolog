@@ -1,4 +1,4 @@
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
 
 list_length([], 0).
 list_length([_|Ls], N) :-
@@ -9,17 +9,18 @@ list_length([_|Ls], N) :-
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- list_length([a,b,c], L).
-L = 3.
+   L = 3
+;  false.
 
 ?- list_length(Ls, 3).
-Ls = [_G1007, _G1087, _G1167] ;
-false.
+   Ls = [_A,_B,_C]
+;  false.
 
 ?- list_length(Ls, L).
-Ls = [],
-L = 0 ;
-Ls = [_G21],
-L = 1 ;
-Ls = [_G21, _G70],
-L = 2 .
+   Ls = [], L = 0
+;  Ls = [_A], L = 1
+;  Ls = [_A,_B], L = 2
+;  Ls = [_A,_B,_C], L = 3
+;  Ls = [_A,_B,_C,_D], L = 4
+;  ...
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
