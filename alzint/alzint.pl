@@ -37,7 +37,7 @@
 :- use_module(library(lists)).
 :- use_module(library(format)).
 :- use_module(library(dcgs)).
-:- use_module(library(charsio)). % for get_single_char/1
+:- use_module(library(charsio), [get_single_char/1,char_type/2]).
 :- use_module(library(dif)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
