@@ -85,67 +85,80 @@
 
     <center><h2>Data representation: characters, codes, bytes etc.</h2></center>
 
-    Before we start with the actual cryptographic functionality, we
-    consider a few different ways to represent <i>data</i>
-    in&nbsp;Prolog, and especially <i>binary</i>&nbsp;data.
+    In Prolog, <i>lists of characters</i> are the preferred
+    representation of text and also of binary data. The reason is that
+    lists of characters can be represented very efficiently, and are
+    amenable to reasoning with DCGs and built-in predicates for lists.
+    Also, processing lists of characters leaves little trace in a
+    system's <i>atom&nbsp;table</i>. These properties make lists of
+    characters an ideal representation in cryptographic applications.
 
     <br><br>
 
-    In Prolog, all data is represented by
-    Prolog&nbsp;<a href="data#term">terms</a>. In Scryer Prolog, the
-    cryptographic predicates let you encrypt, decrypt and hash
-    the following <i>types</i> of terms:
+    A character is an <i>atom</i> of length 1. A list of characters is
+    also called a <i>string</i>. Each character has a
+    corresponding <i>code</i>, which is an integer. The standard
+    predicate <tt>char_code/2</tt> relates a character to its code.
 
-    <ul>
-      <li>lists of <i>characters</i>. A character is
-        an <i>atom</i> of length&nbsp;1. A list of characters is also
-        called a <i>string</i>.</li>
-      <li>lists of <i>bytes</i>, also called <i>octets</i>, which are
-      integers between 0 and&nbsp;255.</li>
-    </ul>
+    <br><br>
 
-    As long as you use lists of characters throughout in your
-    applications, you need not worry much about how these terms are
-    internally represented in Prolog. However, if you are using lists
-    of <i>integers</i> in this context, you should consider what you
-    want to denote. Specifically, a list of integers may denote a list
-    of character <i>codes</i>, such as Unicode code&nbsp;points:
+    In the following, we assume that the Prolog
+    flag <tt>double_quotes</tt> is set to <tt>chars</tt>, which is the
+    default and recommended setting in Scryer Prolog. It lets us write
+    a string very compactly if we enclose it in double&nbsp;quotes.
+    For example, the string <tt>[a,b,c]</tt> can be written more
+    compactly as&nbsp;<tt>"abc"</tt>.
 
-    <pre>
-?- atom_codes(<b>'κρυπτός'</b>, Cs).
-   Cs = [954,961,965,960,964,972,962].
-    </pre>
+    <br><br>
+
+    Hexadecimal escape sequences can be used in strings to embed any
+    character by its code. For example, the
+    string <tt>"\x0\\x12\\x2124\"</tt> is the same term as the
+    list <tt>['\x0\','\x12\','\x2124\']</tt>, namely a list with three
+    characters with respective codes 0, 18 and&nbsp;8484.
+
+    <br><br>
 
     Cryptographic methods typically work on&nbsp;<i>bytes</i>, and
     code points that are greater than&nbsp;255 do not fit into a
-    single&nbsp;byte. Therefore, if all you have is such a list
-    of <i>integers</i>, you may need to convert them to a suitable
-    encoding (such as UTF-8) so that they are amenable to processing
-    with the cryptographic routines. If you want the integers to be
-    interpreted as <i>bytes</i>, you can specify this via the
-    option&nbsp;<tt>encoding(<b>octet</b>)</tt>. Of course, this only
-    works if all occurring integers are in the range&nbsp;0..255.
+    single&nbsp;byte. Therefore, many predicates
+    in <tt>library(crypto)</tt> provide two different ways to reason
+    about strings, specified via the <tt>encoding/1</tt> option:
+
+    <ul>
+      <li><tt>encoding(<b>utf8</b>)</tt> uses the UTF-8 encoding of
+        the string as the sequence of bytes. This is the default.
+      </li>
+
+      <li><tt>encoding(<b>octet</b>)</tt> works on the sequence of
+        bytes that is specified by the <i>code</i> of each character in
+        the list. Of course, this only works if all occurring characters
+        have codes in the range&nbsp;0..255.
+      </li>
+    </ul>
+
+    If the <tt>encoding(octet)</tt> option is used, then you may (as
+    an alternative to a list of characters) also specify a list
+    of <i>bytes</i> as the input, i.e., integers in the
+    range&nbsp;0..255.
 
     <br><br>
 
-
-    There are conversion predicates that let you transform every such
-    term into any other type. Of particular interest in this context
-    is the predicate <tt>chars_utf8bytes/2</tt>
-    in <tt>library(charsio)</tt>. It allows us to obtain the UTF-8
-    encoding of a list of characters:
+    There are conversion predicates that let us transform every Prolog
+    term into a list of characters or bytes that can be processed
+    with <tt>library(crypto)</tt>. For example, the standard
+    predicate <tt>atom_chars/2</tt> relates an atom to a list of
+    characters, and the predicate <tt>chars_utf8bytes/2</tt>
+    from <tt>library(charsio)</tt> relates a list of characters to its
+    UTF-8 encoding, specified as a list of bytes:
 
     <pre>
+?- atom_chars(<b>'κρυπτός'</b>, Cs).
+<b>   Cs = "κρυπτός".</b>
+
 ?- chars_utf8bytes("κρυπτός", UTF8).
 <b>   UTF8 = [206,186,207,129,207,133,207,128,207,132|...]</b>.
     </pre>
-
-    Thus, if you need total control over the representation, you can
-    always convert your data to <i>bytes</i>, and use
-    the <tt>encoding(octet)</tt> option of several cryptographic
-    predicates.
-
-    <br><br>
 
     In cryptographic applications, short lists of <i>bytes</i> also
     often need to be communicated to other programs and participants,
