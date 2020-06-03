@@ -21,8 +21,8 @@ This book is *self-hosting*: It includes an HTTP&nbsp;server that lets
 you browse most of the content locally. When you access files that are
 *not* locally available, it redirects to their online&nbsp;versions.
 
-To run it, you need [Scryer&nbsp;Prolog](https://github.com/mthom/scryer-prolog).
-To spawn the server on port&nbsp;6012, use for example:
+You need [Scryer&nbsp;Prolog](https://github.com/mthom/scryer-prolog)
+to run it. For example, to spawn the server on port&nbsp;6012, use:
 
     $ scryer-prolog -g "server(6012)" server.pl
 
