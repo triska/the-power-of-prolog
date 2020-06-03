@@ -104,6 +104,9 @@ this&nbsp;book in their&nbsp;courses! For example:
   [Artificial
   Intelligence&nbsp;II](http://csitrd.kutztown.edu/~schwesin/spring19/csc548/index.html)
   at Kutztown&nbsp;University in the United States of America
+- As of 2020, Andrea Schwertner Charão is using *The Power of Prolog* in
+  [Paradigmas de Programação](https://github.com/AndreaInfUFSM/elc117-2020a/)
+  at the Federal University of Santa Maria in Brazil.
 - I hope you are next!
 
 <pre>
