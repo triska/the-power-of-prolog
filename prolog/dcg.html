@@ -28,14 +28,19 @@
 Head --&gt; Body.
     </pre>
 
-    A rule's <i>body</i> consists of terminals and nonterminals.
-    A <b>terminal</b> is a list, which stands for the elements
-    it&nbsp;contains. A <b>nonterminal</b> refers to a DCG or other
-    grammar construct, which stand for the elements they themselves
-    describe.
+    A rule's <i>body</i> consists of terminal&nbsp;sequences,
+    nonterminals, and grammar&nbsp;goals.
+    A <b>terminal&nbsp;sequence</b> is a list, and stands for the
+    elements it&nbsp;contains. These elements are
+    <i>terminal&nbsp;symbols</i> of the grammar. A <b>nonterminal</b>
+    refers to a DCG or other grammar construct, and stands for the
+    elements it describes. A nonterminal therefore stands for a
+    sequence of terminal&nbsp;symbols. A <b>grammar&nbsp;goal</b> is
+    written in curly&nbsp;brackets as <tt>{&nbsp;Goal&nbsp;}</tt> and
+    is used to invoke Prolog&nbsp;goals within a grammar.
     
-    We use the <i>nonterminal indicator</i>&nbsp;<tt>f//N</tt> to
-    refer to the nonterminal&nbsp;<tt>f</tt> with
+    We use the <i>nonterminal indicator</i>&nbsp;<tt>A//N</tt> to
+    refer to the nonterminal&nbsp;<tt>A</tt> with
     arity&nbsp;<tt>N</tt>. Note that&nbsp;<tt>//</tt> distinguishes it
     from a
     Prolog <a href="concepts#predicate"><i>predicate&nbsp;indicator</i></a>.
@@ -121,7 +126,7 @@ tree_nodes(node(Name, Left, Right)) --&gt;
     </pre>
 
     You can obtain other orders by moving the
-    terminal&nbsp;<tt>[Name]</tt> in the DCG body.
+    terminal&nbsp;sequence&nbsp;<tt>[Name]</tt> in the DCG body.
 
     <br><br>
     <center><h2 id="leftrecursion">Left recursion</h2></center>
@@ -541,7 +546,9 @@ badlist(Ls) --&gt; Ls.
     </div>
 
     We recommend using this directive for better readability of
-    answers in the following examples and also in other cases.
+    answers in the following examples and also in other cases. In
+    Scryer&nbsp;Prolog and Tau&nbsp;Prolog, this is already the
+    default setting.
 
     <br><br>
 
@@ -552,8 +559,8 @@ badlist(Ls) --&gt; Ls.
 
     <pre>
 ?- phrase_from_file(list(Chars), 'dcg.html').
-<b>Chars = [&lt;, h, t, m, l, &gt;, '\n', ' ', ' '|...] ;
-false.</b>
+<b>   Chars = "&lt;!DOCTYPE html&gt;\n&lt;ht ..."</b>
+;  false.
     </pre>
 
     As another example, consider the following DCG that
@@ -567,8 +574,8 @@ like(What) --&gt; "I like ", list(What), ".", list(_).
 
     <pre>
 ?- phrase(like(What), "I like it. Anything can follow!").
-<b>What = [i, t] ;
-false.</b>
+<b>   What = "it"</b>
+;  false.
     </pre>
 
     As expected, <tt>What</tt> is unified with the atoms&nbsp;<tt>i</tt>
@@ -583,8 +590,8 @@ false.</b>
 
     <pre>
 ?- phrase_from_file(like(What), 'like.txt').
-<b>What = [i, t] ;
-false.</b>
+<b>   What = "it"</b>
+;  false.
     </pre>
 
     Again, <tt>What</tt> is unified with the atoms&nbsp;<tt>i</tt>
@@ -656,8 +663,8 @@ symbol_r([])     --&gt; [].
 
     <pre>
 ?- phrase(("I like ",list(What),".",...), "I like it. Anything can follow!").
-<b>What = [i, t] ;
-false.</b>
+<b>   What = "it"</b>
+;  false.
     </pre>
 
     As another technique that is sometimes useful for parsing, here
@@ -689,7 +696,7 @@ eos([], []).</pre>
 
     <pre>
 ?- phrase_from_file(lines(Ls), 'like.txt').
-<b>Ls = [['I', ' ', l, i, k, e, ' ', i|...]].</b>
+<b>   Ls = ["I like it. Anythi ..."].</b>
     </pre>
 
     <b>Note</b>: <tt>eos/2</tt> is comparatively rarely needed. In the
@@ -714,7 +721,7 @@ eos([], []).</pre>
 
     <br><br>
 
-    For example, we can describe a <i>table</i> with a <tt>format_//2</tt>:
+    For example, we can describe a <i>table</i> with <tt>format_//2</tt>:
 
     <pre>
 table --&gt;
@@ -728,7 +735,7 @@ row(Ls) --&gt; format_("~t~w~7+~t~w~7+~t~w~7+~n", Ls).
 
     <pre>
 ?- phrase(table, Ts).
-<b>Ts = [' ', ' ', ' ', t, h, i, s, ' ', ' '|...].</b>
+<b>   Ts = "   this     is      ..."</b>
     </pre>
 
     An important advantage of this declarative way to describe output
@@ -747,7 +754,7 @@ row(Ls) --&gt; format_("~t~w~7+~t~w~7+~t~w~7+~n", Ls).
 ?- phrase(table, Ts), format("~s", [Ts]).
 <b>   this     is      a
    very   nice  table</b>
-Ts = [' ', ' ', ' ', t, h, i, s, ' ', ' '|...].
+   Ts = "   this     is      ..."
     </pre>
 
     <center><h2 id="implementation">Implementation</h2></center>
