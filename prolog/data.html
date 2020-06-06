@@ -277,10 +277,14 @@
       trees.
     </blockquote>
 
-    In Prolog, a convenient representation of strings is available as
-    lists of <i>characters</i>, which are one-character <i>atoms</i>. This
-    representation is available if you add the following directive to
-    your program:
+    In Prolog, a convenient and natural representation of strings is
+    to use lists of <i>characters</i>, which are
+    one-character <i>atoms</i>. If you set the Prolog
+    flag <tt>double_quotes</tt> to&nbsp;<tt>chars</tt>, then
+    double-quoted strings are automatically interpreted as lists of
+    characters. To enable this setting, add the following directive at
+    the start of your Prolog programs, or to your Prolog system's
+    configuration&nbsp;file:
     <br><br>
     <pre class="box">
 <b>:- set_prolog_flag(double_quotes, chars).</b></pre>
@@ -289,8 +293,8 @@
     With this setting, we obtain for example:
 
     <pre>
-?- Cs = "test".
-<b>Cs = [t,e,s,t]</b>.
+<b>?- "abc" = [a,b,c].</b>
+   true.
     </pre>
 
     Thus, working with strings is reduced to working
