@@ -16,30 +16,39 @@
     <table>
       <tr>
         <td>
-          <i>ediprolog</i> lets you interact with SWI-Prolog in all
+          <i>ediprolog</i> lets you interact with Prolog in all
           Emacs&nbsp;buffers. You can consult Prolog programs and evaluate
           embedded queries.
 
           <br><br>
 
-          The latest version of <i>ediprolog</i> is 1.2.
+          The latest version of <i>ediprolog</i> is 2.1.
 
-          <br>
-          <blockquote>
-            <b>New</b>:
-            <ul>
-              <li>Atomic undo of the whole interaction (available in Emacs&nbsp;&ge;&nbsp;26.1)</li>
-            </ul>
-          </blockquote>
-          <br>
-
-          <br>
+          <br><br>
 
           Download: <a href="ediprolog.el"><b><tt>ediprolog.el</tt></b></a>
 
           <br><br>
 
-          <b>Video</b>: <a href="/prolog/videos/ediprolog" class="video">ediprolog</a>
+          <blockquote>
+            <b>New</b>:
+            <ul>
+              <li>Scryer Prolog is now the default Prolog system. </li>
+              <li>ediprolog now supports two Prolog systems by setting
+                the new variable <tt>ediprolog-system</tt> to
+                either <tt>scryer</tt> or <tt>swi</tt>.</li>
+              <li>Remote Prolog processes are now supported. This requires Emacs 26.1 or greater.</li>
+              <li><tt>ediprolog-prefix</tt> can now be buffer-local.</li>
+            </ul>
+          </blockquote>
+          <br><br>
+          <table>
+            <tr>
+              <td><i>Video</i>:</td>
+              <td><a href="/prolog/videos/ediprolog"><img src="/prolog/videos/t_ediprolog.png" alt="Ediprolog video"></a>
+              </td>
+            </tr>
+          </table>
 
           <!-- A version for YAP Prolog is <a href="yap/ediprolog.el">here</a>. -->
 	  <br><br>
@@ -84,6 +93,14 @@ M-x package-install RET ediprolog RET
     <pre>
 M-x customize-group RET ediprolog RET
     </pre>
+
+
+    The two most important configuration options are:
+
+    <ul>
+      <li><tt>ediprolog-system</tt>, either scryer (default) or swi</li>
+      <li><tt>ediprolog-program</tt>, the path of the Prolog executable.</li>
+    </ul>
 
     <br><br>
 

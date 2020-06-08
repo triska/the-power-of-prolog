@@ -1,6 +1,6 @@
 ;;; ediprolog.el --- Emacs Does Interactive Prolog
 
-;; Copyright (C) 2006, 2007, 2008, 2009, 2012, 2013, 2016, 2017  Markus Triska
+;; Copyright (C) 2006-2020  Markus Triska
 
 ;; Author: Markus Triska <triska@metalevel.at>
 ;; Keywords: languages, processes
@@ -21,7 +21,7 @@
 
 ;;; Commentary:
 
-;; These definitions let you interact with SWI-Prolog in all buffers.
+;; These definitions let you interact with Prolog in all buffers.
 ;; You can consult Prolog programs and evaluate embedded queries.
 
 ;; Installation
@@ -36,6 +36,10 @@
 ;;
 ;;     M-x customize-group RET ediprolog RET
 ;;
+;; The two most important configuration options are:
+;;
+;;    - `ediprolog-system', either 'scryer or 'swi
+;;    - `ediprolog-program', the path of the Prolog executable.
 
 ;; Usage
 ;; =====
@@ -53,10 +57,10 @@
 ;; If you press F10 when point is on that query, you get:
 ;;
 ;;   %?- member(X, [a,b,c]).
-;;   %@ X = a ;
-;;   %@ X = b ;
-;;   %@ X = c ;
-;;   %@ false.
+;;   %@    X = a
+;;   %@ ;  X = b
+;;   %@ ;  X = c
+;;   %@ ;  false.
 ;;
 ;; When waiting for output of the Prolog process, you can press C-g to
 ;; unblock Emacs and continue with other work. To resume interaction
@@ -83,19 +87,30 @@
 ;;   C-u F10       first consult buffer, then evaluate query (if any)
 ;;   C-u C-u F10   like C-u F10, with a new process
 
-;; Tested with SWI-Prolog 7.3.21 + Emacs 22.1, 23.4, 24.5, 25.1 and 26.0
+;; Tested with Scryer Prolog 0.8.119 and SWI-Prolog 8.1.24,
+;; using Emacs versions 26.1 and 27.0.50.
 
 ;;; Code:
 
-(defconst ediprolog-version "1.2")
+(defconst ediprolog-version "2.1")
 
 (defgroup ediprolog nil
-  "Transparent interaction with SWI-Prolog."
+  "Transparent interaction with Prolog."
   :group 'languages
   :group 'processes)
 
+
+(defcustom ediprolog-system 'scryer
+  "Prolog system that is used for interaction."
+  :group 'ediprolog
+  :type '(choice (const :tag "Scryer Prolog" :value scryer)
+                 (const :tag "SWI Prolog" :value swi)))
+
 (defcustom ediprolog-program
-  (or (executable-find "swipl") (executable-find "pl") "swipl")
+  (or
+   (executable-find "scryer-prolog")
+   (executable-find "swipl")
+   "scryer-prolog")
   "Program name of the Prolog executable."
   :group 'ediprolog
   :type 'string)
@@ -135,10 +150,6 @@ nil to never truncate the history."
 (defvar ediprolog-temp-file             nil
   "File name of a temporary file used for consulting the buffer.")
 
-(defvar ediprolog-prompt "?ediprolog- "
-  "Prompt used in the Prolog session. It must differ from the
-default Prolog prompt.")
-
 (defvar ediprolog-consult-buffer "*ediprolog-consult*"
   "Buffer used to display consult output.")
 
@@ -150,6 +161,11 @@ default Prolog prompt.")
 
 (defvar ediprolog-interrupted           nil
   "True iff waiting for the previous query was interrupted with C-g.")
+
+(defun ediprolog-prompt ()
+  "Prompt used in the Prolog session."
+  (cond ((eq ediprolog-system 'swi) "?ediprolog- ")
+         (t "?- ")))
 
 (defmacro ediprolog-wait-for-prompt-after (&rest forms)
   "Evaluate FORMS and wait for prompt."
@@ -224,13 +240,14 @@ default Prolog prompt.")
     (condition-case nil
         (ediprolog-wait-for-prompt-after
          (setq ediprolog-process
-               (apply #'start-process "ediprolog" (current-buffer) args))
+               (apply #'start-file-process "ediprolog" (current-buffer) args))
          (set-process-sentinel ediprolog-process 'ediprolog-sentinel)
          (set-process-filter ediprolog-process
                              'ediprolog-wait-for-prompt-filter)
-         (ediprolog-send-string
-          (format "set_prolog_flag(color_term, false),\
-                  '$set_prompt'('%s').\n" ediprolog-prompt)))
+         (when (eq ediprolog-system 'swi)
+           (ediprolog-send-string
+            (format "set_prolog_flag(color_term, false), \
+set_prolog_flag(toplevel_prompt, '%s').\n" (ediprolog-prompt)))))
       ((error quit)
        (ediprolog-log "No prompt found." "red" t)
        (error "No prompt from: %s" ediprolog-program)))))
@@ -247,7 +264,7 @@ default Prolog prompt.")
       (erase-buffer)
       (insert str)
       (goto-char (point-min))
-      ;; remove normal consult status lines, which start with "%" 
+      ;; remove normal consult status lines, which start with "%"
       (while (re-search-forward "^[\t ]*%.*\n" nil t)
         (delete-region (match-beginning 0) (match-end 0))))
     (setq str (buffer-string)))
@@ -271,7 +288,7 @@ default Prolog prompt.")
     (with-current-buffer (process-buffer proc)
       (ediprolog-log str))
     (when (re-search-backward
-           (format "^%s" (regexp-quote ediprolog-prompt)) nil t)
+           (format "^%s" (regexp-quote (ediprolog-prompt))) nil t)
       (with-current-buffer (process-buffer proc)
         (setq ediprolog-seen-prompt t)))
     (skip-chars-backward "\n")
@@ -286,7 +303,7 @@ default Prolog prompt.")
     (with-current-buffer (process-buffer proc)
       (ediprolog-log str))
     (when (re-search-backward
-           (format "^%s" (regexp-quote ediprolog-prompt)) nil t)
+           (format "^%s" (regexp-quote (ediprolog-prompt))) nil t)
       (with-current-buffer (process-buffer proc)
         (setq ediprolog-seen-prompt t)))))
 
@@ -337,7 +354,7 @@ arguments, equivalent to `ediprolog-remove-interactions'."
   (when (and (not (and transient-mark-mode mark-active))
              (save-excursion
                (beginning-of-line)
-               (looking-at "\\([\t ]*\\)%*[\t ]*[:?]-")))
+               (looking-at "\\([\t ]*\\)%*[\t ]*[:?]- *")))
     ;; whitespace preceding the query is the indentation level
     (setq ediprolog-indent-prefix (match-string 1))
     (let* ((from (goto-char (match-end 0)))
@@ -469,8 +486,11 @@ operates on the region."
     (ediprolog-run-prolog))
   (ediprolog-process-ready)
   (set-process-buffer ediprolog-process (current-buffer))
-  (unless ediprolog-temp-file
-    (setq ediprolog-temp-file (make-temp-file "ediprolog")))
+  (when (or (null ediprolog-temp-file)
+            (and buffer-file-name
+                 (not (equal (file-remote-p ediprolog-temp-file)
+                             (file-remote-p buffer-file-name)))))
+    (setq ediprolog-temp-file (make-nearby-temp-file "ediprolog")))
   (let ((start (if (and transient-mark-mode mark-active)
                    (region-beginning) (point-min)))
         (end (if (and transient-mark-mode mark-active)
@@ -479,7 +499,10 @@ operates on the region."
   (set-process-filter ediprolog-process 'ediprolog-consult-filter)
   (ediprolog-remember-interruption
    (ediprolog-wait-for-prompt-after
-    (ediprolog-send-string (format "['%s'].\n" ediprolog-temp-file))))
+    (ediprolog-send-string (format "['%s'].\n"
+                                   (if (fboundp 'file-local-name)
+                                       (file-local-name ediprolog-temp-file)
+                                     ediprolog-temp-file)))))
   (message "%s consulted." (if (and transient-mark-mode mark-active)
                                "Region" "Buffer"))
   ;; go to line of the first error, if any
@@ -489,10 +512,13 @@ operates on the region."
                         (re-search-forward "^ERROR.*?:\\([0-9]+\\)" nil t))
                   (string-to-number (match-string 1))))))
     (when line
-      (if (and transient-mark-mode mark-active)
-          (when (fboundp 'line-number-at-pos)
-            (goto-line (+ (line-number-at-pos (region-beginning)) line -1)))
-        (goto-line line)))))
+      (let ((p (point)))
+        (goto-char (if (and transient-mark-mode mark-active)
+                       (region-beginning)
+                     (point-min)))
+        ;; doing this first would affect (region-beginning)
+        (push-mark p))
+      (forward-line (1- line)))))
 
 (defun ediprolog-running ()
   "True iff `ediprolog-process' is a running process."
@@ -524,7 +550,7 @@ operates on the region."
         ;; check for prompt
         (goto-char (point-max))
         (when (re-search-backward
-               (format "^%s" (regexp-quote ediprolog-prompt)) nil t)
+               (format "^%s" (regexp-quote (ediprolog-prompt))) nil t)
           (with-current-buffer (process-buffer proc)
             (setq ediprolog-seen-prompt t))
           ;; ignore further output due to accidental user input (C-j,
@@ -536,8 +562,8 @@ operates on the region."
           (goto-char (point-max))
           ;; delay final line if it can still be completed to prompt
           (let ((l (buffer-substring (line-beginning-position) (point))))
-            (when (and (<= (length l) (length ediprolog-prompt))
-                       (string= l (substring ediprolog-prompt 0 (length l))))
+            (when (and (<= (length l) (length (ediprolog-prompt)))
+                       (string= l (substring (ediprolog-prompt) 0 (length l))))
               (goto-char (line-beginning-position))))
           ;; delay emitting newlines until we are sure no prompt
           ;; follows; one or two newlines can precede a prompt
@@ -554,8 +580,11 @@ operates on the region."
             (goto-char (point-min))
             (while (search-forward "\n" nil t)
               (replace-match
-               (format "\n%s%s" (with-current-buffer (process-buffer proc)
-                                  ediprolog-indent-prefix) ediprolog-prefix)))
+               (format "\n%s%s"
+                       (buffer-local-value 'ediprolog-indent-prefix
+                                           (process-buffer proc))
+                       (buffer-local-value 'ediprolog-prefix
+                                           (process-buffer proc)))))
             (setq str (buffer-string)))
           (with-current-buffer (process-buffer proc)
             (let ((near (<= (abs (- (point) (process-mark proc))) 1)))
@@ -586,6 +615,7 @@ operates on the region."
 (defun ediprolog-map-variables (func)
   "Call FUNC with all ediprolog variables that can become buffer-local."
   (mapc func '(ediprolog-process
+               ediprolog-system
                ediprolog-program
                ediprolog-program-switches
                ediprolog-temp-buffer
@@ -594,6 +624,7 @@ operates on the region."
                ediprolog-interrupted
                ediprolog-read-term
                ediprolog-indent-prefix
+               ediprolog-prefix
                ediprolog-temp-file)))
 
 ;;;###autoload
