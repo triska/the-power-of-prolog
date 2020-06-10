@@ -1,0 +1,77 @@
+<html>
+  <head>
+    <title>Connect Four in Prolog</title>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/prolog/prolog.css">
+    <meta name="keywords" content="Prolog,Connect Four,Four in a Row">
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+
+    <center>
+       <h1>Connect Four in Prolog</h1>
+    </center>
+
+    <br><br>
+    <b>Prolog</b> implementation of a connection game known
+    as <b>Connect&nbsp;Four</b> and also <i>Four in a&nbsp;Row</i>.
+
+    <br><br> The program uses the <b>minimax&nbsp;algorithm</b>
+    with <i>&alpha;-&beta; pruning</i> for its AI&nbsp;player.
+
+    <br><br>
+
+    Source code: <a href="conn4.pl"><b><tt>conn4.pl</tt></b></a>
+    <br><br>
+
+    Try it for example with Scryer Prolog:
+
+    <pre>
+$ scryer-prolog conn4.pl
+
+?- play.
+    </pre>
+
+    Example outputs:
+    <a href="conn4_1.txt">conn4_1.txt</a>,
+    <a href="conn4_2.txt">conn4_2.txt</a>
+
+    <br><br>
+
+    Ties between equally good moves are broken randomly, thus games
+    typically differ from run to run.
+
+    <br><br>
+
+    If you have a PostScript viewer (like "gs") installed, you can
+    also use a graphical and interactive version, with:
+
+    <pre>
+$ scryer-prolog -g show conn4.pl | gs -dNOPROMPT -g600x600 -r120 -q
+    </pre>
+
+    At any turn, you can either press SPACE to let the computer choose
+    a move, or press one of the numbers 1, 2, ..., 7 to drop a piece
+    in that column.
+
+    <br><br>
+
+    Sample states of a game:
+
+    <br><br>
+
+    <center>
+      <img src="game.png" alt="Game">
+    </center>
+
+    <br><br><br>
+
+    More about Prolog: <a href="/prolog"><b>The Power of Prolog</b></a>
+
+    <br><br>
+
+    <a href="/"><b>Main page</b></a>
+
+    <br><br>
+  </body>
+</html>

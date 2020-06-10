@@ -1,0 +1,292 @@
+?- play.
+
+
+x plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . x
+
+
+o plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . o . . . x
+
+
+x plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        x . o . . . x
+
+
+o plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        o . . . . . .
+        x . o . . . x
+
+
+x plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        o . . . . . .
+        x x o . . . x
+
+
+o plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        o . . . . . .
+        x x o o . . x
+
+
+x plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        o . x . . . .
+        x x o o . . x
+
+
+o plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        . . o . . . .
+        o . x . . . .
+        x x o o . . x
+
+
+x plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        x . o . . . .
+        o . x . . . .
+        x x o o . . x
+
+
+o plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        x . o . . . .
+        o . x . . . .
+        x x o o . o x
+
+
+x plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . . . . . .
+        x . o . . . .
+        o . x . . . .
+        x x o o x o x
+
+
+o plays:
+
+        . . . . . . .
+        . . . . . . .
+        . . o . . . .
+        x . o . . . .
+        o . x . . . .
+        x x o o x o x
+
+
+x plays:
+
+        . . . . . . .
+        . . x . . . .
+        . . o . . . .
+        x . o . . . .
+        o . x . . . .
+        x x o o x o x
+
+
+o plays:
+
+        . . . . . . .
+        . . x . . . .
+        . . o . . . .
+        x . o . . . .
+        o . x . . o .
+        x x o o x o x
+
+
+x plays:
+
+        . . . . . . .
+        . . x . . . .
+        x . o . . . .
+        x . o . . . .
+        o . x . . o .
+        x x o o x o x
+
+
+o plays:
+
+        . . . . . . .
+        . . x . . . .
+        x . o . . . .
+        x . o . . . .
+        o . x . o o .
+        x x o o x o x
+
+
+x plays:
+
+        . . . . . . .
+        x . x . . . .
+        x . o . . . .
+        x . o . . . .
+        o . x . o o .
+        x x o o x o x
+
+
+o plays:
+
+        o . . . . . .
+        x . x . . . .
+        x . o . . . .
+        x . o . . . .
+        o . x . o o .
+        x x o o x o x
+
+
+x plays:
+
+        o . . . . . .
+        x . x . . . .
+        x . o . . . .
+        x . o . . . .
+        o . x . o o x
+        x x o o x o x
+
+
+o plays:
+
+        o . . . . . .
+        x . x . . . .
+        x . o . . . .
+        x . o . . . .
+        o o x . o o x
+        x x o o x o x
+
+
+x plays:
+
+        o . x . . . .
+        x . x . . . .
+        x . o . . . .
+        x . o . . . .
+        o o x . o o x
+        x x o o x o x
+
+
+o plays:
+
+        o . x . . . .
+        x . x . . . .
+        x . o . . . .
+        x . o . . . .
+        o o x o o o x
+        x x o o x o x
+
+
+x plays:
+
+        o . x . . . .
+        x . x . . . .
+        x . o . . . .
+        x . o x . . .
+        o o x o o o x
+        x x o o x o x
+
+
+o plays:
+
+        o . x . . . .
+        x . x . . . .
+        x . o . . . .
+        x o o x . . .
+        o o x o o o x
+        x x o o x o x
+
+
+x plays:
+
+        o . x . . . .
+        x . x . . . .
+        x . o . . . .
+        x o o x x . .
+        o o x o o o x
+        x x o o x o x
+
+
+o plays:
+
+        o . x . . . .
+        x . x . . . .
+        x . o . o . .
+        x o o x x . .
+        o o x o o o x
+        x x o o x o x
+
+
+x plays:
+
+        o . x . . . .
+        x . x . . . .
+        x . o . o . .
+        x o o x x . x
+        o o x o o o x
+        x x o o x o x
+
+
+o plays:
+
+        o . x . . . .
+        x . x . . . .
+        x . o o o . .
+        x o o x x . x
+        o o x o o o x
+        x x o o x o x
+
+
+x plays:
+
+        o . x . . . .
+        x . x . . . .
+        x . o o o . x
+        x o o x x . x
+        o o x o o o x
+        x x o o x o x
+x wins
