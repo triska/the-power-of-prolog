@@ -625,7 +625,7 @@ like(What) --&gt; "I like ", list(What), ".", list(_).
     example, the following DCG describes a list of whitespace
     characters in such a way that the longest such sequence is the
     first solution, using <tt>char_type/2</tt>
-    from <a href="https://github.com/mthom/scryer-prolog/blob/master/src/prolog/lib/charsio.pl"><tt>library(charsio)</tt></a> for character classification:
+    from <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/charsio.pl"><tt>library(charsio)</tt></a> for character classification:
 
     <pre>
 ws --&gt; [W], { char_type(W, whitespace) }, ws.
@@ -714,7 +714,7 @@ eos([], []).</pre>
 
     DCGs are also useful for describing <i>output</i>, because output
     is a list of characters.
-    In <a href="https://github.com/mthom/scryer-prolog/blob/master/src/prolog/lib/format.pl"><tt>library(format)</tt></a>,
+    In <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/format.pl"><tt>library(format)</tt></a>,
     Scryer Prolog provides the nonterminal <tt>format_//2</tt> to
     declaratively describe output based on a <i>format&nbsp;string</i>
     that defines the layout of specified arguments.
