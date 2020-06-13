@@ -57,10 +57,10 @@ accept_loop(Socket) :-
         accept_loop(Socket).
 
 request_response(Stream) :-
-        (   read_line(Stream, Chars) ->
+        (   read_line_to_chars(Stream, Chars, []),
             format("got line: ~w~n", [Chars]),
             append("GET /", Rest, Chars),
-            append(Path, [' '|_], Rest),
+            append(Path, [' '|_], Rest) ->
             format("request is for ~q~n", [Path]),
             (   dif(Path, ""),
                 path_file(Path, FileChars),
@@ -104,16 +104,6 @@ http_header(Bytes) -->
         { length(Bytes, L) },
         format_("~d", [L]),
         "\r\n\r\n".
-
-read_line(Stream, Chars) :-
-        get_byte(Stream, Byte),
-        Byte >= 0,
-        char_code(Char, Byte),
-        (   member(Char, "\r\n") ->
-            Chars = []
-        ;   Chars = [Char|Rest],
-            read_line(Stream, Rest)
-        ).
 
 %?- phrase_from_file(list(Cs), 'server.pl', [type(binary)]).
 %@   Cs = "/* - - - - - - - -  ..."
