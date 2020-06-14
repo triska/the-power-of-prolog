@@ -600,11 +600,12 @@ like(What) --&gt; "I like ", list(What), ".", list(_).
     <br><br>
 
     Pure input via <tt>library(pio)</tt> can be implemented in such a
-    way that it uses memory efficiently when parsing files: First,
-    file contents can be very compactly represented in memory if your
-    Prolog system supports an
+    way that it uses memory efficiently when parsing files: First, the
+    file can be read <i>lazily</i>, reading only as much as is needed.
+    Second, file contents can be very compactly represented in memory
+    if your Prolog system supports an
     <a href="data#string">efficient representation</a> of lists of
-    characters. Second, file contents that are no longer relevant for
+    characters. Third, file contents that are no longer relevant for
     parsing can be reclaimed automatically if your Prolog system
     satisfies the properties outlined
     in <a href="https://www.complang.tuwien.ac.at/ulrich/papers/PDF/2008-ciclops.pdf"><i>Precise
