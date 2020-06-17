@@ -59,8 +59,7 @@ accept_loop(Socket) :-
 request_response(Stream) :-
         (   read_line_to_chars(Stream, Chars, []),
             format("got line: ~w~n", [Chars]),
-            append("GET /", Rest, Chars),
-            append(Path, [' '|_], Rest) ->
+            phrase(("GET /",list(Path)," ") , Chars, _) ->
             format("request is for ~q~n", [Path]),
             (   dif(Path, ""),
                 path_file(Path, FileChars),
