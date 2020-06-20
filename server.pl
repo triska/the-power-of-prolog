@@ -58,7 +58,6 @@ accept_loop(Socket) :-
 
 request_response(Stream) :-
         (   read_line_to_chars(Stream, Chars, []),
-            format("got line: ~w~n", [Chars]),
             phrase(("GET /",list(Path)," ") , Chars, _) ->
             format("request is for ~q~n", [Path]),
             (   dif(Path, ""),
@@ -72,7 +71,7 @@ request_response(Stream) :-
                 phrase(http_header(FileContents), Response, FileContents)
             ;   append("https://www.metalevel.at/", Path, Redirect),
                 see_other_chars(Redirect, Response),
-                portray_clause(rs(Response))
+                format("redirecting to: ~s~n", [Redirect])
             ),
             catch(format(Stream, "~s", [Response]),
                   Err,
