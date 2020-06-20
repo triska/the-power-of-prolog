@@ -52,22 +52,15 @@
     interpreter written in JavaScript and can be seamlessly embedded
     in web&nbsp;applications.
 
-    <br><br>
-    
-    In the following, we
-    use <a href="http://eu.swi-prolog.org">SWI-Prolog</a> as an
-    example of a Prolog dialect with excellent capabilities for web
-    applications.
-
 
     <center><h2 id="client">HTTP Clients</h2></center>
 
     <center><h3>Fetching pages</h3></center>
 
     A <b>client</b> fetches pages from a <i>server</i>. Using
-    SWI-Prolog, we can easily fetch a page via&nbsp;HTTP
+    Scryer&nbsp;Prolog, we can easily fetch a page via&nbsp;HTTP
     and&nbsp;HTTPS
-    using <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=http_open/3"><tt><b>http_open/3</b></tt></a>.
+    using <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/http/http_open.pl"><tt><b>http_open/3</b></tt></a>.
 
     <br><br>
 
@@ -75,10 +68,10 @@
 
     <pre>
 ?- use_module(library(http/http_open)).
-true.
+   true.
 
-?- <b>http_open</b>('https://www.metalevel.at/prolog', Stream, []).
-Stream = &lt;stream&gt;(0x1cadaf0,0x1cad920).
+?- <b>http_open</b>("https://www.metalevel.at/prolog", Stream, []).
+   Stream = '$stream'(0x7faed0412400)
     </pre>
 
     This opens <tt>Stream</tt> for reading the page. The third
@@ -91,7 +84,7 @@ Stream = &lt;stream&gt;(0x1cadaf0,0x1cad920).
     Since the <tt>https</tt> scheme was specified in the example
     above, a <i>secure</i> connection is automatically established
     and&nbsp;used. You can
-    use <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=section(%27packages/ssl.html%27)"><tt>library(ssl)</tt></a>
+    use <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/sockets.pl"><tt>library(sockets)</tt></a>
     to establish secure connections explicitly.
 
     <center><h3>Parsing HTML</h3></center>
@@ -106,18 +99,18 @@ Stream = &lt;stream&gt;(0x1cadaf0,0x1cad920).
     Very often, it is most convenient to convert the HTML&nbsp;page to
     a <a href="data">Prolog&nbsp;term</a> that reflects the page
     structure in a uniform way. The
-    predicate <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=load_html/3"><tt><b>load_html/3</b></tt></a>
+    predicate <tt><b>load_html/3</b></tt>
     performs this conversion:
 
     <pre>
-?- http_open('https://www.metalevel.at/prolog', Stream, []),
+?- http_open("https://www.metalevel.at/prolog", Stream, []),
    <b>load_html</b>(stream(Stream), DOM, []).
 Stream = ...,
 <b>DOM = [element(html, [], [element(head, [], [element(title, ...)])])]</b>.
     </pre>
 
     See
-    <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=section%28%27packages/sgml.html%27%29"><tt><b>library(sgml)</b></tt></a>
+    <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/sgml.pl"><tt><b>library(sgml)</b></tt></a>
     for more information, and related predicates for parsing markup
     languages like&nbsp;XML.
 
@@ -133,7 +126,7 @@ Stream = ...,
     <br><br>
 
     Amazingly, we can do even better: In
-    SWI-Prolog, <a href="http://eu.swi-prolog.org/pldoc/man?section=xpath"><tt><b>library(xpath)</b></tt></a>
+    Scryer Prolog, <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/xpath.pl"><tt><b>library(xpath)</b></tt></a>
     allows us to access HTML&nbsp;elements by
     <a href="https://en.wikipedia.org/wiki/XPath">XPath</a>&nbsp;specifications
     in a straight-forward way.
@@ -145,23 +138,23 @@ Stream = ...,
 
     <pre>
 ?- use_module(library(xpath)).
-true.
+   true.
       
-?- http_open('https://www.metalevel.at/prolog', Stream, []),
+?- http_open("https://www.metalevel.at/prolog", Stream, []),
    load_html(stream(Stream), DOM, []),
    <b>xpath(DOM, //li(text), Item)</b>.
 Stream = ...,
 DOM = ...,
-<b>Item = '<a href="introduction">Introduction</a>'</b> ;
+<b>Item = "<a href="introduction">Introduction</a>"</b> ;
 Stream = ...,
 DOM = ...,
-<b>Item = '<a href="facets">Facets of Prolog</a>'</b> ;
+<b>Item = "<a href="facets">Facets of Prolog</a>"</b> ;
 Stream = ...,
 DOM = ...,
-<b>Item = '<a href="concepts">Basic Concepts</a>'</b> ;
+<b>Item = "<a href="concepts">Basic Concepts</a>"</b> ;
 Stream = ...,
 DOM = ...,
-<b>Item = '<a href="data">Data Structures</a>'</b> ;
+<b>Item = "<a href="data">Data Structures</a>"</b> ;
 etc.
     </pre>
 
@@ -171,8 +164,10 @@ etc.
 
     <center><h2 id="server">HTTP Servers</h2></center>
 
-    SWI-Prolog makes it extremely easy to write HTTP and
-    HTTPS <b>servers</b>.
+    For <b>server</b> applications, we
+    use <a href="http://eu.swi-prolog.org">SWI-Prolog</a>, a
+    Prolog dialect with excellent support for robust and efficient
+    multithreading.
 
     <br><br>
 
