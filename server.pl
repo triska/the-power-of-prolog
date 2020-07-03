@@ -33,6 +33,7 @@
 :- use_module(library(dif)).
 :- use_module(library(pio)).
 :- use_module(library(reif)).
+:- use_module(library(files)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- server(6012).
@@ -64,8 +65,8 @@ request_response(Stream) :-
                 path_file(Path, FileChars),
                 path_segments(Path, Segments),
                 memberd_t("..", Segments, false),
+                file_exists(FileChars) ->
                 atom_chars(File, FileChars),
-                exists_file(File) ->
                 format("sending ~q~n", [File]),
                 phrase_from_file(list(FileContents), File, [type(binary)]),
                 phrase(http_header(FileContents), Response, FileContents)
@@ -109,11 +110,6 @@ http_header(Bytes) -->
 list([]) --> [].
 list([L|Ls]) --> [L], list(Ls).
 
-exists_file(File) :-
-        catch(open(File, read, S, []), error(existence_error(_,_),_), Err = true),
-        Err \== true,
-        close(S).
-
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- path_segments("hello/declarative/world/", S).
 %@    S = ["hello","declarative","world",[]].
@@ -135,9 +131,6 @@ path_file(Path, File) :-
 path_file(Path, Path).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-?- exists_file(none).
-
-
 ?- socket_client_open('metalevel.at':80, Stream, []),
    maplist(put_char(Stream), "GET / HTTP/1.0\r\n\r\n"),
    repeat,
