@@ -68,7 +68,7 @@ new_private_key(Key) :-
         crypto_curve_order(Curve, Order),
         Upper #= Order - 1,
         (   between(1, Upper, Key) -> true
-        ;   domain_error(inadmissible_key, Key, new_private_key/1)
+        ;   domain_error(private_key, Key, new_private_key/1)
         ).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
