@@ -29,7 +29,7 @@ var toc = new Array(
     { link: "/prolog/nontermination",
       title: "Nontermination"
     },
-    { link: "/prolog/clpfd",
+    { link: "/prolog/clpz",
       title: "Integer Arithmetic"
     },
     { link: "/prolog/metapredicates",
