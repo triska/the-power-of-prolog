@@ -434,18 +434,12 @@ edge(X, Y) :- edges(Es), ( member(X-Y, Es) ; member(Y-X, Es) ).
 
     <pre>
 ?- bagof(E, edge(N, E), Es).
-N = a,
-Es = [b, c, d, f] ;
-N = b,
-Es = [c, d, a] ;
-N = c,
-Es = [d, e, a, b] ;
-N = d,
-Es = [e, f, a, b, c] ;
-N = e,
-Es = [f, c, d] ;
-N = f,
-Es = [a, d, e].
+   Es = "bcdf", N = a
+;  Es = "cda", N = b
+;  Es = "deab", N = c
+;  Es = "efabc", N = d
+;  Es = "fcd", N = e
+;  Es = "ade", N = f.
     </pre>
 
     An explicit representation is well suited for further analysis of
@@ -474,18 +468,12 @@ tree(node(_, Left, Right)) --&gt; [_], tree(Left), tree(Right).
 
     <pre>
 <b>?- length(Ls, _), phrase(tree(T), Ls)</b>.
-Ls = [],
-T = nil ;
-Ls = [_8284],
-T = node(_8296, nil, nil) ;
-Ls = [_8284, _8290],
-T = node(_8302, nil, node(_8310, nil, nil)) ;
-Ls = [_8284, _8290],
-T = node(_8302, node(_8310, nil, nil), nil) ;
-Ls = [_8284, _8290, _8296],
-T = node(_8308, nil, node(_8316, nil, node(_8324, nil, nil))) ;
-Ls = [_8284, _8290, _8296],
-T = node(_8308, nil, node(_8316, node(_8324, nil, nil), nil)) .
+   Ls = [], T = nil
+;  Ls = [_A], T = node(_B,nil,nil)
+;  Ls = [_A,_B], T = node(_C,nil,node(_D,nil,nil))
+;  Ls = [_A,_B], T = node(_C,node(_D,nil,nil),nil)
+;  Ls = [_A,_B,_C], T = node(_D,nil,node(_E,nil,node(_F,nil,nil)))
+;  ...
     </pre>
 
     <br><br>
