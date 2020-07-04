@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Reason about Term Rewriting Systems.
    Written 2015-2020 by Markus Triska (triska@metalevel.at)
-   Public domain code.
+   Public domain code. Tested with Scryer Prolog.
 
    Motivating example
    ==================
@@ -41,7 +41,7 @@
 
    yielding the convergent TRS:
 
-      i(B*A)==>i(A)*i(B).
+      i(A*B)==>i(B)*i(A).
       A*i(A)==>e.
       i(i(A))==>A.
       A*e==>A.
@@ -369,12 +369,12 @@ functors_([T|Ts]) -->
 
 %?- group(Gs), equations_trs(Gs, Rs).
 
-%?- group(Gs), permutation([*,e,i], Ord), equations_trs(rpo(Ord, [(*)-lex,e-lex,i-lex]), Gs, Rs), maplist(writeln, Rs).
-%?- group(Gs), equations_trs(rpo([*,e,i],[(*)-lex,e-lex,i-lex]), Gs, Rs), maplist(writeln, Rs).
+%?- group(Gs), permutation([*,e,i], Ord), equations_trs(rpo(Ord, [(*)-lex,e-lex,i-lex]), Gs, Rs), maplist(portray_clause, Rs).
+%?- group(Gs), equations_trs(rpo([*,e,i],[(*)-lex,e-lex,i-lex]), Gs, Rs), maplist(portray_clause, Rs).
 
-%?- group(Gs), equations_trs(rpo([e,*,i],[(*)-lex,e-lex,i-lex]), Gs, Rs), maplist(writeln, Rs), length(Rs, L).
+%?- group(Gs), equations_trs(rpo([e,*,i],[(*)-lex,e-lex,i-lex]), Gs, Rs), maplist(portray_clause, Rs), length(Rs, L).
 
-%?- group(Gs), equations_trs(rpo([*,i,e],[(*)-lex,e-lex,i-lex]), Gs, Rs), maplist(writeln, Rs), length(Rs, L).
+%?- group(Gs), equations_trs(rpo([*,i,e],[(*)-lex,e-lex,i-lex]), Gs, Rs), maplist(portray_clause, Rs), length(Rs, L).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Testing
@@ -403,12 +403,12 @@ orient(A=B, A==>B).
 
 %?- critical_pairs([A*B*D ==> A*B], Ps).
 
-%?- group(Gs0), maplist(orient, Gs0, Gs), critical_pairs(Gs, Ps), maplist(writeln, Ps), length(Ps, L).
+%?- group(Gs0), maplist(orient, Gs0, Gs), critical_pairs(Gs, Ps), maplist(portray_clause, Ps), length(Ps, L).
 
 %?- critical_pairs([f(f(X)) ==> a, f(f(X))==>b], Ps).
 %?- c(CPs).
-%@ CPs = [g(_G9)-g(_G9), g(f(_G22))-f(g(_G22))] ;
-%@ CPs = [f(_G41)-f(_G41), f(f(_G57))-f(f(_G57)), f(_G71)-f(_G71), f(g(_G95))-g(f(_G95))].
+%@    CPs = [g(_A)=g(_A),g(f(_B))=f(g(_B))]
+%@ ;  CPs = [f(_A)=f(_A),f(f(_B))=f(f(_B)),f(_C)=f(_C),f(g(_D))=g(f(_D))].
 
 %?- critical_pairs([f(X,a) ==> X, a ==> b], Ps).
 
