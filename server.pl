@@ -128,6 +128,7 @@ path_file(Path, File) :-
         path_segments(Path, Segments),
         append(_, [Last,[]], Segments),
         phrase(format_("~s~s.html", [Path,Last]), File).
+path_file("prolog/clpfd", "prolog/clpz.html").
 path_file(Path, Path).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
