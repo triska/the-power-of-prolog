@@ -110,18 +110,6 @@ http_header(Bytes) -->
 list([]) --> [].
 list([L|Ls]) --> [L], list(Ls).
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-?- path_segments("hello/declarative/world/", S).
-%@    S = ["hello","declarative","world",[]].
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-path_segments(Path, Segments) :-
-        (   append(Front, [/|Ps], Path) ->
-            Segments = [Front|Rest],
-            path_segments(Ps, Rest)
-        ;   Segments = [Path]
-        ).
-
 path_file("prolog", "prolog/prolog.html").
 path_file(Path, HTML) :- append(Path, ".html", HTML).
 path_file(Path, File) :-
