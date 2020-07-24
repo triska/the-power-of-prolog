@@ -401,12 +401,9 @@ Hash = "<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sL
     therefore be kept absolutely secret. We can relate
     the <span class="secret">pair</span> to its
     <i>public&nbsp;key</i> component
-    with <tt>ed25519_keypair_public_key/2</tt>. In my case,
-    I obtained as public key the Prolog string
-    <tt>"&#15;&#247;&#100;&#32;&#110;&#230;&#167;&#166;&#180;&#145;&#181;&#30;&#170;&#60;&#241;&#2;&#43;&#83;&#32;&#203;&#97;&#156;&#170;&#62;&#91;&#160;&#66;&#8;&#204;&#134;&#91;&#40;"</tt>.
-    Using <tt>char_code/2</tt> and <tt>hex_bytes/2</tt>, I can
-    represent the public key as a list of hexadecimal
-    characters: <tt>"<span class="hex">0ff764206ee6a7a6b491b51eaa3cf1022b5320cb619caa3e5ba04208cc865b28</span>"</tt>.
+    with <tt>ed25519_keypair_public_key/2</tt>. In my case, I obtained
+    as public key a Prolog string whose Base64 encoding
+    is <tt>"D/dkIG7mp6a0kbUeqjzxAitTIMthnKo+W6BCCMyGWyg="</tt>.
 
     <br><br>
 
@@ -437,11 +434,10 @@ Hash = "<span class="hex">$pbkdf2-sha512$t=131072$+aXCnE1r3gAFjpQ3qHcsVw$JAiD2sL
     reasonable doubt that it is I who signed it:
 
     <pre>
-?- PublicKeyHex = "<span class="hex">0ff764206ee6a7a6b491b51eaa3cf1022b5320cb619caa3e5ba04208cc865b28</span>",
+?- PublicKeyB64 = "D/dkIG7mp6a0kbUeqjzxAitTIMthnKo+W6BCCMyGWyg=",
    Message = "Hello!",
    Signature = "<span class="hex">480895ab0202dd9de5e967b4ea9f12757efdfb81043dbbb8d7edf065f24ff01def8095f93bda78db91f8a34a4eff814f7dbe55ee974c92f232b74563536c3f09</span>",
-   hex_bytes(PublicKeyHex, PublicKeyBytes),
-   maplist(char_code, PublicKey, PublicKeyBytes),
+   chars_base64(PublicKey, PublicKeyB64, []),
    ed25519_verify(PublicKey, Message, Signature, []).
     </pre>
 
@@ -858,9 +854,6 @@ var hex_consts = [
 
 ["c63813a8f804abece06213a46acd04a2d738c8e7a58fbf94bfe066a9c7f89197",
  "c638...9197"],
-
-["0ff764206ee6a7a6b491b51eaa3cf1022b5320cb619caa3e5ba04208cc865b28",
- "0ff7...5b28"],
 
 ["480895ab0202dd9de5e967b4ea9f12757efdfb81043dbbb8d7edf065f24ff01def8095f93bda78db91f8a34a4eff814f7dbe55ee974c92f232b74563536c3f09",
  "4808...3f09"],
