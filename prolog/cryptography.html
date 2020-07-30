@@ -778,10 +778,61 @@ Salt = [203,81,172,46,86,244,37,2,215|...],
 
     <br><br>
 
-    A shared secret can be established via ECDH, using the elliptic
-    curve functionality of <tt>library(crypto)</tt>. Again, once such
-    a secret is established, we can derive keys from it
-    using <tt>crypto_data_hkdf/4</tt>.
+    A shared secret can be established over an insecure channel via
+    elliptic-curve Diffie–Hellman&nbsp;(ECDH), using the elliptic
+    curve functionality of <tt>library(crypto)</tt>. Curve25519 is
+    particularly well suited for this: In <tt>library(crypto)</tt>,
+    points on Curve25519 are represented as <i>lists of characters</i>
+    that denote the <i>u</i>-coordinate of the Montgomery curve. There
+    are two predicates that let us implement X25519, a secure key
+    exchange algorithm using Curve25519:
+
+    <ul>
+      <li><tt>curve25519_generator(-Gs)</tt><br>
+        <i>Gs</i> is the generator point of Curve25519.
+      </li>
+      <li><tt>curve25519_scalar_mult(+Scalar, +Ps, -Rs)</tt><br>
+        <i>Scalar</i> must be an integer between 0 and
+        2<sup>256</sup>-1, or a list of 32&nbsp;bytes,
+        and <i>Ps</i> must be a point on the curve. Computes the
+        point <i>Rs = Scalar&middot;Ps</i> as mandated by&nbsp;X25519.
+      </li>
+    </ul>
+
+    Alice and Bob can establish a shared secret over an insecure
+    channel as follows, where <i>Gs</i> is the generator point of
+    Curve25519:
+
+    <ol>
+      <li>
+        Alice creates a random integer <i>a</i>, computes <i>As =
+          a&middot;Gs</i>, and sends <i>As</i> to Bob. Instead of an
+        integer <i>a</i>, Alice can
+        use <tt>crypto_n_random_bytes/2</tt> to generate 32
+        random&nbsp;bytes.
+      </li>
+      <li>
+        Bob creates a random integer <i>b</i>, computes <i>Bs =
+          b&middot;Gs</i>, and sends <i>Bs</i> to Alice. Bob can also
+        use <tt>crypto_n_random_bytes/2</tt> to
+        generate&nbsp;<i>b</i>.
+      </li>
+      <li>
+        Alice computes <i>Rs = a&middot;Bs</i>.
+      </li>
+      <li>
+        Bob computes <i>Rs = b&middot;As</i>.
+      </li>
+      <li>
+        Alice and Bob use <tt>crypto_data_hkdf/4</tt> on <i>Rs</i>
+        with suitable (same) parameters to obtain lists of bytes that
+        can be used as keys and initialization vectors for symmetric
+        encryption.
+      </li>
+    </ol>
+
+    If <i>a</i> and <i>b</i> are kept secret, this method is
+    considered very secure.
 
     <br><br>
 
