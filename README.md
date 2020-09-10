@@ -51,15 +51,41 @@ Ulrich&nbsp;Neumerkel in Vienna. A collection of
 [Prolog&nbsp;meta-interpreters](https://www.metalevel.at/acomip/)
 formed the first chapter.
 
-You can run most of the examples with any popular Prolog system, such
-as Scryer&nbsp;Prolog, GNU&nbsp;Prolog, SICStus&nbsp;Prolog, YAP
-and&nbsp;SWI. In some cases, slight modifications may be necessary to
-adjust for different libraries or small variations. See your Prolog
+To run the code examples, you can use every Prolog implementation that
+conforms to the Prolog ISO&nbsp;standard and provides the following
+conforming extensions:
+
+- Definite Clause Grammars (DCGs)
+- constraints like `dif/2` and declarative integer arithmetic
+- alternative execution strategies such as SLG&nbsp;resolution.
+
+A *conforming* extension is a language feature that would not cause
+any ambiguity or contradiction if it were added to the Prolog
+standard, ISO/IEC&nbsp;13211. Notably, a conforming extension
+*must&nbsp;not* change the meaning of Prolog text which conforms to
+the standard. Each of the above features can be added to every
+Prolog&nbsp;system in a conforming manner, as exemplified by the
+following recommended Prolog&nbsp;systems:
+
+- [SICStus Prolog](https://sicstus.sics.se/)
+  A state-of-the-art, ISO standard compliant, Prolog system.
+- [Scryer Prolog](https://github.com/mthom/scryer-prolog)
+  A modern Prolog implementation written mostly in Rust.
+- [GNU Prolog](http://www.gprolog.org/)
+  A free Prolog compiler with constraint solving over finite domains.
+
+In the example code, I assume that the Prolog flag `double_quotes` is
+set to the value&nbsp;`chars` so that strings in double-quotes are
+interpreted as lists of *characters*. This was the case in the
+original Prolog implementation, Marseille Prolog, and is already the
+default value in the two newest Prolog implementations,
+Scryer&nbsp;Prolog and
+[Tau&nbsp;Prolog](https://github.com/tau-prolog/tau-prolog).
+
+In some cases, slight modifications to code snippets may be necessary
+to adjust for different libraries or small variations. See your Prolog
 system's manual, or ask on&nbsp;Stackoverflow and `comp.lang.prolog`
 for more information.
-
-See also the
-[Prolog&nbsp;chat](https://chat.stackexchange.com/rooms/74093/prolog).
 
 ## On teaching Prolog
 
