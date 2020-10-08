@@ -44,9 +44,11 @@
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 server(Port) :-
-        socket_server_open('127.0.0.1':Port, Socket),
-        accept_loop(Socket).
+        server('127.0.0.1', Port).
 
+server(IP, Port) :-
+        socket_server_open(IP:Port, Socket),
+        accept_loop(Socket).
 
 accept_loop(Socket) :-
         format("waiting for connections...~n", []),
