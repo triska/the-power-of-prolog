@@ -129,10 +129,14 @@ this&nbsp;book in their&nbsp;courses! For example:
 - As of 2019, Dylan Schwesinger is using *The Power of Prolog* in
   [Artificial
   Intelligence&nbsp;II](http://csitrd.kutztown.edu/~schwesin/spring19/csc548/index.html)
-  at Kutztown&nbsp;University in the United States of America
+  at Kutztown&nbsp;University in the United States of America.
 - As of 2020, Andrea Schwertner Charão is using *The Power of Prolog* in
   [Paradigmas de Programação](https://github.com/AndreaInfUFSM/elc117-2020a/)
   at the Federal University of Santa Maria in Brazil.
+- As of 2020, Alejandro Guerra Hernández is using *The Power of
+  Prolog* in [Programación para la Inteligencia
+  Artificial&nbsp;(PIA)](https://www.uv.mx/personal/aguerra/pia/) at
+  the Universidad Veracruzana in Mexico.
 - I hope you are next!
 
 <pre>
