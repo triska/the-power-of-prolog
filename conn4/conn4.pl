@@ -3,7 +3,7 @@
    Connect 4 in Prolog
    ===================
 
-   Written 2006 by Markus Triska (triska@metalevel.at)
+   Written 2006, 2020 by Markus Triska (triska@metalevel.at)
    Public domain code. Tested with Scryer Prolog.
 
    To make the computer play against itself, use:
@@ -29,6 +29,7 @@
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- use_module(library(clpz)).
+:- use_module(library(dif)).
 :- use_module(library(lists)).
 :- use_module(library(random)).
 :- use_module(library(format)).
@@ -84,10 +85,8 @@ four_in_a_row([Col1,Col2,Col3,Col4|Cs], Player) :-
         ).
 
 four_in_a_row([C1|Cs1], [C2|Cs2], [C3|Cs3], [C4|Cs4], P) :-
-        \+ empty(C1),
-        \+ empty(C2),
-        \+ empty(C3),
-        \+ empty(C4),
+        empty(E),
+        maplist(dif(E), [C1,C2,C3,C4]),
         (   C1 == P, C2 == P, C3 == P, C4 == P
         ;   four_in_a_row(Cs1, Cs2, Cs3, Cs4, P)
         ).
