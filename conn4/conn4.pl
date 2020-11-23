@@ -86,8 +86,9 @@ four_in_a_row([Col1,Col2,Col3,Col4|Cs], Player) :-
 
 four_in_a_row([C1|Cs1], [C2|Cs2], [C3|Cs3], [C4|Cs4], P) :-
         empty(E),
-        maplist(dif(E), [C1,C2,C3,C4]),
-        (   C1 == P, C2 == P, C3 == P, C4 == P
+        Firsts = [C1,C2,C3,C4],
+        maplist(dif(E), Firsts),
+        (   maplist(=(P), Firsts)
         ;   four_in_a_row(Cs1, Cs2, Cs3, Cs4, P)
         ).
 
