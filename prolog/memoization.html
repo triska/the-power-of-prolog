@@ -299,8 +299,8 @@ edit_option([A|As], [A|Bs], use(A), 0, As, Bs).
 
     <pre>
 ?- min_edit([a,b,c,e,f], [a,x,b,d,e,f], Min).
-<b>Min = 3-[use(a), insert(x), use(b), drop(c), insert(d), use(e), use(f)] </b>;
-false.
+<b>   Min = 3-[use(a),insert(x),use(b),drop(c),insert(d),use(e),use(f)]</b>
+;  false.
     </pre>
 
     If it were implemented naively, <tt>min_edit/3</tt> would exhibit

@@ -199,11 +199,9 @@ year_month_days(2017, mar, 31).
 
     <pre>
 ?- year_month_total(Year, Month, Total).
-?- year_month_total(Year, Month, Total).
-   Month = jan, Total = 930558, Year = 2017
-;  Month = feb, Total = 921564, Year = 2017
-;  Month = mar, Total = 1112001, Year = 2017
-;  false.
+   Year = 2017, Month = jan, Total = 930558
+;  Year = 2017, Month = feb, Total = 921564
+;  Year = 2017, Month = mar, Total = 1112001.
     </pre>
 
     Using <tt>format/2</tt>, you can turn this into a more readable report:
@@ -268,7 +266,6 @@ months([jan,feb,mar,apr,may,jun,jul,aug,sept,oct,nov,dec]).
     particular&nbsp;month:
 
     <pre>
-?- cumulative(year_month_total(2017), feb, C).
 ?- cumulative(year_month_total(2017), feb, C).
    <b>C = 1852122</b>
 ;  false.

@@ -746,7 +746,7 @@ row(Ls) --&gt; format_("~t~w~7+~t~w~7+~t~w~7+~n", Ls).
 
     <pre>
 ?- phrase(table, Ts).
-<b>   Ts = "   this     is      ..."</b>
+<b>   Ts = "   this     is      ..."</b>.
     </pre>
 
     An important advantage of this declarative way to describe output
@@ -765,7 +765,7 @@ row(Ls) --&gt; format_("~t~w~7+~t~w~7+~t~w~7+~n", Ls).
 ?- phrase(table, Ts), format("~s", [Ts]).
 <b>   this     is      a
    very   nice  table</b>
-   Ts = "   this     is      ..."
+   Ts = "   this     is      ...".
     </pre>
 
     <center><h2 id="implementation">Implementation</h2></center>
