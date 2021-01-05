@@ -196,19 +196,34 @@
 
     <center><h2 id="pair">Pairs</h2></center>
 
-    By convention, the functor <tt>(-)/2</tt> is often used to denote
-    <i>pairs</i> of elements in Prolog. For example, the term <tt>-(A,
-    B)</tt> denotes the pair of elements <tt>A</tt> and <tt>B</tt>. In
-    Prolog, <tt>(-)/2</tt> is defined as an infix <i>operator</i>.
-    Therefore, the term can be written equivalently
-    as&nbsp;<tt>A-B</tt>.
+    <i>Pairs</i> are terms with principal functor <tt>(-)/2</tt>. For
+    example, the term <tt>-(A, B)</tt> denotes the pair of
+    elements <tt>A</tt> and <tt>B</tt>. In Prolog, <tt>(-)/2</tt> is
+    defined as an infix <i>operator</i>. Therefore, the term can be
+    written equivalently as&nbsp;<tt>A-B</tt>.
 
     <br><br>
 
-    Many commonly available predicates also use this syntax to denote
-    pairs. Examples of this
-    are <a href="sorting#keysort"><tt>keysort/2</tt></a>
-    and <tt>pairs_keys_values/3</tt>.
+    <table>
+      <tr>
+        <td><i>Video</i>:</td>
+        <td><a href="videos/pairs"><img src="videos/t_pairs.png" alt="Pairs"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    The standard
+    predicate <a href="sorting#keysort"><tt>keysort/2</tt></a> is an
+    example of a predicate that reasons about pairs. They are
+    called <i>Key-Value</i> pairs because the first argument of each
+    pair is used as the <i>key</i> for sorting. Many Prolog systems
+    provide additional predicates for reasoning about pairs, and they
+    often adopt this terminology from <tt>keysort/2</tt>. Common
+    examples of such predicates are
+    <tt>pairs_keys_values/3</tt> and <tt>pairs_keys/2</tt> to relate a
+    list of pairs to their respective keys and values.
 
     <center><h2 id="assoc">Association lists</h2></center>
 
