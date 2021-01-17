@@ -173,47 +173,35 @@ etc.
 
     <center><h2 id="server">HTTP Servers</h2></center>
 
-    For <b>server</b> applications, we
-    use <a href="http://eu.swi-prolog.org">SWI-Prolog</a>, a
-    Prolog dialect with excellent support for robust and efficient
-    multithreading.
+    For <b>server</b> applications, we can use for example
+    the <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/http/http_server.pl">HTTP&nbsp;server</a>
+    library of Scryer Prolog.
 
     <br><br>
 
     To get started, consider a very rudimentary HTTP&nbsp;server:
 
     <pre>
-:- use_module(library(http/thread_httpd)).
-:- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_unix_daemon)).
+:- use_module(library(http/http_server)).
 
-:- http_handler(/, handle_request, []).
+run(Port) :-
+        http_listen(Port, [get('', request_response)]).
 
-handle_request(_Request) :-
-    format("Content-type: text/plain~n~n"),
-    format("Hello!").
+request_response(_, Response) :-
+        http_status_code(Response, 200),
+        http_body(Response, text("Hello!")).
     </pre>
 
-    The snippet uses the
-    HTTP <a href="http://eu.swi-prolog.org/pldoc/doc/_SWI_/library/http/http_unix_daemon.pl">Unix
-    daemon library</a> to implement a server that simply responds
-    with&nbsp;<i>Hello!</i> to every request. This library implicitly
-    augments your code with options that you can use on the command
-    line.
+    The snippet implements a server that simply responds
+    with&nbsp;<i>Hello!</i>.
 
     <br><br>
 
-    To run the server, copy the snippet to <tt>server.pl</tt> and find
-    out more with:
+    To run the server, copy the snippet to <tt>server.pl</tt>,
+    and start the server for example on port&nbsp;3040 using:
 
     <pre>
-swipl server.pl --help
-    </pre>
-
-    For example, you can start the server on port&nbsp;3040 using:
-
-    <pre>
-swipl server.pl <b>--port=3040 --interactive</b>
+$ scryer-prolog <b>-g "run(3040)"</b> server.pl
     </pre>
 
     Once the server is running, you can test it by browsing
@@ -223,65 +211,18 @@ swipl server.pl <b>--port=3040 --interactive</b>
 
     In a more realistic
     HTTP&nbsp;server, the response will of course depend on the actual
-    <i>request</i> of the client. The server libraries represent
-    the <a href="http://eu.swi-prolog.org/pldoc/man?section=request">parsed&nbsp;request</a>
-    as a list of <tt>Name(Value)</tt>&nbsp;elements, which can be
-    easily processed in Prolog.
+    <i>request</i> of the client. Using different or additional
+    handlers, you can change the behaviour of the server.
 
     <br><br>
 
-    Using different or additional <tt>http_handler/3</tt> directives,
-    you can change the behaviour of the server. For example, to serve
-    <i>files</i> from the current directory, use the following
-    directives instead:
-
-    <pre>
-:- use_module(library(http/http_files)).
-:- http_handler(root(.), <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=http_reply_from_files/3"><b>http_reply_from_files</b></a>('.', []), [prefix]).
-    </pre>
-
-    To emit HTML pages, you have several options:
-
-    <ul>
-      <li>You can simply emit any reply you want on <tt>stdout</tt>,
-        as in the example above. This is quite error-prone, making it
-        easy to forget closing tags&nbsp;etc.</li>
-      <li>You can emit the contents of an existing HTML file
-        with <a href="http://eu.swi-prolog.org/pldoc/doc_for?object=http_reply_file/3"><tt>http_reply_file/3</tt></a>.</li>
-      <li>You can
-      use <a href="http://eu.swi-prolog.org/pldoc/man?section=htmlwrite"><tt>library(http/html_write)</tt></a>
-      to create HTML pages from Prolog terms. Here is an example,
-      using
-      the <a href="dcg">DCG&nbsp;nonterminal</a> <tt>html//1</tt>
-      to convert a Prolog term to&nbsp;HTML and printing it:
-
-        <pre>
-?- phrase(html(<b>center(h1('Heading'))</b>), As), print_html(As).
-
-
-<b>&lt;center&gt;
-
-&lt;h1&gt;Heading&lt;/h1&gt;
-
-&lt;/center&gt;</b>
-
-As = [nl(2), &lt;, center, &gt;, nl(1), nl(2), &lt;, h1, &gt;|...].
-        </pre>
-      </li>
-    </ul>
-
-    Depending on the task, some of these options will be more appropriate than others.
-
-    <br><br>
-
-    See
-    the <a href="http://eu.swi-prolog.org/pldoc/man?section=httpserver"><b>HTTP&nbsp;server&nbsp;libraries</b></a>
-    for more information.
-
-    <br><br>
-
-    To run a Prolog-based HTTPS server,
-    see <a href="/letswicrypt/"><b>LetSWICrypt</b></a>.
+    For HTTP server applications, also
+    consider <a href="http://eu.swi-prolog.org">SWI-Prolog</a>, a
+    Prolog dialect with excellent support for robust and efficient
+    multithreading. See
+    its <a href="http://eu.swi-prolog.org/pldoc/man?section=httpserver"><b>HTTP&nbsp;server&nbsp;libraries</b></a>
+    for more information. To run Prolog-based HTTPS servers with
+    SWI-Prolog, see <a href="/letswicrypt/"><b>LetSWICrypt</b></a>.
 
     <br><br>
 

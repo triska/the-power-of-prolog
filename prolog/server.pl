@@ -1,9 +1,14 @@
-:- use_module(library(http/thread_httpd)).
-:- use_module(library(http/http_dispatch)).
-:- use_module(library(http/http_unix_daemon)).
+:- use_module(library(http/http_server)).
 
-:- http_handler(/, handle_request, []).
+run(Port) :-
+        http_listen(Port, [get('', request_response)]).
 
-handle_request(_Request) :-
-    format("Content-type: text/plain~n~n"),
-    format("Hello!").
+request_response(_, Response) :-
+        http_status_code(Response, 200),
+        http_body(Response, text("Hello!")).
+
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+?- run(6080).
+Listening at port 6080
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
