@@ -183,8 +183,7 @@ etc.
     To get started, consider a very rudimentary HTTP&nbsp;server:
 
     <pre>
-:- use_module(library(http/thread_httpd)).
-:- use_module(library(http/http_dispatch)).
+:- use_module(library(http/http_server)).
 :- use_module(library(http/http_unix_daemon)).
 
 :- http_handler(/, handle_request, []).
