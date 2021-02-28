@@ -185,7 +185,7 @@ etc.
 :- use_module(library(http/http_server)).
 
 run(Port) :-
-        http_listen(Port, [get('', request_response)]).
+        http_listen(Port, [get(/, request_response)]).
 
 request_response(_, Response) :-
         http_status_code(Response, 200),
