@@ -106,6 +106,13 @@ natnum(0) :- true.
 ;  Z = s(_A), Body = natnum(_A).
     </pre>
 
+    <b>Note</b>: Clause inspection requires the predicate to
+    be <i>public</i>. A portable way to declare predicates public is
+    to use the <tt>dynamic/1</tt> directive, because dynamic
+    predicates are automatically public.
+
+    <br><br>
+
     The two solutions found on backtracking correspond to the two
     clauses of the predicate's definition.
 
