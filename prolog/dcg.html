@@ -78,25 +78,70 @@ as --&gt; [a], as.
 
     <pre>
 ?- phrase(as, Ls).
-<b>Ls = [] ;
-Ls = [a] ;
-Ls = [a, a] ;
-Ls = [a, a, a] ;
-Ls = [a, a, a, a] ;</b>
-etc.
+<b>   Ls = []
+;  Ls = [a]
+;  Ls = [a,a]
+;  Ls = [a,a,a]
+;  Ls = [a,a,a,a]
+;  ...</b>
     </pre>
 
-   Examples of more specific queries and the system's answers:
+    Prolog lets us write lists of <i>characters</i>,
+    i.e., <a href="data#string">strings</a>, very conveniently if the
+    Prolog flag <tt>double_quotes</tt> is set to <tt>chars</tt>, for
+    example by posting the query:
 
     <pre>
-?- phrase(as, [a,a,a]).
+?- set_prolog_flag(double_quotes, chars).
 <b>true.</b>
+    </pre>
 
-?- phrase(as, [b,c,d]).
+    or by adding the following directive in your initialisation file
+    or program:
+
+    <div>
+      <pre class="box">:- set_prolog_flag(double_quotes, chars).</pre>
+    </div>
+
+    We strongly recommend using this setting for better readability
+    of programs, queries and answers. In Scryer&nbsp;Prolog and
+    Tau&nbsp;Prolog, this is already the default setting.
+
+    <br><br>
+
+    With <tt>double_quotes</tt> set to <tt>chars</tt>, the list of
+    characters <tt>[a,a,a]</tt> can be written equivalently
+    as <tt>"aaa"</tt>, and a Prolog system may therefore report the
+    solutions above equivalently and more compactly as:
+
+    <pre>
+?- phrase(as, Ls).
+<b>   Ls = []
+;  Ls = "a"
+;  Ls = "aa"
+;  Ls = "aaa"
+;  Ls = "aaaa"
+;  ...</b>
+    </pre>
+
+    Throughout this text, we assume that the Prolog
+      flag <tt>double_quotes</tt> is set to <tt>chars</tt>.
+
+    <br><br>
+
+    Examples of more specific queries and the system's answers:
+
+    <pre>
+?- phrase(as, "aaa").
+<b>   true</b>
+;  false.
+
+?- phrase(as, "bcd").
 <b>false.</b>
 
 ?- phrase(as, [a,X,a]).
-<b>X = a.</b>
+<b>   X = a</b>
+;  false.
     </pre>
 
     <center><h2>Relating trees to lists</h2></center>
@@ -122,7 +167,7 @@ tree_nodes(node(Name, Left, Right)) --&gt;
 ?- phrase(tree_nodes(node(a, node(b, nil,
                                      node(c, nil, nil)),
                              node(d, nil, nil))), Ns).
-<b>Ns = [b, c, a, d].</b>
+   <b>Ns = "bcad".</b>
     </pre>
 
     You can obtain other orders by moving the
@@ -135,9 +180,9 @@ tree_nodes(node(Name, Left, Right)) --&gt;
     that yield this sequence:
 
     <pre>
-?- phrase(tree_nodes(Tree), [a,b,c,d]).
-<b>Tree = node(a, nil, node(b, nil, node(c, nil, node(d, nil, nil)))) ;</b>
-(nontermination)
+?- phrase(tree_nodes(Tree), "abcd").
+<b>   Tree = node(a,nil,node(b,nil,node(c,nil,node(d,nil,nil))))</b>
+;  % <i>(nontermination)</i>
     </pre>
 
     The system yields one (correct) solution, then loops. This is
@@ -225,14 +270,11 @@ tree_nodes(node(Name, Left, Right), [_|Ls0], Ls) --&gt;
     Example query:
 
     <pre>
-?- Ns = [a,b,c,d], phrase(tree_nodes(Tree, Ns, _), Ns).
-<b>Ns = [a, b, c, d],
-Tree = node(a, nil, node(b, nil, node(c, nil, node(d, nil, nil)))) ;
-Ns = [a, b, c, d],
-Tree = node(a, nil, node(b, nil, node(d, node(c, nil, nil), nil))) ;
-Ns = [a, b, c, d],
-Tree = node(a, nil, node(c, node(b, nil, nil), node(d, nil, nil))) ;</b>
-etc.
+?- Ns = "abcd", phrase(tree_nodes(Tree, Ns, _), Ns).
+<b>   Ns = "abcd", Tree = node(a,nil,node(b,nil,node(c,nil,node(d,nil,nil))))
+;  Ns = "abcd", Tree = node(a,nil,node(b,nil,node(d,node(c,nil,nil),nil)))
+;  Ns = "abcd", Tree = node(a,nil,node(c,node(b,nil,nil),node(d,nil,nil)))
+;  ...</b>
     </pre>
 
     Another option to parse with left-recursive grammars is to use
@@ -276,8 +318,8 @@ nt2      --&gt; [b].
     which is left in the list after <tt>nt1//0</tt> succeeds:
 
     <pre>
-?- phrase((nt1,nt2), [a]).
-<b>true.</b>
+?- phrase((nt1,nt2), "a").
+<b>   true.</b>
     </pre>
 
     We can also use <tt>nt1//0</tt> in isolation. However, the following query
@@ -285,7 +327,7 @@ nt2      --&gt; [b].
     are consumed by the given DCG body:
 
     <pre>
-?- phrase(nt1, [a]).
+?- phrase(nt1, "a").
 <b>false.</b>
     </pre>
 
@@ -293,8 +335,8 @@ nt2      --&gt; [b].
     after <tt>nt1//0</tt> succeeds:
 
     <pre>
-?- phrase(nt1, [a], Rest).
-<b>Rest = [b].</b>
+?- phrase(nt1, "a", Rest).
+<b>   Rest = "b".</b>
     </pre>
 
     As expected, the atom&nbsp;<tt>b</tt> remains in the list.
@@ -313,9 +355,8 @@ look_ahead(T), [T] --&gt; [T].
     Example:
 
     <pre>
-?- phrase(look_ahead(T), [a], Rest).
-<b>T = a,
-Rest = [a].</b>
+?- phrase(look_ahead(T), "a", Rest).
+<b>   Rest = "a", T = a.</b>
     </pre>
 
     <center><h2>Implicitly passing states around</h2></center>
@@ -434,8 +475,8 @@ list([L|Ls]) --&gt; [L], list(Ls).</pre>
     as a subsequence of a longer list that is being described:
 
     <pre>
-?- phrase((list([a,b]),list([c,d])), Ls).
-<b>Ls = [a, b, c, d].</b>
+?- phrase((list("ab"),list("cd")), Ls).
+<b>   Ls = "abcd".</b>
     </pre>
 
     Thus, <tt>list//1</tt> is useful to describe the concatenation of
@@ -443,8 +484,8 @@ list([L|Ls]) --&gt; [L], list(Ls).</pre>
     needed, because we could have simply used:
 
     <pre>
-?- phrase(([a,b],[c,d]), Ls).
-<b>Ls = [a, b, c, d].</b>
+?- phrase(("ab","cd"), Ls).
+<b>   Ls = "abcd".</b>
     </pre>
 
     However, using <tt>list//1</tt>, we can readily define a much more
@@ -465,8 +506,8 @@ concatenation([List|Lists]) --&gt;
     Sample use:
 
     <pre>
-?- phrase(concatenation([[a,b],[c,d],[e,f]]), Ls).
-<b>Ls = [a, b, c, d, e, f].</b>
+?- phrase(concatenation(["ab","cd","ef"]), Ls).
+<b>   Ls = "abcdef".</b>
     </pre>
 
     Moreover, like all pure relations, <tt>list//1</tt> can be used in
@@ -475,8 +516,8 @@ concatenation([List|Lists]) --&gt;
 
     <pre>
 ?- phrase(([alpha],list(Mid),[omega]), [alpha,beta,gamma,omega]).
-<b>Mid = [beta, gamma] ;
-false.</b>
+<b>   Mid = [beta,gamma]</b>
+;  false.
     </pre>
 
     Note that in cases where we use DCGs only to <i>generate</i>
@@ -489,8 +530,8 @@ badlist(Ls) --&gt; Ls.
     This still works as expected in cases like:
 
     <pre>
-?- phrase(badlist([a,b,c]), Ls).
-<b>Ls = [a, b, c].</b>
+?- phrase(badlist("abc"), Ls).
+<b>   Ls = "abc".</b>
     </pre>
 
     However, it is still not a good idea for two reasons: First, it
@@ -498,7 +539,7 @@ badlist(Ls) --&gt; Ls.
     relation:
 
     <pre>
-?- phrase(badlist(Ls), [a,b,c]).
+?- phrase(badlist(Ls), "abc").
 <b>ERROR: call_dcg/3: Arguments are not sufficiently instantiated</b>
     </pre>
 
@@ -536,29 +577,6 @@ badlist(Ls) --&gt; Ls.
       </tr>
     </table>
 
-
-    <br><br>
-
-    In the following examples, we assume that the Prolog
-    flag <tt>double_quotes</tt> is set to <tt>chars</tt> with the
-    following query:
-
-    <pre>
-?- set_prolog_flag(double_quotes, chars).
-<b>true.</b>
-    </pre>
-
-    or that you use the following directive in your initialisation
-    file or program:
-
-    <div>
-      <pre class="box">:- set_prolog_flag(double_quotes, chars).</pre>
-    </div>
-
-    We recommend using this directive for better readability of
-    answers in the following examples and also in other cases. In
-    Scryer&nbsp;Prolog and Tau&nbsp;Prolog, this is already the
-    default setting.
 
     <br><br>
 
