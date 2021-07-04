@@ -155,6 +155,142 @@ as --&gt; [a], as.
 ;  false.
     </pre>
 
+    <center><h2>Describing sequences with <tt>seq//1</tt>, <tt>seqq//1</tt> and <tt>...//0</tt></h2></center>
+
+    Let us define the nonterminal <tt>seq//1</tt> to describe a
+    sequence of elements. We use its single argument to refer to the
+    sequence that it describes, represented as a list:
+
+    <div>
+      <pre class="box">
+seq([])     --&gt; [].
+seq([E|Es]) --&gt; [E], seq(Es).</pre>
+    </div>
+
+    Sample use case:
+
+    <pre>
+?- phrase(("Hello, ",seq(Cs),"!"), "Hello, all!").
+<b>   Cs = "all"</b>
+;  false.
+    </pre>
+
+    Note that in cases where we use DCGs only to <i>generate</i>
+    lists, you might be tempted to define <tt>seq//1</tt> as follows:
+
+    <pre>
+badseq(Ls) --&gt; Ls.
+    </pre>
+
+    This still works as expected in cases like:
+
+    <pre>
+?- phrase(badseq("abc"), Ls).
+<b>   Ls = "abc".</b>
+    </pre>
+
+    However, it is still not a good idea for two reasons: First, it
+    cannot be used in the other direction and is thus not a pure
+    relation:
+
+    <pre>
+?- phrase(badseq(Ls), "abc").
+<b>ERROR: call_dcg/3: Arguments are not sufficiently instantiated</b>
+    </pre>
+
+    Second, such a simplistic definition can be tricked into invoking
+    arbitrary code by specifying <tt>{Goal}</tt> as the argument, as
+    in:
+
+    <pre>
+?- phrase(badseq({halt}), _).
+    </pre>
+
+    For these two reasons, it is better to use the definition
+    of <tt>seq//1</tt> shown above to refer to arbitrary lists
+    with&nbsp;DCGs.
+
+    <br><br>
+
+    Using <tt>seq//1</tt>, we can define <tt>seqq//1</tt> to describe
+    a sequence of sequences:
+
+    <div>
+      <pre class="box">
+seqq([]) --&gt; [].
+seqq([Es|Ess]) --&gt;
+        seq(Es),
+        seqq(Ess).</pre>
+    </div>
+
+    Sample use:
+
+    <pre>
+?- phrase(seqq(["ab","cd","ef"]), Ls).
+<b>   Ls = "abcdef".</b>
+    </pre>
+
+    This is an elegant way to describe the <i>concatenation</i> of
+    arbitrarily many lists.
+
+    <br><br>
+
+    It is sometimes useful to describe "any sequence at all", and we can
+    do this with the nonterminal&nbsp;<tt>...//0</tt> which is
+    equivalent to <tt>seq(_)</tt>:
+
+    <div>
+      <pre class="box">... --&gt; [] | [_], ... .</pre>
+    </div>
+
+    The grammar construct <tt>('|')//2</tt> and its
+    equivalent&nbsp;<tt>(;)//2</tt> correspond to the Prolog control
+    structure&nbsp;<tt>(;)/2</tt> and are read as "or". When parsing
+    with DCGs, using <tt>('|')/2</tt> is preferable over <tt>(;)//2</tt>
+    due to existing conventions for writing grammars.
+
+    <br><br>
+
+    <tt>seq//1</tt>, <tt>seqq//1</tt> and <tt>...//0</tt> are very
+    versatile nonterminals and can be used to elegantly solve many
+    tasks that involve reasoning over lists. For example, the last
+    element of a list can be described with:
+
+    <pre>
+?- phrase((...,[Last]), "hello").
+<b>   Last = o</b>
+;  false.
+    </pre>
+
+    As another example, consecutively repeated elements in a list can be described with:
+
+    <pre>
+?- phrase((...,[E,E],...), Ls).
+<b>   Ls = [E,E]
+;  Ls = [E,E,_A]
+;  Ls = [E,E,_A,_B]
+;  Ls = [E,E,_A,_B,_C]
+;  ...</b>
+    </pre>
+
+    Using iterative deepening, we obtain a <i>fair</i> enumeration of answers:
+
+    <pre>
+?- length(Ls, _), phrase((...,[E,E],...), Ls).
+<b>   Ls = [E,E]
+;  Ls = [E,E,_A]
+;  Ls = [_A,E,E]
+;  Ls = [E,E,_A,_B]
+;  Ls = [_A,E,E,_B]
+;  Ls = [_A,_B,E,E]
+;  ...</b>
+    </pre>
+
+
+    In Scryer Prolog, <tt>seq//1</tt> and <tt>seqq//1</tt> are
+    provided
+    by <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/dcgs.pl"><tt>library(dcgs)</tt></a>.
+
     <center><h2>Relating trees to lists</h2></center>
 
     Let us now use a DCG to relate a binary tree to the in-order
@@ -470,104 +606,6 @@ num_leaves_(node(_,Left,Right)) --&gt;
 
     <br><br>
 
-    <center><h2>Describing lists with <tt>list//1</tt></h2></center>
-
-    We now consider an important nonterminal that is useful in many
-    cases. We shall call it <tt>list//1</tt> and use its single
-    argument to refer to the list that it describes:
-
-    <div>
-      <pre class="box">
-list([])     --&gt; [].
-list([L|Ls]) --&gt; [L], list(Ls).</pre>
-    </div>
-
-    We can use this nonterminal to <i>embed</i> a given list
-    as a subsequence of a longer list that is being described:
-
-    <pre>
-?- phrase((list("ab"),list("cd")), Ls).
-<b>   Ls = "abcd".</b>
-    </pre>
-
-    Thus, <tt>list//1</tt> is useful to describe the concatenation of
-    lists. In this concrete case, <tt>list//1</tt> was actually not
-    needed, because we could have simply used:
-
-    <pre>
-?- phrase(("ab","cd"), Ls).
-<b>   Ls = "abcd".</b>
-    </pre>
-
-    However, using <tt>list//1</tt>, we can readily define a much more
-    general nonterminal that describes the concatenation of an
-    arbitrary number of lists:
-
-    <pre>
-concatenation([]) --&gt; [].
-concatenation([List|Lists]) --&gt;
-        list(List),
-        concatenation(Lists).
-    </pre>
-
-    Note the declarative name, which makes sense in all directions: It
-    is the <i>concatenation</i> of lists that is being described. An
-    imperative name like <tt>concat</tt> would heavily imply only a
-    single direction, and we avoid imperative names for this reason.
-    Sample use:
-
-    <pre>
-?- phrase(concatenation(["ab","cd","ef"]), Ls).
-<b>   Ls = "abcdef".</b>
-    </pre>
-
-    Moreover, like all pure relations, <tt>list//1</tt> can be used in
-    other directions too. For example, we can use it to refer to
-    subsequences at specific positions:
-
-    <pre>
-?- phrase(([alpha],list(Mid),[omega]), [alpha,beta,gamma,omega]).
-<b>   Mid = [beta,gamma]</b>
-;  false.
-    </pre>
-
-    Note that in cases where we use DCGs only to <i>generate</i>
-    lists, you might be tempted to define <tt>list//1</tt> as follows:
-
-    <pre>
-badlist(Ls) --&gt; Ls.
-    </pre>
-
-    This still works as expected in cases like:
-
-    <pre>
-?- phrase(badlist("abc"), Ls).
-<b>   Ls = "abc".</b>
-    </pre>
-
-    However, it is still not a good idea for two reasons: First, it
-    cannot be used in the other direction and is thus not a pure
-    relation:
-
-    <pre>
-?- phrase(badlist(Ls), "abc").
-<b>ERROR: call_dcg/3: Arguments are not sufficiently instantiated</b>
-    </pre>
-
-    Second, such a simplistic definition can be tricked into invoking
-    arbitrary code by specifying <tt>{Goal}</tt> as the argument, as
-    in:
-
-    <pre>
-?- phrase(badlist({halt}), _).
-    </pre>
-
-    For these two reasons, you should use the definition
-    of <tt>list//1</tt> shown above to refer to arbitrary lists
-    with&nbsp;DCGs.
-
-    <br><br>
-
     <center><h2>Reading from files</h2></center>
 
     In Scryer Prolog, SICStus Prolog and SWI-Prolog, DCGs can be
@@ -592,24 +630,24 @@ badlist(Ls) --&gt; Ls.
     <br><br>
 
     In our first example, we read a whole file to a <i>list of
-    characters</i>. This is very easy to do with <tt>list//1</tt> as
+    characters</i>. This is very easy to do with <tt>seq//1</tt> as
     defined above. For example, to read the contents of the
     file <tt>dcg.html</tt> to a list of characters, we use:
 
     <pre>
-?- phrase_from_file(list(Chars), 'dcg.html').
+?- phrase_from_file(seq(Chars), 'dcg.html').
 <b>   Chars = "&lt;!DOCTYPE html&gt;\n&lt;ht ..."</b>
 ;  false.
     </pre>
 
     As another example, consider the following DCG that
-    uses <tt>list//1</tt> to refer to a subsequence of characters:
+    uses <tt>seq//1</tt> to refer to a subsequence of characters:
 
     <pre>
-like(What) --&gt; "I like ", list(What), ".", list(_).
+like(What) --&gt; "I like ", seq(What), ".", ... .
     </pre>
 
-    Like before, we can use this DCG to parse a given list of characters:
+    As before, we can use this DCG to parse a given list of characters:
 
     <pre>
 ?- phrase(like(What), "I like it. Anything can follow!").
@@ -680,31 +718,6 @@ identifier([A|As]) --&gt; [A], { char_type(A, alpha) }, symbol_r(As).
 
 symbol_r([A|As]) --&gt; [A], { char_type(A, alnum) }, symbol_r(As).
 symbol_r([])     --&gt; [].
-    </pre>
-
-    It is sometimes useful to refer to "anything at all", and we can
-    do this with the nonterminal&nbsp;<tt>...//0</tt> which is
-    equivalent to <tt>list(_)</tt>:
-
-    <div>
-      <pre class="box">... --&gt; [] | [_], ... .</pre>
-    </div>
-
-    The grammar construct <tt>('|')//2</tt> and its
-    equivalent&nbsp;<tt>(;)//2</tt> correspond to the Prolog control
-    structure&nbsp;<tt>(;)/2</tt> and are read as "or". When parsing
-    with DCGs, using <tt>('|')/2</tt> is preferable over <tt>(;)//2</tt>
-    due to existing conventions for writing grammars.
-
-    <br><br>
-
-    Using this definition of <tt>...//0</tt>, we can write the earlier
-    example equivalently as:
-
-    <pre>
-?- phrase(("I like ",list(What),".",...), "I like it. Anything can follow!").
-<b>   What = "it"</b>
-;  false.
     </pre>
 
     As another technique that is sometimes useful for parsing, here
