@@ -291,6 +291,43 @@ seqq([Es|Ess]) --&gt;
     provided
     by <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/dcgs.pl"><tt>library(dcgs)</tt></a>.
 
+    <center><h2>List reversal, palindromes and other exercises</h2></center>
+
+    The <i>reversal</i> of a list can be described with:
+
+    <pre>
+reversal([]) --&gt; [].
+reversal([L|Ls]) --&gt; reversal(Ls), [L].
+    </pre>
+
+    Example:
+
+    <pre>
+?- phrase(reversal("abcd"), Ls).
+<b>   Ls = "dcba".</b>
+    </pre>
+
+    Using <tt>seq//1</tt> and <tt>reversal//1</tt>,
+    a <i>palindrome</i> can be described with:
+
+    <pre>
+palindrome --&gt; [].
+palindrome --&gt; [E,E].
+palindrome --&gt; seq(Es), [_], reversal(Es).
+    </pre>
+
+    This definition can be used to <i>generate</i>, to <i>complete</i>
+    and to <i>check</i> palindromes. For example:
+
+    <pre>
+?- phrase(palindrome, "hellolleh").
+<b>   true</b>
+;  false.
+    </pre>
+
+    When reasoning about lists or solving exercises involving lists,
+    consider using DCGs for convenience.
+
     <center><h2>Relating trees to lists</h2></center>
 
     Let us now use a DCG to relate a binary tree to the in-order
