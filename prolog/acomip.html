@@ -309,13 +309,7 @@ mi3(g(G)) :-
     commutative). Procedurally, there's a difference: With minor
     adjustments to <b>mi_clause/2</b> (adding the fact
     "defaulty_better(false, false)." and guarding <i>G</i> against the
-    atom <b>false/0</b>), and after adding the additional clause
-
-    <pre>
-mi3(false) :- false.
-    </pre>
-
-    this MI can be used to prove that the query
+    atom <b>false/0</b>), this MI can be used to prove that the query
     "?-&nbsp;declarative_false."  cannot succeed given the predicate's
     definition:
 
