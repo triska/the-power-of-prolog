@@ -2,7 +2,7 @@
    The Power of Prolog
    ===================
 
-   Copyright (C) 2005-2020 Markus Triska triska@metalevel.at
+   Copyright (C) 2005-2021 Markus Triska triska@metalevel.at
 
    This Prolog program implements a simple web server that you can use
    to read the book.
@@ -61,7 +61,7 @@ accept_loop(Socket) :-
 
 request_response(Stream) :-
         (   read_line_to_chars(Stream, Chars, []),
-            phrase(("GET /",list(Path)," ") , Chars, _) ->
+            phrase(("GET /",seq(Path)," ") , Chars, _) ->
             format("request is for ~q~n", [Path]),
             (   dif(Path, ""),
                 path_file(Path, FileChars),
@@ -70,7 +70,7 @@ request_response(Stream) :-
                 file_exists(FileChars) ->
                 atom_chars(File, FileChars),
                 format("sending ~q~n", [File]),
-                phrase_from_file(list(FileContents), File, [type(binary)]),
+                phrase_from_file(seq(FileContents), File, [type(binary)]),
                 phrase(http_header(FileContents), Response, FileContents)
             ;   append("https://www.metalevel.at/", Path, Redirect),
                 see_other_chars(Redirect, Response),
@@ -105,12 +105,6 @@ http_header(Bytes) -->
         { length(Bytes, L) },
         format_("~d", [L]),
         "\r\n\r\n".
-
-%?- phrase_from_file(list(Cs), 'server.pl', [type(binary)]).
-%@   Cs = "/* - - - - - - - -  ..."
-
-list([]) --> [].
-list([L|Ls]) --> [L], list(Ls).
 
 path_file("prolog", "prolog/prolog.html").
 path_file(Path, HTML) :- append(Path, ".html", HTML).
