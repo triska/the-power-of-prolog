@@ -64,11 +64,10 @@ request_response(Stream) :-
             phrase(("GET /",seq(Path)," ",...) , Chars) ->
             format("request is for ~q~n", [Path]),
             (   dif(Path, ""),
-                path_file(Path, FileChars),
+                path_file(Path, File),
                 path_segments(Path, Segments),
                 memberd_t("..", Segments, false),
-                file_exists(FileChars) ->
-                atom_chars(File, FileChars),
+                file_exists(File) ->
                 format("sending ~q~n", [File]),
                 phrase_from_file(seq(FileContents), File, [type(binary)]),
                 phrase(http_header(FileContents), Response, FileContents)
