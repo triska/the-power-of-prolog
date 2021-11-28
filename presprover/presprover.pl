@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Presprover -- Prove formulas of Presburger arithmetic
-  Copyright (C) 2005, 2014, 2020 Markus Triska triska@metalevel.at
+  Copyright (C) 2005, 2014, 2020, 2021 Markus Triska triska@metalevel.at
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -857,7 +857,7 @@ nf_quantified(_ =< _)       --> [].
    We establish the definitive order of variables occurring in the
    formula, and thus of the tracks in the automaton, by using
    list_to_set/2 on the list of all variables. This is more reliable
-   than sort/2, since the relative (term-)order of logical variables
+   than sort/2, since the relative (term-)order of logic variables
    may change (for example, due to garbage collection or stack
    shifting) during program execution in future Scryer versions.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
