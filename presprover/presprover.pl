@@ -64,49 +64,49 @@
    Some example queries and their results:
 
       ?- valid(x > 0).
-      false.
+      %@ false.
 
       ?- satisfiable(x > 0).
-      true.
+      %@    true.
 
       ?- valid(x >= 0).
-      true.
+      %@    true.
 
       ?- valid(exists(x, x > 0)).
-      true.
+      %@    true.
 
       ?- valid(forall(x, exists(y, 3*x + y > 2))).
-      true.
+      %@    true.
 
       ?- valid(2*y + 3*x = 30 /\ x = 0 ==> y = 15).
-      true.
+      %@    true.
 
       ?- valid(x = 3 \/ not(x=3)).
-      true.
+      %@    true.
 
       ?- valid(x = 5 ==> 2*x = 10).
-      true.
+      %@    true.
 
       ?- valid(y > 1 /\ x = 3 /\ x + y < 19 ==> x + 19 > y).
-      true.
+      %@    true.
 
    You can use solution/1 to print solutions of satisfiable formulas:
 
       ?- solution(x > 100_000 /\ y = 20).
-      x=114688.
-      y=20.
-      true .
+      %@ x=114688.
+      %@ y=20.
+      %@    true
+      %@ ;  ...
 
-   For logical variables, solutions are reported as variable bindings:
+   For logic variables, solutions are reported as variable bindings:
 
       ?- solution(X > 1_000_000_000 /\ Y > 10*X).
-      X = 1536870912,
-      Y = 16106127360 ;
-      X = 1536870912,
-      Y = 16106128384 ;
-      X = 1536870912,
-      Y = 16106127872 ;
-      etc.
+      %@    X = 1536870912, Y = 16106127360
+      %@ ;  X = 1536870912, Y = 16106128384
+      %@ ;  X = 1536870912, Y = 16106127872
+      %@ ;  X = 1536870912, Y = 16106127616
+      %@ ;  X = 1536870912, Y = 16106127488
+      %@ ;  ...
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- module(presprover, [
