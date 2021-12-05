@@ -117,19 +117,20 @@
 
     Different Prolog systems provide different ways to <i>time</i>
     and <i>profile</i> your&nbsp;predicates. For example, in
-    SWI-Prolog, you can use the built-in predicate <tt>time/1</tt> to
-    measure the run&nbsp;time of any goal. For example:
+    Scryer&nbsp;Prolog, you can use the predicate <tt>time/1</tt>
+    from <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/time.pl"><tt>library(time)</tt></a>
+    to measure the run&nbsp;time of any goal. For example:
 
     <pre>
-?- <b>time</b>((X in 0..100 000,indomain(X),false)).
-% 6,700,137 inferences, <b>0.362 CPU in 0.389 seconds</b> (93% CPU, 18485129 Lips)
+?- <b>time</b>((X in 0..1_000,indomain(X),false)).
+   <b>% CPU time: 1.835 seconds</b>
 false.
     </pre>
 
-    SWI-Prolog also ships with a very nice <i>profiler</i> which you
-    can invoke via <tt>profile/1</tt>. Simply supply the goal you want
-    to profile as an argument. Other systems such as
-    SICStus&nbsp;Prolog also ship with a
+    SWI-Prolog ships with a very nice <i>profiler</i> which you can
+    invoke via <tt>profile/1</tt>. Simply supply the goal you want to
+    profile as an argument. Other systems such as SICStus&nbsp;Prolog
+    also ship with a
     built-in <a href="https://sicstus.sics.se/sicstus/docs/4.3.2/html/sicstus/Execution-Profiling.html">profiler</a>.
 
     <br><br>
