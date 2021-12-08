@@ -189,6 +189,13 @@
     <a href="https://github.com/dcnorris/precautionary/blob/main/exec/prolog/ccd.pl"><tt>cdd.pl</tt></a>
     uses pure constructs as far as possible in order to derive
     interesting statements about the trial&nbsp;specification itself.
+    This is an example of an application area where careful
+    consideration of all possible outcomes is especially important: If
+    the program unexpectedly fails to take into account <i>all</i>
+    possibilities that can arise in practice, then the derived results
+    are not valid, and medical decisions that are based on these
+    results may have disastrous effects. Logical purity ensures that
+    <i>all</i> possible cases are considered.
 
     <center><h2>Applications to teaching Prolog</h2></center>
 
