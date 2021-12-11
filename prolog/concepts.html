@@ -207,12 +207,23 @@
 
     <br><br>
 
-    Informally, you can think of Prolog's execution strategy, which is
-    called <i>depth-first search with chronological backtracking</i>,
-    as a generalization of <i>function&nbsp;calls</i> that are
-    available in other languages. The main differences are that:
-    (1)&nbsp;multiple clauses can match and (2)&nbsp;unification works
-    in both directions.
+    Informally, you can think of Prolog's default execution strategy,
+    which is called <i>depth-first search with chronological
+    backtracking</i>, as a generalization
+    of <i>function&nbsp;calls</i> that are available in other
+    languages. The main differences are that: (1)&nbsp;multiple
+    clauses can match and (2)&nbsp;unification works in both
+    directions.
+
+    <br><br>
+
+    A Prolog&nbsp;program can be interpreted with <i>different</i>
+    execution strategies that can be flexibly
+    selected. <a href="memoization.html#tabling">SLG&nbsp;resolution</a>
+    is an alternative execution strategy that is available in an
+    increasing number of Prolog&nbsp;systems. The ability to use
+    different execution strategies while keeping the program unchanged
+    is a major attraction of Prolog.
 
     <br><br>
     To find mistakes in Prolog programs,
