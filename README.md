@@ -140,6 +140,11 @@ this&nbsp;book in their&nbsp;courses! For example:
   Prolog* in [Programación para la Inteligencia
   Artificial&nbsp;(PIA)](https://www.uv.mx/personal/aguerra/pia/) at
   the Universidad Veracruzana in Mexico.
+- As of 2021, Ilkka Kokkarinen is using *The Power of Prolog* in
+  [CCPS&nbsp;721 Artificial
+  Intelligence&nbsp;I](https://github.com/ikokkari/AI) at the G.
+  Raymond&nbsp;Chang School of Continuing&nbsp;Education,
+  Ryerson&nbsp;University, in Canada.
 - I hope you are next!
 
 <pre>
