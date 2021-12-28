@@ -194,20 +194,15 @@ base58check_(<, I0) --> [Char],
         base58check(I).
 
 base58check_to_integer(B58, Integer) :-
-        reverse(B58, Chars),
-        foldl(pow58, Chars, 0-0, Integer-_).
+        foldl(base58_times58, B58, 0, Integer).
 
-pow58(Char, N0-I0, N-I) :-
+base58_times58(Char, S0, S) :-
         base58_alphabet(As),
         nth0(Value, As, Char),
-        N #= N0 + Value*58^I0,
-        I #= I0 + 1.
+        S #= S0*58 + Value.
 
 hex_to_integer(Hex, Integer) :-
-        hex_bytes(Hex, Bytes0),
-        reverse(Bytes0, Bytes),
-        foldl(pow256, Bytes, 0-0, Integer-_).
+        hex_bytes(Hex, Bytes),
+        foldl(plus_times256, Bytes, 0, Integer).
 
-pow256(Byte, N0-I0, N-I) :-
-        N #= N0 + Byte*256^I0,
-        I #= I0 + 1.
+plus_times256(B, S0, S) :- S #= S0*256 + B.
