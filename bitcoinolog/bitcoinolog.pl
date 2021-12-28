@@ -1,7 +1,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Bitcoinolog: Reason about Bitcoin addresses with Prolog.
 
-   Written 2017-2020 by Markus Triska (triska@metalevel.at)
+   Written 2017-2021 by Markus Triska (triska@metalevel.at)
 
    For more information, visit:
 
@@ -95,10 +95,10 @@ private_key_to_public_key(PrivateKey, PublicKey) :-
         Rem #= Y mod 2,
         zcompare(Cmp, 0, Rem),
         cmp0_prefix(Cmp, Prefix),
-        phrase(format_("~w~|~`0t~16r~64+", [Prefix,X]), PublicKey).
+        phrase(format_("~s~|~`0t~16r~64+", [Prefix,X]), PublicKey).
 
-cmp0_prefix(=, '02').
-cmp0_prefix(<, '03').
+cmp0_prefix(=, "02").
+cmp0_prefix(<, "03").
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Convert a private key to Wallet Import Format (WIF).
