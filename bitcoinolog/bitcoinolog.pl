@@ -177,8 +177,9 @@ hex_to_base58check(Hex, Base58Check) :-
         hex_bytes(Hex, Bytes),
         once(phrase(leading_zeroes(Bytes), Base58Check, Bs)).
 
-leading_zeroes([0|Rest]) --> ['1'], leading_zeroes(Rest).
-leading_zeroes([D|_]) --> { D #\= 0 }.
+leading_zeroes([])       --> [].
+leading_zeroes([0|Rest]) --> "1", leading_zeroes(Rest).
+leading_zeroes([D|_])    --> { D #\= 0 }.
 
 base58check(I0) -->
         { zcompare(C, 0, I0) },
