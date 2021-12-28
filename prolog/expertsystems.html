@@ -84,12 +84,12 @@
     input is the atom&nbsp;<tt>yes</tt>:
 
     <pre>
-animal(dog)  :- is_true('has fur'), is_true('says woof').
-animal(cat)  :- is_true('has fur'), is_true('says meow').
-animal(duck) :- is_true('has feathers'), is_true('says quack').
+animal(dog)  :- is_true("has fur"), is_true("says woof").
+animal(cat)  :- is_true("has fur"), is_true("says meow").
+animal(duck) :- is_true("has feathers"), is_true("says quack").
 
 is_true(Q) :-
-        format("~w?\n", [Q]),
+        format("~s?\n", [Q]),
         read(yes).
     </pre>
 
@@ -137,9 +137,9 @@ A = cat .
     We shall use the following representation to represent the knowledge:
 
     <pre>
-animals([animal(dog, [is_true('has fur'), is_true('says woof')]),
-         animal(cat, [is_true('has fur'), is_true('says meow')]),
-         animal(duck, [is_true('has feathers'), is_true('says quack')])]).
+animals([animal(dog, [is_true("has fur"), is_true("says woof")]),
+         animal(cat, [is_true("has fur"), is_true("says meow")]),
+         animal(duck, [is_true("has feathers"), is_true("says quack")])]).
     </pre>
 
     The inference rules are now represented by terms of the
@@ -232,7 +232,7 @@ state0_state(S0, S), [S] --&gt; [S0].
 condition_truth(is_true(Q), Answer, Known0, Known) :-
         if_(known_(Q,Answer,Known0),
             Known0 = Known,
-            ( format("~w?\n", [Q]),
+            ( format("~s?\n", [Q]),
               read(Answer),
               Known = [known(Q,Answer)|Known0])).
 
@@ -282,14 +282,14 @@ A = cat .
     and <tt>animal/1</tt> and&nbsp;<tt>false/0</tt> for leaves:
 
     <pre>
-tree(if_then_else('has fur',
-                  if_then_else('says woof',
+tree(if_then_else("has fur",
+                  if_then_else("says woof",
                                animal(dog),
-                               if_then_else('says meow',
+                               if_then_else("says meow",
                                             animal(cat),
                                             false)),
-                  if_then_else('has feathers',
-                               if_then_else('says quack',
+                  if_then_else("has feathers",
+                               if_then_else("says quack",
                                             animal(duck),
                                             false),
                                false))).
