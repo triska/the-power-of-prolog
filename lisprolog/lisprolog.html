@@ -103,7 +103,6 @@
         y))
 
     (append '(a b) '(3 4 5))", Vs).
-
 <b>   Vs = [append,[a,b,3,4,5]].</b>
     </pre>
 
@@ -119,9 +118,8 @@
             1
           (+ (fib (- n 1)) (fib (- n 2))))))
     (fib 24)", Vs)).
-
-<b>% 14,255,802 inferences, 3.71 CPU in 3.87 seconds (96% CPU, 3842534 Lips)
-Vs = [fib, 46368].</b>
+<b>   % CPU time: 17.320s
+   Vs = [fib,46368].</b>
     </pre>
 
     <br>
@@ -138,8 +136,7 @@ Vs = [fib, 46368].</b>
         (fib1 f2 (+ f1 f2) (+ i 1) to)))
 
     (fib 250)", Vs)).
-
-<b>   % CPU time: 0.222 seconds
+<b>   % CPU time: 0.068s
    Vs = [fib,fib1,7896325826131730509282738943634332893686268675876375].</b>
     </pre>
 
@@ -157,8 +154,7 @@ Vs = [fib, 46368].</b>
       (car f))
 
     (fib 350)", Vs)).
-
-<b>   % CPU time: 0.230 seconds
+<b>   % CPU time: 0.064s
    Vs = [fib,6254449428820551641549772190170184190608177514674331726439961915653414425].</b>
     </pre>
 
@@ -175,7 +171,6 @@ Vs = [fib, 46368].</b>
     (defun plus1 (x) (+ 1 x))
 
     (map 'plus1 '(1 2 3))", Vs).
-
 <b>   Vs = [map,plus1,[2,3,4]].</b>
     </pre>
     <br>
