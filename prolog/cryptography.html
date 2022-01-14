@@ -68,7 +68,7 @@
     methods, with sample code that you can try out and&nbsp;use.  The
     methods I use in this document are all deemed at
     least <i>reasonably&nbsp;secure</i>
-    in April&nbsp;2020. <b>Beware</b>&nbsp;though: Make sure to follow best
+    in December&nbsp;2021. <b>Beware</b>&nbsp;though: Make sure to follow best
     current practices when you use these methods in your own
     applications. This includes studying additional reference material
     and at least an introductory textbook on this subject. For
@@ -608,6 +608,8 @@ Ts = [119,23,173,207,167,255,29,135,101|...].
     prototyping their implementations. For example, here is a Prolog
     implementation of the Poly1305
     authenticator: <a href="poly1305aes.pl"><tt>poly1305aes.pl</tt></a>.
+    And here is the ChaCha20
+    core: <a href="chacha20.pl"><tt>chacha20.pl</tt></a>.
 
     <br><br>
 
@@ -878,7 +880,9 @@ Salt = [203,81,172,46,86,244,37,2,215|...],
     use Prolog to reason about <i>Bitcoin</i>&nbsp;addresses.
     See <a href="/bitcoinolog/"><b>Bitcoinolog</b></a> for more
     information. You can use the above methods to <i>encrypt</i> your
-    Bitcoin&nbsp;wallets.
+    Bitcoin&nbsp;wallets and other sensitive data:
+    Use <a href="/enscryerypt/"><b>Enscryerypt</b></a> to encrypt and
+    decrypt files.
 
     <br><br>
 
