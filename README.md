@@ -81,7 +81,7 @@ original Prolog implementation, Marseille Prolog, and is already the
 default value in the three newest Prolog implementations,
 [Scryer&nbsp;Prolog](https://github.com/mthom/scryer-prolog),
 [Tau&nbsp;Prolog](https://github.com/tau-prolog/tau-prolog) and
-[Trealla&nbsp;Prolog](https://github.com/infradig/trealla). It is to
+[Trealla&nbsp;Prolog](https://github.com/trealla-prolog/trealla). It is to
 be hoped that other Prolog&nbsp;systems will also adopt this setting
 to make string&nbsp;processing with Prolog more convenient.
 
