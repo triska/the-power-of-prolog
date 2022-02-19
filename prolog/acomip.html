@@ -73,7 +73,7 @@ natnum(s(X)) :-
 ?- Goal = natnum(X), Goal.
    Goal = natnum(0), X = 0
 ;  Goal = natnum(s(0)), X = s(0)
-;  ...
+;  ... .
     </pre>
 
     You can make the call explicit using the built-in <b><a href="/prolog/metapredicates#call">call/1</a></b>
@@ -188,7 +188,7 @@ mi1(Goal) :-
    X = 0
 ;  X = s(0)
 ;  X = s(s(0))
-;  ...
+;  ... .
     </pre>
 
     <center><h3>Using a clean representation</h3></center>
@@ -420,7 +420,7 @@ mi_list3([G0|Gs0]) :-
    X = 0
 ;  X = s(0)
 ;  X = s(s(0))
-;  ...
+;  ... .
     </pre>
 
     <center><h3>A meta-circular MI</h3></center>
@@ -454,7 +454,7 @@ mi_circ(G) :-
    X = 0
 ;  X = s(0)
 ;  X = s(s(0))
-;  ...
+;  ... .
     </pre>
 
     <center><h3 id="reasoning">Reasoning about programs</h3></center>
@@ -670,7 +670,7 @@ mi_tree(g(G), TBody => G) :-
    T = true=>natnum(0), X = 0
 ;  T = (true=>natnum(0))=>natnum(s(0)), X = s(0)
 ;  T = ((true=>natnum(0))=>natnum(s(0)))=>natnum(s(s(0))), X = s(s(0))
-;  ...
+;  ... .
     </pre>
     <br>
 
@@ -739,7 +739,7 @@ path(A, C, [e(A,B)|Es]) :-
 
 ?- mi_id(g(path(a, c, Es))).
    <b>Es = [e(a,b),e(b,c)]</b>
-;  ...
+;  ... .
     </pre>
 
     In contrast to depth-first search, iterative deepening finds a
@@ -824,7 +824,7 @@ expr(A+B) --> expr(A), [(+)], expr(B).
    E = 0, Ss = [0]
 ;  E = 1, Ss = [1]
 ;  E = 0+0, Ss = [0,+,0]
-;  ...
+;  ... .
     </pre>
 
     However, parsing ground strings leads to problems:

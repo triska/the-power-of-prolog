@@ -94,7 +94,7 @@ as --&gt; [a], as.
 ;  Ls = [a,a]
 ;  Ls = [a,a,a]
 ;  Ls = [a,a,a,a]
-;  ...</b>
+;  ... .</b>
     </pre>
 
     Prolog lets us write lists of <i>characters</i>,
@@ -132,7 +132,7 @@ as --&gt; [a], as.
 ;  Ls = "aa"
 ;  Ls = "aaa"
 ;  Ls = "aaaa"
-;  ...</b>
+;  ... .</b>
     </pre>
 
     Throughout this text, we assume that the Prolog
@@ -270,7 +270,7 @@ seqq([Es|Ess]) --&gt;
 ;  Ls = [E,E,_A]
 ;  Ls = [E,E,_A,_B]
 ;  Ls = [E,E,_A,_B,_C]
-;  ...</b>
+;  ... .</b>
     </pre>
 
     Using iterative deepening, we obtain a <i>fair</i> enumeration of answers:
@@ -283,7 +283,7 @@ seqq([Es|Ess]) --&gt;
 ;  Ls = [E,E,_A,_B]
 ;  Ls = [_A,E,E,_B]
 ;  Ls = [_A,_B,E,E]
-;  ...</b>
+;  ... .</b>
     </pre>
 
 
@@ -335,7 +335,7 @@ palindrome --&gt; [E], palindrome, [E].
 ;  Ls = [_A,_A]
 ;  Ls = [_A,_B,_A]
 ;  Ls = [_A,_B,_B,_A]
-;  ...</b>
+;  ... .</b>
     </pre>
 
     <b>Challenge</b>: Define <tt>palindrome//0</tt>
@@ -471,7 +471,7 @@ tree_nodes(node(Name, Left, Right), [_|Ls0], Ls) --&gt;
 <b>   Ns = "abcd", Tree = node(a,nil,node(b,nil,node(c,nil,node(d,nil,nil))))
 ;  Ns = "abcd", Tree = node(a,nil,node(b,nil,node(d,node(c,nil,nil),nil)))
 ;  Ns = "abcd", Tree = node(a,nil,node(c,node(b,nil,nil),node(d,nil,nil)))
-;  ...</b>
+;  ... .</b>
     </pre>
 
     Another option to parse with left-recursive grammars is to use

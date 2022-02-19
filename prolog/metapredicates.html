@@ -127,7 +127,7 @@ maplist(Pred_2, [A|As], [B|Bs]) :-
 ;  Ls = [_A], dif:dif(E,_A)
 ;  Ls = [_A,_B], dif:dif(E,_A), dif:dif(E,_B)
 ;  Ls = [_A,_B,_C], dif:dif(E,_A), dif:dif(E,_B), dif:dif(E,_C)
-;  ...
+;  ... .
     </pre>
 
     This works in <i>all directions</i>, even if <tt>Ls</tt> is not
@@ -229,7 +229,7 @@ integer_integer_sum(A, B, S) :- S #= A + B.
 ;  Ls = [S], clpz:(S in inf..sup)
 ;  Ls = [_A,_B], clpz:(_B+_A#=S)
 ;  Ls = [_A,_B,_C], clpz:(_B+_A#=_J), clpz:(_C+_J#=S)
-;  ...
+;  ... .
     </pre>
 
     As another example, we can define the <i>maximum</i> of a
