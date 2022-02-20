@@ -95,7 +95,7 @@ print_dashes :- format("~`-t~70|~n", []).
 unfold_seqs([S|Ss]) -->
         (   { S = stm(_,sequence(A,B)) } ->
             unfold_seqs([A,B|Ss])
-        ;   list([S|Ss])
+        ;   seq([S|Ss])
         ).
 
 question(Prog, stm(Current,_), Env0, Choice) :-
@@ -340,11 +340,8 @@ upto_nl([])     --> [].
    Use library(pio) to read from a file.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-list([])     --> [].
-list([L|Ls]) --> [L], list(Ls).
-
 run(File, Option) :-
-        phrase_from_file(list(Chars), File),
+        phrase_from_file(seq(Chars), File),
         run_(Chars, Option).
 
 run_(Chars, Option) :-
