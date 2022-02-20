@@ -14,11 +14,11 @@
 
    For single-stepping, use:
 
-      ?- step('your_file').
+      ?- step("your_file").
 
    To run an AL(ℤ) program, use:
 
-      ?- run('your_file').
+      ?- run("your_file").
 
 
    Project page:
