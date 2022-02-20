@@ -1,22 +1,22 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   Interpreter for AL(Z) programs.
-   Written 2006, 2015, 2020 Markus Triska triska@metalevel.at
+   Interpreter for AL(ℤ) programs.
+   Written 2006, 2015, 2020, 2022 Markus Triska triska@metalevel.at
    Public domain code. Tested with Scryer Prolog.
 
-   AL(Z) means "Assignment Language over Integers". AL(Z) is a simple
+   AL(ℤ) means "Assignment Language over Integers". AL(ℤ) is a simple
    programming language that supports variable assignments, loops and
    conditions. It is a Turing complete language.
 
-   This is a Prolog interpreter for AL(Z) programs. One interesting
+   This is a Prolog interpreter for AL(ℤ) programs. One interesting
    aspect of this interpreter: It supports *reverse execution* of
-   AL(Z) programs. This means that previous steps can be undone. When
+   AL(ℤ) programs. This means that previous steps can be undone. When
    stepping through a program, press "u" to undo the previous step.
 
    For single-stepping, use:
 
       ?- step('your_file').
 
-   To run an AL(Z) program, use:
+   To run an AL(ℤ) program, use:
 
       ?- run('your_file').
 
@@ -43,7 +43,7 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Main interpreter loop.
 
-   Declaratively, interpretation of an AL(Z) statement is a relation
+   Declaratively, interpretation of an AL(ℤ) statement is a relation
    between two variable binding environments: one environment before
    the execution of the statement, and one environment after it.
    Association lists are used to keep track of current assignments.
