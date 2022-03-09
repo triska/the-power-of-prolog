@@ -155,7 +155,7 @@ as --&gt; [a], as.
 ;  false.
     </pre>
 
-    <center><h2>Describing sequences with <tt>seq//1</tt>, <tt>seqq//1</tt> and <tt>...//0</tt></h2></center>
+    <center><h2>Describing sequences with <tt>seq//1</tt>, <tt>seqq//1</tt> and <tt>...&nbsp;//0</tt></h2></center>
 
     Let us define the nonterminal <tt>seq//1</tt> to describe a
     sequence of elements. We use its single argument to refer to the
@@ -236,7 +236,7 @@ seqq([Es|Ess]) --&gt;
     <br><br>
 
     It is sometimes useful to describe "any sequence at all", and we can
-    do this with the nonterminal&nbsp;<tt>...//0</tt> which is
+    do this with the nonterminal&nbsp;<tt>...&nbsp;//0</tt> which is
     equivalent to <tt>seq(_)</tt>:
 
     <div>
@@ -251,7 +251,7 @@ seqq([Es|Ess]) --&gt;
 
     <br><br>
 
-    <tt>seq//1</tt>, <tt>seqq//1</tt> and <tt>...//0</tt> are very
+    <tt>seq//1</tt>, <tt>seqq//1</tt> and <tt>...&nbsp;//0</tt> are very
     versatile nonterminals and can be used to elegantly solve many
     tasks that involve reasoning over lists. For example, the last
     element of a list can be described with:
@@ -288,7 +288,7 @@ seqq([Es|Ess]) --&gt;
 
 
     In Scryer Prolog, <tt>seq//1</tt>, <tt>seqq//1</tt>
-    and <tt>...//0</tt> are provided
+    and <tt>...&nbsp;//0</tt> are provided
     by <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/dcgs.pl"><tt>library(dcgs)</tt></a>.
 
     <center><h2>List reversal, palindromes and other exercises</h2></center>
