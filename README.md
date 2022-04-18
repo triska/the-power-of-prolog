@@ -7,6 +7,8 @@ formal&nbsp;logic. It supports *search* and *unification*
 as built-in features. Prolog allows us to elegantly&nbsp;solve
 many&nbsp;tasks with short and general programs.
 
+[*A Tour of Prolog:*](https://www.metalevel.at/prolog/videos/tour) [![A Tour of Prolog](prolog/videos/t_tour.png)](https://www.metalevel.at/prolog/videos/tour)
+
 The goal of this material is to *bridge the&nbsp;gap* between the
 great traditional Prolog textbooks of the&nbsp;past and the language
 *as it currently is*, several decades after these books
