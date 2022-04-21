@@ -1,33 +1,39 @@
 :- use_module(library(clpb)).
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
+:- use_module(library(lists)).
+:- use_module(library(dcgs)).
+:- use_module(library(between)).
+:- use_module(library(pairs)).
+:- use_module(library(time)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Independent sets, maximal independent sets (kernels) and maximal
    independent sets with maximum weight of the Cycle graph C_100.
 
-   Example queries:
+   Example queries, tested with Scryer Prolog:
 
    (1) Independent sets:
 
        ?- time((independent_set(I,_),sat_count(I,N))).
-       %@ % 2,101,289 inferences, 0.194 CPU
-       %@ I = *(...),
-       %@ N = 792070839848372253127.
+       %@    % CPU time: 0.999s
+       %@    I = *(....), N = 792070839848372253127
+       %@ ;  % CPU time: 0.000s
+       %@    false.
 
    (2) Maximal independent sets:
 
        ?- time((kernel(K,_),sat_count(K,N))).
-       %@ % 10,480,391 inferences, 1.210 CPU
-       %@ K = *...* *...,
-       %@ N = 1630580875002.
+       %@    % CPU time: 3.893s
+       %@    K = *(...)* *(...), N = 1630580875002
+       %@ ;  % CPU time: 0.000s
+       %@    false.
 
    (3) Maximal independent sets with maximum weight:
 
        %?- time(maximum_thue_morse_kernel(Is, Negatives, Max)).
-       %@ % 28,998,719 inferences, 3.636 CPU
-       %@ Is = [1, 3, 6, 9, 12, 15, 18, 20, 23|...],
-       %@ Negatives = [1, 25, 41, 73, 97],
-       %@ Max = 28 .
+       %@    % CPU time: 122.740s
+       %@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51,...], Negatives = [1,25,41,73,97], Max = 28
+       %@ ;  ... .
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -54,7 +60,7 @@ edge_(_, N1, X, Y) :-
   For example, the Thue-Morse weights of the integers 1,...,10 are:
 
    ?- thue_morse_weights(10, Ms).
-   %@ Ms = [-1, -1, 1, -1, 1, 1, -1, -1, 1|...].
+   %@    Ms = [-1,-1,1,-1,1,1,-1,-1,1,1].
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -101,11 +107,22 @@ key_negative(K-_) :- K #< 0.
 
 key_one(1-_).
 
+include(_, [], []).
+include(Goal_1, [E|Es], Ls) :-
+        (   call(Goal_1, E) ->
+            Ls = [E|Rs]
+        ;   Ls = Rs
+        ),
+        include(Goal_1, Es, Rs).
+
 %?- time(maximum_thue_morse_kernel(Is, Negatives, Max)).
-%@ % 32,886,119 inferences, 6.049 CPU in 6.068 seconds (100% CPU, 5436963 Lips)
-%@ Is = [1, 3, 6, 9, 12, 15, 18, 20, 23|...],
-%@ Negatives = [1, 25, 41, 73, 97],
-%@ Max = 28 .
+%@    % CPU time: 124.214s
+%@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51,...], Negatives = [1,25,41,73,97], Max = 28
+%@ ;  % CPU time: 0.039s
+%@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51,...], Negatives = [1,25,41,73,94], Max = 28
+%@ ;  % CPU time: 1.020s
+%@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51,...], Negatives = [1,25,41,73,97], Max = 28
+%@ ;  ... .
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Independent set:
@@ -148,5 +165,5 @@ node_or(Assoc, Node, Var + +(Vars)) :-
 u_to_var(Assoc, Node, Var) :- get_assoc(Node, Assoc, Var).
 
 %?- kernel(Sat, _), sat_count(Sat, C).
-%@ Sat = ~ (... + ... + ... * ... + _G117*_G118+_G118*_G117+_G118*_G119+_G119*_G118+_G20*_G119+_G119*_G20)* (... * ... * (... + ...)* (_G113+ (... + ...))* (_G114+ (... + ... + _G115))* (_G115+ (0+_G114+_G116))* (_G116+ (0+_G115+_G117))* (_G117+ (0+_G116+_G118))* (_G118+ (0+_G117+_G119))* (_G119+ (0+_G20+_G118))),
-%@ C = 1630580875002.
+%@    Sat = *(...)* *(...), C = 1630580875002
+%@ ;  ... .

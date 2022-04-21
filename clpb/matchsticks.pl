@@ -1,8 +1,15 @@
-:- use_module(library(clpfd)).
+:- use_module(library(clpz)).
 :- use_module(library(clpb)).
+:- use_module(library(between)).
+:- use_module(library(pairs)).
+:- use_module(library(format)).
+:- use_module(library(lists)).
+:- use_module(library(dcgs)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  Task: Remove minimum number of matchsticks so that no subsquare remains.
+   Task: Remove minimum number of matchsticks so that no subsquare remains.
+
+   Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,20 +33,18 @@ layout(L) :-
 ?- matchsticks(L, Vs),
    same_length(Vs, Coeffs), maplist(=(1), Coeffs),
    weighted_maximum(Coeffs, Vs, Maximum),
-   maplist(writeln, L).
-%@ [x,1,x,0,x,1,x,1,x]
-%@ [1,o,1,o,1,o,1,o,1]
-%@ [x,0,x,1,x,0,x,0,x]
-%@ [1,o,1,o,1,o,1,o,1]
-%@ [x,1,x,0,x,0,x,1,x]
-%@ [1,o,1,o,1,o,1,o,1]
-%@ [x,0,x,1,x,1,x,0,x]
-%@ [1,o,1,o,0,o,1,o,1]
-%@ [x,1,x,1,x,1,x,1,x]
-%@ L = [[x, 1, x, 0, x, 1, x, 1|...], ..., [...|...]],
-%@ Vs = [1, 1, 0, 1, 0, 1, 1, 1, 0|...],
-%@ Coeffs = [1, 1, 1, 1, 1, 1, 1, 1, 1|...],
-%@ Maximum = 31 .
+   maplist(portray_clause, L).
+%@ [x,1,x,0,x,1,x,1,x].
+%@ [1,o,1,o,1,o,1,o,1].
+%@ [x,0,x,1,x,0,x,0,x].
+%@ [1,o,1,o,1,o,1,o,1].
+%@ [x,1,x,0,x,0,x,1,x].
+%@ [1,o,1,o,1,o,1,o,1].
+%@ [x,0,x,1,x,1,x,0,x].
+%@ [1,o,1,o,0,o,1,o,1].
+%@ [x,1,x,1,x,1,x,1,x].
+%@    L = [[x,1,x,0,x,1,x,1,x]|...], Vs = [1,1,0,1,0,1,1,1,0,1,1,0,1,1,1,1,0,1,0,1,...], Coeffs = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,...], Maximum = 31
+%@ ;  ... .
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 matchsticks(L, Vs) :-

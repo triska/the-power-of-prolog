@@ -1,6 +1,11 @@
 :- use_module(library(clpb)).
+:- use_module(library(lists)).
+:- use_module(library(assoc)).
+:- use_module(library(pairs)).
+:- use_module(library(time)).
+:- use_module(library(format)).
 
-:- include(edges).
+:- use_module(edges).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Independent set:
@@ -9,13 +14,13 @@
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 %?- independent_set(Sat), time(sat_count(Sat, Count)).
-%@ % 14,002,141 inferences, 1.563 CPU in 1.575 seconds (99% CPU, 8956017 Lips)
-%@ Sat = *(...),
-%@ Count = 211954906.
+%@    % CPU time: 6.306s
+%@    Sat = *(...), Count = 211954906
 
 independent_set(*(NBs)) :-
         findall(U-V, edge(U, V), Edges),
-        setof(U, V^(member(U-V, Edges);member(V-U, Edges)), Nodes),
+        findall(U, (member(U-V, Edges);member(V-U, Edges)), Nodes0),
+        sort(Nodes0, Nodes),
         pairs_keys_values(Pairs, Nodes, _),
         list_to_assoc(Pairs, Assoc),
         maplist(not_both(Assoc), Edges, NBs).
