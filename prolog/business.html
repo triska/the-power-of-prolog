@@ -27,7 +27,7 @@
         violating the standard.</li>
       <li>Prolog <b>cuts&nbsp;costs</b>: Since Prolog programs are
         so&nbsp;general, you typically need <i>less&nbsp;code</i>,
-        which you can type in less&nbsp;time.</li>
+        which you can type, read and audit in less&nbsp;time.</li>
       <li>Prolog has a proven <b>track&nbsp;record</b> in many very
       serious applications. See for example the SICStus
         <a href="https://sicstus.sics.se/customers.html">customer&nbsp;references</a>.</li>
@@ -209,12 +209,12 @@ year_month_days(2017, mar, 31).
     <pre>
 ?- <b>format("year month visitors~n", []),</b>
    year_month_total(Year, Month, Total),
-   <b>format("~w ~w ~t~D~20|~n", [Year,Month,Total]),</b>
+   <b>format("~w ~w ~t~U~20|~n", [Year,Month,Total]),</b>
    false.
 <b>year month visitors
-2017 jan     930,558
-2017 feb     921,564
-2017 mar   1,112,001</b>
+2017 jan     930_558
+2017 feb     921_564
+2017 mar   1_112_001</b>
     </pre>
 
     Notice the use of <i>forced backtracking</i>
