@@ -695,7 +695,7 @@ num_leaves_(node(_,Left,Right)) --&gt;
     file <tt>dcg.html</tt> to a list of characters, we use:
 
     <pre>
-?- phrase_from_file(seq(Chars), 'dcg.html').
+?- phrase_from_file(seq(Chars), "dcg.html").
 <b>   Chars = "&lt;!DOCTYPE html&gt;\n&lt;ht ..."</b>
 ;  false.
     </pre>
@@ -726,7 +726,7 @@ like(What) --&gt; "I like ", seq(What), ".", ... .
     file&nbsp;<tt>like.txt</tt> starts with the string "I like it."
 
     <pre>
-?- phrase_from_file(like(What), 'like.txt').
+?- phrase_from_file(like(What), "like.txt").
 <b>   What = "it"</b>
 ;  false.
     </pre>
@@ -808,7 +808,7 @@ eos([], []).</pre>
     a list of lines for further reasoning:
 
     <pre>
-?- phrase_from_file(lines(Ls), 'like.txt').
+?- phrase_from_file(lines(Ls), "like.txt").
 <b>   Ls = ["I like it. Anythi ..."].</b>
     </pre>
 
