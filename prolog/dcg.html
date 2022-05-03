@@ -104,7 +104,7 @@ as --&gt; [a], as.
 
     <pre>
 ?- set_prolog_flag(double_quotes, chars).
-<b>true.</b>
+<b>   true.</b>
     </pre>
 
     or by adding the following directive in your initialisation file
@@ -148,7 +148,7 @@ as --&gt; [a], as.
 ;  false.
 
 ?- phrase(as, "bcd").
-<b>false.</b>
+<b>   false.</b>
 
 ?- phrase(as, [a,X,a]).
 <b>   X = a</b>
@@ -195,7 +195,7 @@ badseq(Ls) --&gt; Ls.
 
     <pre>
 ?- phrase(badseq(Ls), "abc").
-<b>ERROR: call_dcg/3: Arguments are not sufficiently instantiated</b>
+<b>   error(instantiation_error,phrase/3).</b>
     </pre>
 
     Second, such a simplistic definition can be tricked into invoking
@@ -535,7 +535,7 @@ nt2      --&gt; [b].
 
     <pre>
 ?- phrase(nt1, "a").
-<b>false.</b>
+<b>   false.</b>
     </pre>
 
     The list difference version <tt>phrase/3</tt> shows what remains
