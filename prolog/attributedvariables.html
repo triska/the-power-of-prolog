@@ -968,10 +968,18 @@ X = Y,
     unification. Nobody is able to think all cases through completely.
     An example of a situation that can arise due to simultaneous
     unifications is explained in
-    commit&nbsp;<a href="https://github.com/SWI-Prolog/swipl-devel/commit/9c8ea20b7c9aa5a2b86d4bcc82a93f8f0e7b34c1">9c8ea20b7</a>. A
-    highly experienced expert in constraint programming ran into
+    commit&nbsp;<a href="https://github.com/SWI-Prolog/swipl-devel/commit/9c8ea20b7c9aa5a2b86d4bcc82a93f8f0e7b34c1">9c8ea20b7</a>.
+    A highly experienced expert in constraint programming ran into
     the <a href="https://github.com/SWI-Prolog/issues/issues/15">same&nbsp;issue</a>
-    in his own constraint solver.
+    in his own implementation of the <tt>dif/2</tt> constraint, even
+    though it is one of the simplest and most elementary constraints
+    Prolog systems provide. A few years
+    later, <a href="https://github.com/SWI-Prolog/issues/issues/105">another&nbsp;mistake</a>
+    was found and corrected in the implementation of
+    SWI-Prolog's <tt>dif/2</tt> constraint, and to this
+    day, <a href="https://github.com/SWI-Prolog/issues/issues/113"><tt>dif/2</tt>
+      remains incorrectly implemented in SWI-Prolog</a>,
+    <a href="https://github.com/SWI-Prolog/issues/issues/112">even for acyclic&nbsp;terms</a>.
 
     <br><br>
 
