@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Reason about Term Rewriting Systems.
-   Written 2015-2020 by Markus Triska (triska@metalevel.at)
+   Written 2015-2022 by Markus Triska (triska@metalevel.at)
    Public domain code. Tested with Scryer Prolog.
 
    Motivating example
@@ -70,11 +70,6 @@
 :- use_module(library(pairs)).
 :- use_module(library(iso_ext)).
 :- use_module(library(format)).
-
-permutation([], []).
-permutation([X|Xs], Ys) :-
-        permutation(Xs, Yss),
-        select(X, Ys, Yss).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Variables in equations and TRS are represented by Prolog variables.
@@ -185,12 +180,6 @@ ord(Fs, F1, F2, Ord) :-
         once((nth0(N1, Fs, F1),
               nth0(N2, Fs, F2))),
         compare(Ord, N1, N2).
-
-nth0(0, [E|_], E).
-nth0(N0, [_|Es], E) :-
-        N0 #> 0,
-        N1 #= N0 - 1,
-        nth0(N1, Es, E).
 
 lex(Cmp, Xs, Ys, Ord) :- lex_(Xs, Ys, Cmp, Ord).
 
