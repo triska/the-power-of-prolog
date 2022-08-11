@@ -138,22 +138,20 @@ list_element_rest([L|Ls0], E, [L|Ls]) :-
     generate, complete or test possible&nbsp;solutions. For example:
 
     <pre>
-?- list_element_rest([a,b], E, Rest).
-E = a,
-Rest = [b] ;
-E = b,
-Rest = [a] ;
-false.
+?- list_element_rest("ab", E, Rest).
+   E = a, Rest = "b"
+;  E = b, Rest = "a"
+;  false.
     </pre>
 
     And also:
 
     <pre>
-?- list_element_rest(Ls, c, [a,b]).
-Ls = [c, a, b] ;
-Ls = [a, c, b] ;
-Ls = [a, b, c] ;
-false.
+?- list_element_rest(Ls, c, "ab").
+   Ls = "cab"
+;  Ls = "acb"
+;  Ls = "abc"
+;  false.
     </pre>
 
 
@@ -181,14 +179,14 @@ list_permutation1(Ls, [E|Ps]) :-
     Here is an example query:
 
     <pre>
-<b>?- list_permutation1([a,b,c], Ps).</b>
-Ps = [a, b, c] ;
-Ps = [a, c, b] ;
-Ps = [b, a, c] ;
-Ps = [b, c, a] ;
-Ps = [c, a, b] ;
-Ps = [c, b, a] ;
-false.
+<b>?- list_permutation1("abc", Ps).</b>
+   Ps = "abc"
+;  Ps = "acb"
+;  Ps = "bac"
+;  Ps = "bca"
+;  Ps = "cab"
+;  Ps = "cba"
+;  false.
     </pre>
 
     Let us now run a few benchmarks. We generate <i>all</i> solutions
@@ -199,11 +197,11 @@ false.
    length(Ls, L),
    <b>time((list_permutation1(Ls,_),false))</b>.
 <b>9.</b>
-% 3,322,110 inferences, 0.440 CPU in 0.457 seconds (96% CPU, 7546288 Lips)
+   % CPU time: 1.662s
 <b>10.</b>
-% 33,221,103 inferences, 4.447 CPU in 5.166 seconds (86% CPU, 7470928 Lips)
+   % CPU time: 16.620s
 <b>11.</b>
-% 365,432,136 inferences, 49.162 CPU in 58.028 seconds (85% CPU, 7433257 Lips)
+   % CPU time: 187.939s
     </pre>
 
     Now consider an alternative definition of this relation, which we
@@ -224,11 +222,11 @@ list_permutation2([L|Ls0], Ps) :-
    length(Ls, L),
    <b>time((list_permutation2(Ls,_),false))</b>.
 <b>9.</b>
-% 772,005 inferences, 0.094 CPU in 0.099 seconds (94% CPU, 8252942 Lips)
+   % CPU time: 0.344s
 <b>10.</b>
-% 7,666,725 inferences, 0.922 CPU in 1.044 seconds (88% CPU, 8313976 Lips)
+   % CPU time: 3.342s
 <b>11.</b>
-% 83,871,526 inferences, 10.084 CPU in 13.271 seconds (76% CPU, 8317163 Lips)
+   % CPU time: 36.651s
     </pre>
 
     Note that this version is <i>several times faster</i> in each of
@@ -276,16 +274,17 @@ list([_|Ls]) :-
     This is a very general relation that works in all directions. For example:
 
     <pre>    
-?- list([a,b,c]).
-true.
+?- list("abc").
+   true.
 
 ?- list(Ls).
-Ls = [] ;
-Ls = [_15346] ;
-Ls = [_15346, _15352] .
+   Ls = []
+;  Ls = [_A]
+;  Ls = [_A,_B]
+;  ... .
 
 ?- list(true).
-false.
+   false.
     </pre>
 
     After seeing they can actually affect the control flow of Prolog
@@ -309,8 +308,8 @@ list([_|Ls]) :-
     A quick test case "confirms" that <i>everything</i> still works:
 
     <pre>
-?- list([a,b,c]).
-true.
+?- list("abc").
+   true.
     </pre>
 
     The <i>flaw</i> in this reasoning is that the clauses are in
@@ -325,7 +324,7 @@ true.
 
     <pre>
 ?- list(Ls).
-Ls = []. % <b>incompleteness</b>!
+   Ls = []. % <b>incompleteness</b>!
     </pre>
 
     Thus, instead of an <i>infinite</i> set of solutions, the
@@ -366,17 +365,16 @@ Ys = [Xs].
     is <i>not&nbsp;flattened</i>! Witness the evidence for yourself:
 
     <pre>
-?- flatten(Xs, Ys), Xs = [a].
-Xs = [a],
-Ys = [[a]].
+?- flatten(Xs, Ys), Xs = "a".
+   Xs = "a", Ys = ["a"].
     </pre>
 
     Thus, <tt>Y</tt> is <i>not</i> a flat&nbsp;list, but
     a <i>nested</i>&nbsp;list! In contrast, exchanging the goals yields:
 
     <pre>
-?- Xs = [a], flatten(Xs, Ys).
-Xs = Ys, Ys = [a].
+?- Xs = "a", flatten(Xs, Ys).
+   Xs = Ys, Ys = "a".
     </pre>
 
     This means that exchanging the order of goals <i>changes</i> the
