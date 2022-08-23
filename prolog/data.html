@@ -415,10 +415,10 @@
 
     <pre>
 ?-        atom(X).
-<b>false.</b>
+<b>   false.</b>
 
 ?- X = a, atom(X).
-<b>X = a.</b>
+<b>   X = a.</b>
     </pre>
 
     Therefore, new families of predicates for type testing are now
@@ -556,21 +556,19 @@
 
     <pre>
 <b>?- functor(f(a,g(X)), Functor, Arity).</b>
-Functor = f,
-Arity = 2.
+   Functor = f, Arity = 2.
 
 <b>?- functor(Term, f, 2).</b>
-Term = f(_25002, _25004).
+   Term = f(_A,_B).
 
 <b>?- arg(2, f(a,g(X)), Arg).</b>
-Arg = g(X).
+   Arg = g(X).
 
 <b>?- f(a,g(X)) =.. [Functor|Args].</b>
-Functor = f,
-Args = [a, g(X)].
+   Functor = f, Args = [a,g(X)].
 
 <b>?- Term =.. [f,a,g(X)].</b>
-Term = f(a, g(X)).
+   Term = f(a,g(X)).
     </pre>
 
     These predicates cannot be defined by a finite set of clauses, and
