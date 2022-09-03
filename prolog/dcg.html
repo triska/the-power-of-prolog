@@ -18,9 +18,9 @@
     <center><h2>Introduction</h2></center>
 
     A Prolog <b>definite clause grammar</b> (DCG) describes
-    a <a href="data#list">list</a>. Operationally, DCGs can be used
+    a <i>sequence</i>. Operationally, DCGs can be used
     to <i>parse</i>, <i>generate</i>, <i>complete</i> and <i>check</i>
-    lists.
+    sequences manifested as <a href="data#list">lists</a>.
 
     <br><br>
 
@@ -39,10 +39,9 @@
 Head --&gt; Body.
     </pre>
 
-    A rule's <i>body</i> consists of terminal&nbsp;sequences,
-    nonterminals, and grammar&nbsp;goals.
-    A <b>terminal&nbsp;sequence</b> is a list, and stands for the
-    elements it&nbsp;contains. These elements are
+    A rule's <i>body</i> consists of terminal, nonterminals, and
+    grammar&nbsp;goals. A <b>terminal</b> is a list, and stands for
+    the elements it&nbsp;contains. These elements are
     <i>terminal&nbsp;symbols</i> of the grammar. A <b>nonterminal</b>
     refers to a DCG or other grammar construct, and stands for the
     elements it describes. A nonterminal therefore stands for a
@@ -58,20 +57,20 @@ Head --&gt; Body.
 
     <br><br>
 
-    As an example of a DCG, let us describe lists whose every element
+    As an example of a DCG, let us describe sequences whose every element
     is the atom&nbsp;<tt>a</tt>. We shall use the
-    nonterminal&nbsp;<tt>as//0</tt> to refer to such lists:
+    nonterminal&nbsp;<tt>as//0</tt> to refer to such sequences:
 
     <pre>
 as --&gt; [].
 as --&gt; [a], as.
     </pre>
 
-    The first rule states: The empty list is such a list. In the
-    second rule, we read the comma as "<i>and then</i>". Therefore,
-    the second rule states: A list that contains as its first element
-    the atom&nbsp;<tt>a</tt> <i>and then</i> only
-    atoms&nbsp;<tt>a</tt> is also such a list.
+    The first rule states: The empty sequence is such a sequence. The second
+    rule uses the nonterminal <tt>(',')//2</tt>, which we read as
+    "<i>and&nbsp;then</i>". Therefore, the second rule states: A sequence
+    that contains as its first element the atom&nbsp;<tt>a</tt> <i>and
+    then</i> only atoms&nbsp;<tt>a</tt> is also such a sequence.
 
     <br><br>
 
@@ -378,7 +377,7 @@ tree_nodes(node(Name, Left, Right)) --&gt;
     </pre>
 
     You can obtain other orders by moving the
-    terminal&nbsp;sequence&nbsp;<tt>[Name]</tt> in the DCG body.
+    terminal&nbsp;<tt>[Name]</tt> in the DCG body.
 
     <br><br>
     <center><h2 id="leftrecursion">Left recursion</h2></center>
@@ -459,8 +458,9 @@ tree_nodes(node(Name, Left, Right), [_|Ls0], Ls) --&gt;
     misleading: We are <i>not</i> talking about&mdash;as the name may
     suggest&mdash;a special <i>kind</i> of list. The additional
     arguments are completely
-    ordinary&nbsp;<a href="data#list">lists</a>. It is
-    their <i>differences</i> that matter especially in such cases.
+    ordinary&nbsp;<a href="data#list">lists</a> or partial&nbsp;lists.
+    It is their <i>differences</i> that matter especially in such
+    cases.
 
     <br><br>
 
@@ -497,9 +497,10 @@ tree_nodes(node(Name, Left, Right), [_|Ls0], Ls) --&gt;
     <center><h2 id="semicontext">Semicontext notation</h2></center>
 
     Using <b>semicontext notation</b>, in now outdated terminology
-    also called <i>pushback lists</i> or <i>right-hand context</i>,
-    you can insert list elements that were initially not in the list
-    that is being parsed. A DCG rule of the form:
+    also called <i>pushback lists</i> or <i>right-hand context</i>, we
+    can make statements about <i>remaining</i> elements. Operationally
+    speaking, we can insert list elements that were initially not in
+    the list that is being parsed. A DCG rule of the form:
 
     <pre>
 Head, <b>[T<sub>1</sub>,...,T<sub>n</sub>]</b> --&gt; Body.
