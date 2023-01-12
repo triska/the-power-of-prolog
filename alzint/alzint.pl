@@ -71,12 +71,12 @@ step([S0|Ss0], Prog, Undo0, Env0, Env) :-
         ;   Choice = u ->
             (   Undo0 = [Us-UEs|Undo1] ->
                 step(Us, Prog, Undo1, UEs, Env)
-            ;   format("\nnothing to undo\n\n", []),
+            ;   format("~nnothing to undo~2n", []),
                 step([S|Ss], Prog, Undo0, Env0, Env)
             )
         ;   Choice = q -> halt
         ;   Choice = r -> run([S|Ss], Prog, Env0, Env)
-        ;   format("invalid choice\n\n", []),
+        ;   format("invalid choice~2n", []),
             step([S|Ss], Prog, Undo0, Env0, Env)
         ).
 
@@ -135,7 +135,7 @@ eval(bin(Op,A,B), Env, Value) :-
         eval_(Op, VA, VB, Value).
 eval(v(V), Env, Value) :-
         (   env_get_var(Env, V, Value) -> true
-        ;   format("\n\nvariable '~w' not in environment.\n\n\n", [V]),
+        ;   format("~2nvariable '~w' not in environment.~3n", [V]),
             halt
         ).
 eval(n(N), _, N).
@@ -299,8 +299,8 @@ display_program(prog(Lines,Displace), Current0) :-
 display_line(Current, Line, N0, N) :-
         N #= N0 + 1,
         (   N0 #= Current ->
-            format(" ==>  ~s\n", [Line])
-        ;   format("      ~s\n", [Line])
+            format(" ==>  ~s~n", [Line])
+        ;   format("      ~s~n", [Line])
         ).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -346,10 +346,10 @@ run(File, Option) :-
 
 run_(Chars, Option) :-
         (   lex_analysis(Chars, Tokens) ->
-            % format("\n\ntokens:\n\n~w\n", [Tokens]),
+            % format("~2ntokens:~2n~w~n", [Tokens]),
             (   syn_analysis(Tokens, Tree, Env0) ->
                 nl,nl,
-                % format("\nAST:\n\n~w\n", [Tree]),
+                % format("~nAST:~2n~w~n", [Tree]),
                 % print_env(Env0),
                 Tree = stm(First,_),
                 phrase(lines(Chars), Lines),
@@ -359,7 +359,7 @@ run_(Chars, Option) :-
                 nl,
                 print_env(Env),
                 nl, nl
-            ;   format("syntax error\n", [])
+            ;   format("syntax error~n", [])
             ),
             halt
         ;   format("lexical error", []),
