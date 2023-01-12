@@ -150,7 +150,16 @@
 
     Regarded as a theorem prover, Prolog with its default execution
     strategy is <i>incomplete</i> in the sense that, in&nbsp;general,
-    not <i>all</i> logical consequences of a theory are found.
+    not <i>all</i> logical consequences of a theory are found, because
+    infinite branches of the search tree may occlude them. For
+    example, even though <i>a</i> is a logical consequence of the
+    theory {<i>a</i>&leftarrow;<i>a</i>}&nbsp;&cup;&nbsp;{<i>a</i>}, a
+    depth-first traversal of the search space over admissible
+    inferences will not derive this if it gets caught up in the
+    infinite branch trying to derive <i>a</i>
+    from <i>a</i>&leftarrow;<i>a</i> by deriving <i>a</i>,
+    then <i>again</i> trying to derive <i>a</i>
+    from <i>a</i>&leftarrow;<i>a</i> etc.
 
     <br><br>
 
