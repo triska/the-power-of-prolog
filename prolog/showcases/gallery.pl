@@ -14,7 +14,7 @@
 
    To create thumbnails, evaluate the following code with Tcl:
 
-        foreach f [glob {[PI]*.JPG}] {
+        foreach f [lsort [glob {[PI]*.JPG}]] {
             puts "doing $f"
             if {![file exists t_$f]} {
                 exec convert $f -resize 500x t_$f
