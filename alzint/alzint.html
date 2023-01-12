@@ -10,7 +10,7 @@
   </head>
   <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
     <br><br>
-    <center><h1>Alzint &mdash; An interpreter for AL(Z) programs</h1></center>
+    <center><h1>Alzint &mdash; An interpreter for AL(&#x2124;) programs</h1></center>
     <br><br>
 
     Source code: <a href="alzint.pl"><b><tt>alzint.pl</tt></b></a>
@@ -22,38 +22,38 @@
 
     <br><br>
 
-    AL(Z) stands for <i>Assignment Language over Integers</i>. It is a
+    AL(&#x2124;) stands for <i>Assignment Language over Integers</i>. It is a
     <a href="https://en.wikipedia.org/wiki/Turing_completeness">Turing
       complete</a> programming language supporting variable
       assignments, loops and conditions.
 
     <br><br>
 
-    <i>Alzint</i> is an interpreter for AL(Z) programs, written in
-    Prolog. Alzint lets you run AL(Z) programs. It also supports
-    single-stepping and <i>reverse execution</i> of AL(Z) programs.
+    <i>Alzint</i> is an interpreter for AL(&#x2124;) programs, written in
+    Prolog. Alzint lets you run AL(&#x2124;) programs. It also supports
+    single-stepping and <i>reverse execution</i> of AL(&#x2124;) programs.
     This means that previous steps of the execution can
     be <i>undone</i> and later repeated.
 
     <br><br>
 
-    To run an AL(Z) program with Alzint, use <tt>run(+File)</tt>:
+    To run an AL(&#x2124;) program with Alzint, use <tt>run(+File)</tt>:
 
     <pre>
-      ?- run('ex1.txt').
+      ?- run("ex1.txt").
     </pre>
 
     For single-stepping, use <tt>step(+File)</tt>:
 
     <pre>
-      ?- step('ex1.txt').
+      ?- step("ex1.txt").
     </pre>
 
-    When single-stepping through an AL(Z) program, you press:
+    When single-stepping through an AL(&#x2124;) program, you press:
 
     <ul>
-      <li><b>c</b> to continue</li>
-      <li><b>r</b> to run</li>
+      <li><b>c</b> to continue with the next statement</li>
+      <li><b>r</b> to run the program without further interruption</li>
       <li><b>u</b> to undo the preceding step (reverse execution)</li>
       <li><b>q</b> to quit</li>
     </ul>
@@ -77,7 +77,7 @@
     <p class="box">
       <b>Acknowledgments:</b> Many thanks
       to <a href="https://www.logic.at/staff/chrisf">Christian
-        Ferm&uuml;ller</a> for spawning my interest in AL(Z) and countless
+        Ferm&uuml;ller</a> for spawning my interest in AL(&#x2124;) and countless
       other topics in theoretical computer science.
     </p>
     <br><br>
