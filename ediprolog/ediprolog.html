@@ -22,7 +22,7 @@
 
           <br><br>
 
-          The latest version of <i>ediprolog</i> is 2.1.
+          The latest version of <i>ediprolog</i> is 2.2.
 
           <br><br>
 
@@ -33,12 +33,9 @@
           <blockquote>
             <b>New</b>:
             <ul>
-              <li>Scryer Prolog is now the default Prolog system. </li>
-              <li>ediprolog now supports two Prolog systems by setting
-                the new variable <tt>ediprolog-system</tt> to
-                either <tt>scryer</tt> or <tt>swi</tt>.</li>
-              <li>Remote Prolog processes are now supported. This requires Emacs 26.1 or greater.</li>
-              <li><tt>ediprolog-prefix</tt> can now be buffer-local.</li>
+              <li>handle answer format of recent Scryer Prolog versions</li>
+              <li>faithful processing of multiline queries when using Scryer Prolog</li>
+              <li>improved compatibility with older Emacs versions</li>
             </ul>
           </blockquote>
           <br><br>
@@ -98,7 +95,7 @@ M-x customize-group RET ediprolog RET
     The two most important configuration options are:
 
     <ul>
-      <li><tt>ediprolog-system</tt>, either scryer (default) or swi</li>
+      <li><tt>ediprolog-system</tt>, either <tt>scryer</tt> (default) or <tt>swi</tt></li>
       <li><tt>ediprolog-program</tt>, the path of the Prolog executable.</li>
     </ul>
 
@@ -141,13 +138,13 @@ M-x customize-group RET ediprolog RET
     An example of a query is:
 
     <pre>
-%?- member(X, [a,b,c]).
+%?- member(X, "abc").
     </pre>
 
     If you press <tt>F10</tt> when point is on that query, you get:
 
     <pre>
-%?- member(X, [a,b,c]).
+%?- member(X, "abc").
 %@    X = a
 %@ ;  X = b
 %@ ;  X = c
@@ -213,43 +210,30 @@ M-x customize-group RET ediprolog RET
       </table>
     </center>
 
+    <br><br>
+
     <center><h2>Multi-line queries</h2></center>
 
-    <i>ediprolog</i> also supports multi-line queries. There are two
-    ways to write a query that spans multiple lines in such a way that
-    the meaning of the program is retained:
+    <i>ediprolog</i> also supports multi-line queries.  For this to
+    work, put the whole query in a <i>comment&nbsp;block</i> that
+    spans multiple lines.
 
-    <ul>
-      <li> Comment out <i>each&nbsp;line</i> of the query,
-      using&nbsp;<tt>%</tt>.
-        <br><br>
-      For example:
+    <br><br>
 
-        <pre>
-%?- X <a href="/prolog/clpfd#constraint">#\=</a> 3,
-%   X <a href="/prolog/clpfd#constraint">#\=</a> 5.
-%@ X <a href="/prolog/clpfd#domain">in</a> inf..2\/4\/6..sup.
-        </pre>
-      </li>
-      <li>Put the whole query in a <i>comment&nbsp;block</i> that
-      spans multiple lines.
+    For example:
 
-        <br><br>
-
-        For example:
-
-        <pre>
+    <pre>
 /*
   ?- Vs = [X,Y,Z],
      Vs <a href="/prolog/clpfd#domain">ins</a> 1..2,
      <a href="/prolog/clpfd#propagation">all_distinct</a>(Vs).
   %@ false.
 */
-        </pre>
-        Using <a href="/pceprolog/">PceProlog</a>, you can quickly
-        create such comment blocks with <tt>C-c&nbsp;q</tt>.
-      </li>
-    </ul>
+    </pre>
+    Using <a href="/pceprolog/">PceProlog</a>, you can quickly
+    create such comment blocks with <tt>C-c&nbsp;q</tt>.
+
+    <br><br>
 
     To evaluate a multi-line query, invoke <tt>ediprolog-dwim</tt> on
     the <i>first</i>&nbsp;line of the query, which starts

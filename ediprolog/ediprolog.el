@@ -1,6 +1,6 @@
 ;;; ediprolog.el --- Emacs Does Interactive Prolog
 
-;; Copyright (C) 2006-2020  Markus Triska
+;; Copyright (C) 2006-2022  Markus Triska
 
 ;; Author: Markus Triska <triska@metalevel.at>
 ;; Keywords: languages, processes
@@ -38,7 +38,7 @@
 ;;
 ;; The two most important configuration options are:
 ;;
-;;    - `ediprolog-system', either 'scryer or 'swi
+;;    - `ediprolog-system', either 'scryer (default) or 'swi
 ;;    - `ediprolog-program', the path of the Prolog executable.
 
 ;; Usage
@@ -52,11 +52,11 @@
 ;; Queries start with "?-" or ":-", possibly preceded by "%" and
 ;; whitespace. An example of a query is (without leading ";;"):
 ;;
-;;   %?- member(X, [a,b,c]).
+;;   %?- member(X, "abc").
 ;;
 ;; If you press F10 when point is on that query, you get:
 ;;
-;;   %?- member(X, [a,b,c]).
+;;   %?- member(X, "abc").
 ;;   %@    X = a
 ;;   %@ ;  X = b
 ;;   %@ ;  X = c
@@ -92,7 +92,7 @@
 
 ;;; Code:
 
-(defconst ediprolog-version "2.1")
+(defconst ediprolog-version "2.2")
 
 (defgroup ediprolog nil
   "Transparent interaction with Prolog."
@@ -272,9 +272,9 @@ set_prolog_flag(toplevel_prompt, '%s').\n" (ediprolog-prompt)))))
   ;; success (i.e., consulted without errors), or still an incomplete
   ;; line that starts with a comment character
   (unless (or (string-match "^[\t ]*\\(?:%.*\\)?\\'" str)
-              (let ((success "true."))
-                (and (<= (length str) (length success))
-                     (string= str (substring success 0 (length str))))))
+              (string-prefix-p str "true.")
+              ;; newer versions of Scryer Prolog prepend 3 spaces to "true."
+              (string-prefix-p str "   true."))
     (setq ediprolog-consult-window (display-buffer ediprolog-consult-buffer))
     (set-window-dedicated-p ediprolog-consult-window t)
     (fit-window-to-buffer ediprolog-consult-window (/ (frame-height) 2))))
@@ -369,9 +369,19 @@ arguments, equivalent to `ediprolog-remove-interactions'."
       (end-of-line)
       (insert "\n" ediprolog-indent-prefix ediprolog-prefix)
       (ediprolog-interact
-       (format "%s\n" (mapconcat #'identity
+       (format "%s\n"
+               (if (eq ediprolog-system 'scryer)
+                   ;; Scryer Prolog emits no additional indicators
+                   ;; when a query spans multiple lines, so we send
+                   ;; the query verbatim.
+                   query
+                 ;; For other Prolog systems, we merge the query into
+                 ;; a single line. The drawback of this approach is
+                 ;; that single-line comments at the end of a line are
+                 ;; not handled correctly.
+                 (mapconcat #'identity
                                  ;; `%' can precede each query line
-                                 (split-string query "\n[ \t%]*") " ")))
+                                 (split-string query "\n[ \t%]*") " "))))
       (when handle
         (undo-amalgamate-change-group (cdr handle))))
     t))
@@ -490,7 +500,11 @@ operates on the region."
             (and buffer-file-name
                  (not (equal (file-remote-p ediprolog-temp-file)
                              (file-remote-p buffer-file-name)))))
-    (setq ediprolog-temp-file (make-nearby-temp-file "ediprolog")))
+    (setq ediprolog-temp-file
+          (funcall (if (fboundp 'make-nearby-temp-file)
+                       'make-nearby-temp-file
+                     'make-temp-file)
+                   "ediprolog")))
   (let ((start (if (and transient-mark-mode mark-active)
                    (region-beginning) (point-min)))
         (end (if (and transient-mark-mode mark-active)
