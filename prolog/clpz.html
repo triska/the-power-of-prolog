@@ -275,13 +275,13 @@ nat_nat_sum(s(N), M, s(Sum)) :-
 
     <pre>
 ?- X #= 5 + 3.
-X = 8.
+   X = 8.
 
 ?- 2 #= X + 9.
-X = -7.
+   X = -7.
 
 ?- 1 #= 1 + Y.
-Y = 0.
+   Y = 0.
     </pre>
 
     Equality is one of the most important predicates when reasoning
@@ -318,7 +318,7 @@ list_length([_|Ls], Length) :-
 
     <pre>
 ?- list_length([a,b,c,d], Length).
-<b>Length = 4</b>.
+   <b>Length = 4</b>.
     </pre>
 
     Importantly, this also works in more general cases. For example:
@@ -378,7 +378,7 @@ list_length_([_|Ls], L0, L) :-
 
     <pre>
 ?- V in 0..2.
-V in 0..2.
+   clpz:(V in 0..2).
     </pre>
 
 
@@ -390,14 +390,14 @@ V in 0..2.
 
     <pre>
 ?- V in 0..2, V #= 3.
-<b>false.</b>
+   <b>false.</b>
     </pre>
 
     In contrast, the following query succeeds:
 
     <pre>
 ?- V in 0..2, V #= 1.
-<b>V = 1.</b>
+   <b>V = 1.</b>
     </pre>
 
     Now two variables <tt>X</tt> and <tt>Y</tt>, both constrained to
@@ -405,16 +405,14 @@ V in 0..2.
 
     <pre>
 ?- X in 0..2, Y in 0..2.
-X in 0..2,
-Y in 0..2.
+   clpz:(X in 0..2), clpz:(Y in 0..2).
     </pre>
 
     Or, equivalently:
 
     <pre>
 ?- [X,Y] ins 0..2.
-X in 0..2,
-Y in 0..2.
+   clpz:(X in 0..2), clpz:(Y in 0..2).
     </pre>
 
     Thus, the predicate <tt>(ins)/2</tt> lifts <tt>(in)/2</tt>
@@ -491,10 +489,7 @@ label(Vs) :- <a href="metapredicates#maplist">maplist</a>(indomain, Vs).
 
     <pre>
 ?- [X,Y] ins 0..2, Z #= X + Y.
-X in 0..2,
-X+Y#=Z,
-Y in 0..2,
-<b>Z in 0..4.</b>
+   clpz:(X+Y#=Z), clpz:(X in 0..2), clpz:(Y in 0..2), <b>clpz:(Z in 0..4)</b>.
     </pre>
 
     Note that the domain of <tt>Z</tt> is <i>deduced</i> from the
@@ -507,9 +502,7 @@ Y in 0..2,
 
     <pre>
 ?- [X,Y] ins 0..2, Z #= X + Y, Z #= 0.
-X = 0,
-Y = 0,
-Z = 0.
+   X = 0, Y = 0, Z = 0.
     </pre>
 
     In this case, propagation yields ground instances for all
@@ -518,17 +511,14 @@ Z = 0.
 
     <pre>
 ?- X in 0..1, X #&gt; 2.
-<b>false.</b>
+   <b>false.</b>
     </pre>
 
     In yet other cases, domain boundaries are adjusted:
 
     <pre>
 ?- [X,Y] ins 0..2, Z #= X + Y, Z #= 1.
-<b>Z = 1,
-X in 0..1,</b>
-X+Y#=1,
-<b>Y in 0..1.</b>
+   <b>Z = 1</b>, clpz:(X+Y#=1), <b>clpz:(Y in 0..1), clpz:(X in 0..1)</b>.
     </pre>
 
     A set of constraints and variables with associated domains is
@@ -546,10 +536,7 @@ X+Y#=1,
 
     <pre>
 ?- [X,Y,Z] ins 0..1, all_different([X,Y,Z]).
-X in 0..1,
-all_different([X, Y, Z]),
-Y in 0..1,
-Z in 0..1.
+   clpz:all_different([X,Y,Z]), clpz:(X in 0..1), clpz:(Y in 0..1), clpz:(Z in 0..1).
     </pre>
 
     The <tt>all_distinct/1</tt> constraint, in contrast, detects the
@@ -557,7 +544,7 @@ Z in 0..1.
 
     <pre>
 ?- [X,Y,Z] ins 0..1, all_distinct([X,Y,Z]).
-<b>false.</b>
+   <b>false.</b>
     </pre>
 
     To guarantee that stronger form of consistency, the
