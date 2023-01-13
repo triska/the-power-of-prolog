@@ -136,8 +136,8 @@ list1_element_list2(Ls1, E, Ls2) :-
     sufficiently instantiated. For example:
 
     <pre>
-?- list1_element_list2([a,b,c], b, Ls).
-Ls = [a, c].
+?- list1_element_list2("abc", b, Ls).
+   Ls = "ac".
     </pre>
 
     As yet another example, when you find yourself asking: "How do I
