@@ -20,11 +20,11 @@
     <b>optimization</b> tasks, such as:
 
     <ul>
-      <li>timetabling</li>
+      <li><a href="/simsttab/">timetabling</a></li>
       <li>resource allocation</li>
       <li>planning, i.e., finding suitable orderings of dependent
       tasks</li>
-      <li>scheduling</li>
+      <li><a href="/sgp/">scheduling</a></li>
 
       <li>etc.</li>
     </ul>
@@ -200,10 +200,11 @@ regions(Rs) :-
 
     <pre>
 <b>?- regions(Rs), label(Rs).</b>
-Rs = [0, 1, 2, 1, 0, 3] ;
-Rs = [0, 1, 2, 1, 3, 3] ;
-Rs = [0, 1, 2, 3, 0, 1] ;
-etc.
+   Rs = [0,1,2,3,0,1]
+;  Rs = [0,1,2,3,0,2]
+;  Rs = [0,1,2,3,1,2]
+;  Rs = [0,1,3,2,0,1]
+;  ... .
     </pre>
 
     To obtain more readable solutions, we can relate integers
@@ -245,7 +246,7 @@ etc.
 
     <pre>
 ?- regions(Rs), Rs ins 0..2, label(Rs).
-<b>false.</b>
+   <b>false.</b>
     </pre>
 
     Major advantages of using CLP(FD) constraints for combinatorial
@@ -325,18 +326,15 @@ path_from_to(A, B, Visited) --&gt; [A],
 
     <pre>
 <b>?- phrase(path_from_to(a, c, []), Ps).</b>
-Ps = [a, b, c] ;
-Ps = [a, c] ;
-false.
+   Ps = "abc"
+;  Ps = "ac"
+;  false.
 
 <b>?- phrase(path_from_to(a, To, []), Ps).</b>
-To = a,
-Ps = [a] ;
-To = b,
-Ps = [a, b] ;
-etc.
+   To = a, Ps = "a"
+;  To = b, Ps = "ab"
+;  ... .
     </pre>
-
 
     <br><br>
     
@@ -347,19 +345,16 @@ etc.
 
     <pre>
 ?- findall(From-To, arc_from_to(From, To), Arcs).
-<b>Arcs = [a-b, b-c, a-c, c-a].</b>
+<b>    Arcs = [a-b,b-c,a-c,c-a].</b>
     </pre>
 
     Another example:
 
     <pre>
 ?- bagof(To, arc_from_to(From, To), Arcs).
-From = a,
-<b>Arcs = [b, c] ;</b>
-From = b,
-<b>Arcs = [c] ;</b>
-From = c,
-<b>Arcs = [a].</b>
+   From = a, <b>Arcs = "bc"</b>
+;  From = b, <b>Arcs = "c"</b>
+;  From = c, <b>Arcs = "a"</b>.
     </pre>
 
     With these predicates, we can obtain a representation of the graph
@@ -368,7 +363,7 @@ From = c,
 
     <pre>
 ?- findall(From-Ls, bagof(To, arc_from_to(From, To), Ls), Is).
-<b>Is = [a-[b, c], b-[c], c-[a]].</b>
+   <b>Is = [a-"bc",b-"c",c-"a"].</b>
     </pre>
 
     In Prolog, this is often a good representation for&nbsp;graphs. We
@@ -484,8 +479,6 @@ tree(node(_, Left, Right)) --&gt; [_], tree(Left), tree(Right).
 
     <ul>
       <li>solve <a href="/sudoku/"><b>Sudoku</b></a> puzzles</li>
-      <li><a href="/simsttab/"><b>timetabling</b></a> for schools</li>
-      <li><a href="/sgp/"><b>sports scheduling</b></a></li>
       <li><a href="/queens/"><b>N-queens</b></a> puzzle</li>
       <li>more examples: <a href="https://github.com/triska/clpz"><b>https://github.com/triska/clpz</b></a>
     </ul>
