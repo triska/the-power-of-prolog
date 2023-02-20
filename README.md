@@ -71,7 +71,7 @@ following recommended Prolog&nbsp;systems:
 
 - [SICStus Prolog](https://sicstus.sics.se/)
   A state-of-the-art, ISO standard compliant, Prolog system.
-- [Scryer Prolog](https://github.com/mthom/scryer-prolog)
+- [Scryer Prolog](https://www.scryer.pl)
   A modern Prolog implementation written mostly in Rust.
 - [GNU Prolog](http://www.gprolog.org/)
   A free Prolog compiler with constraint solving over finite domains.
