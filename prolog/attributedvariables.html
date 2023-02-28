@@ -156,7 +156,7 @@ dissertation&nbsp;[Holzbaur 90].
     <br><br>
 
     The same interface is also implemented in other Prolog systems,
-    such as in Scryer&nbsp;Prolog
+    such as in <a href="https://www.scryer.pl/">Scryer&nbsp;Prolog</a>
     and&nbsp;<a href="https://ciao-lang.org/">Ciao</a>.
 
     <center><h2>What we have now</h2></center>
@@ -360,7 +360,7 @@ verify_attributes(X, Y, _) :- throw(cannot_unify(X,Y)).
 ?- attrmod:put_atts(X, a(1)),
    attrmod:put_atts(Y, a(2)),
    <b>X = Y</b>.
-<b>   caught: cannot_unify(_9,_11)</b>
+   <b>throw(cannot_unify(_397,_399)).</b>
     </pre>
 
     <br>
@@ -430,7 +430,7 @@ verify_attributes(_, _, _) :- <b>false</b>.
 ?- attrmod:put_atts(X, a(n(1))),
    attrmod:put_atts(Y, a(n(2))),
    <b>X = Y</b>.
-<b>false.</b>
+   <b>false.</b>
     </pre>
 
     OK, this works as advertised. In this example and the following,
@@ -521,7 +521,7 @@ verify_attributes(Var, Value, []) :-
 
     <br><br>
 
-    The following yields a <i>type&nbsp;error</i>, because
+    The following yields an <i>uninstantiation&nbsp;error</i>, because
     because <tt>get_atts/2</tt>&mdash;which is used in our definition
     of <tt>verify_attributes/3</tt>)&mdash;requires its first argument
     to be a <i>variable</i>, whereas we use the atom&nbsp;<tt>b</tt>:
@@ -529,13 +529,13 @@ verify_attributes(Var, Value, []) :-
     <pre>
 ?- attrmod:put_atts(X, a(n(1))),
    <b>X = b</b>.
-   <b>caught: error(type_error(variable,b),get_atts/2)</b>
+   <b>error(uninstantiation_error(b),get_atts/2).</b>
     </pre>
 
     In fact, with the above definition of <tt>verify_attributes/3</tt>,
     only very specific kinds of unifications will <i>succeed</i>. In
     particular, every unification with a <i>ground</i> value will
-    yield a type&nbsp;error. However, in actual
+    yield an uninstantiation&nbsp;error. However, in actual
     constraint&nbsp;systems, we are very interested in ground terms,
     because they typically represent concrete <i>solutions</i>.
 
@@ -598,7 +598,7 @@ verify_attributes(Var, Value, []) :-
    attrmod:put_atts(Y, a(n(2))),
    X = Y,
    X = 3.
-<b>X = Y, Y = 3.</b>
+   <b>X = Y, Y = 3.</b>
     </pre>
 
     Thus, everything seems to work as intended. We have successfully
@@ -706,15 +706,15 @@ domain(X, List) :-
     With these definitions in place, we can query:
 
     <pre>
-?- domain(X, [a,b,c]),
-   domain(Y, [c,d,e]),
+?- domain(X, "abc"),
+   domain(Y, "cde"),
    X = Y.
     </pre>
 
     In response, we get the concrete solution:
 
     <pre>
-<b>X = Y, Y = c.</b>
+   <b>X = Y, Y = c.</b>
     </pre>
 
     This works because upon unification, the hook is invoked, builds
@@ -781,31 +781,31 @@ domain(X, List) :-
     In the concrete case above, we can do it like this:
 
     <pre>
-domain:attribute_goals(Var) --&gt;
-        (   { get_atts(Var, domain(Dom)) } ->
+attribute_goals(Var) --&gt;
+        (   { get_atts(Var, domain(Dom)) } -&gt;
             [domain(Var, Dom)]
         ;   []
         ).
     </pre>
 
-    This simply fetches the attribute from module <tt>domain</tt>, and
-    describes a list with a <i>single</i> goal. Here is an example
-    that illustrates that this predicate is automatically invoked by
-    the toplevel when reporting answers:
+    This simply fetches the attribute, and describes a list with
+    a <i>single</i> goal. Here is an example that illustrates that
+    this predicate is automatically invoked by the toplevel when
+    reporting answers:
 
     <pre>
-?- domain(X, [a,b,c]).
-<b>domain(X, [a, b, c]).</b>
+?- domain(X, "abc").
+   <b>domain(X, "abc").</b>
     </pre>
 
     It also works for more complex queries:
 
     <pre>
-?- domain(X, [a,b,c]),
-   domain(Y, [b,c,d]),
+?- domain(X, "abc"),
+   domain(Y, "bcd"),
    X = Y.
-X = Y,
-<b>domain(Y, [b, c])</b>.
+   X = Y,
+   <b>domain(Y, "bc")</b>.
     </pre>
 
     Using this mechanism, you can always translate internal attributes
@@ -976,10 +976,9 @@ X = Y,
     Prolog systems provide. A few years
     later, <a href="https://github.com/SWI-Prolog/issues/issues/105">another&nbsp;mistake</a>
     was found and corrected in the implementation of
-    SWI-Prolog's <tt>dif/2</tt> constraint, and to this
-    day, <a href="https://github.com/SWI-Prolog/issues/issues/113"><tt>dif/2</tt>
+    SWI-Prolog's <tt>dif/2</tt> constraint, then <a href="https://github.com/SWI-Prolog/issues/issues/112">another mistake</a>, and to this day, <a href="https://github.com/SWI-Prolog/issues/issues/122"><tt>dif/2</tt>
       remains incorrectly implemented in SWI-Prolog</a>,
-    <a href="https://github.com/SWI-Prolog/issues/issues/112">even for acyclic&nbsp;terms</a>.
+    <a href="https://github.com/SWI-Prolog/issues/issues/113">even for acyclic terms</a>.
 
     <br><br>
 
