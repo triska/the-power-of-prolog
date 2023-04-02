@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Interpreter for AL(ℤ) programs.
-   Written 2006, 2015, 2020, 2022 Markus Triska triska@metalevel.at
+   Written 2006, 2015, 2020, 2022, 2023 Markus Triska triska@metalevel.at
    Public domain code. Tested with Scryer Prolog.
 
    AL(ℤ) means "Assignment Language over Integers". AL(ℤ) is a simple
@@ -378,15 +378,15 @@ run(File) :- run(File, run).
 ?- alzint:run_("begin x <- 3; if x + y < 19 then x <- x + 19 else x <- y + y end", step).
 
 
-?- alzint:run_("I(x) = 10\n
-                I(f) = 1\n
-\n
-                while (x >= 2) do\n
-                  begin\n
-                   f <- f * x\n
-                  ;\n
-                   x <- x - 1\n
-                  end\n
+?- alzint:run_("I(x) = 10             \n\
+                I(f) = 1              \n\
+                                      \n\
+                while (x >= 2) do     \n\
+                  begin               \n\
+                   f <- f * x         \n\
+                  ;                   \n\
+                   x <- x - 1         \n\
+                  end                 \n\
 ",
    step).
 
