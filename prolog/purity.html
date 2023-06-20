@@ -223,7 +223,7 @@
             <div class="query">
               <pre>
 ?- integer(I).
-<b>false.</b>
+   <b>false.</b>
               </pre>
             </div>
           </td>
@@ -237,7 +237,7 @@
             <div class="query">
               <pre>
 ?- integer(3).
-<b>true.</b>
+   <b>true.</b>
               </pre>
             </div>
           </td>
@@ -252,7 +252,7 @@
             <div class="query">
               <pre>
 ?- X \= Y.
-<b>false.</b>
+   <b>false.</b>
               </pre>
             </div>
           </td>
@@ -266,7 +266,7 @@
             <div class="query">
               <pre>
 ?- a \= b.
-<b>true.</b>
+   <b>true.</b>
               </pre>
             </div>
           </td>
@@ -282,7 +282,7 @@
             <div class="query">
               <pre>
 ?- X =:= Y.
-<b>ERROR: =:=/2: ...&nbsp;</b>
+   <b>error(...,...).</b>
               </pre>
             </div>
           </td>
@@ -297,7 +297,7 @@
               <pre>
 ?- 3 =:= X,
    X =:= Y.
-<b>ERROR: =:=/2: ...&nbsp;</b>
+   <b>error(...,...).</b>
               </pre>
             </div>
           </td>
@@ -333,7 +333,7 @@
             <div class="query">
               <pre>
 ?- I in inf..sup.
-<b>I in inf..sup.</b>
+   <b>clpz:(I in inf..sup).</b>
               </pre>
             </div>
           </td>
@@ -346,8 +346,8 @@
           <td>
             <div class="query">
               <pre>
-?- 3 in inf..sup.&nbsp;
-<b>true.</b>
+?- 3 in inf..sup.
+   <b>true.</b>
               </pre>
             </div>
           </td>
@@ -361,7 +361,7 @@
             <div class="query">
               <pre>
 ?- dif(X, Y).
-<b>dif(X, Y).</b>
+   <b>dif:dif(X, Y).</b>
               </pre>
             </div>
           </td>
@@ -376,7 +376,7 @@
             <div class="query">
               <pre>
 ?- dif(a, b).
-<b>true.</b>
+   <b>true.</b>
               </pre>
             </div>
           </td>
@@ -391,8 +391,8 @@
             <div class="query">
               <pre>
 ?- X #= Y.
-<b>X = Y,
-Y in inf..sup.</b>
+<b>   X = Y,
+   clpz:(X in inf..sup).</b>
               </pre>
             </div>
           </td>
@@ -408,7 +408,7 @@ Y in inf..sup.</b>
               <pre>
 ?- 3 #= X,
    X #= Y.
-<b>X = Y, Y = 3.</b>
+<b>   X = Y, Y = 3.</b>
               </pre>
             </div>
           </td>
