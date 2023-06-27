@@ -81,15 +81,18 @@ request_response(Stream) :-
         ;   true
         ).
 
+rn --> "\r\n".
+
 see_other_chars(Link, Chars) :-
         phrase(see_other_page(Link), Ps),
         length(Ps, L),
-        phrase(("HTTP/1.1 303 See Other\r\n",
-                format_("Location: ~s\r\n", [Link]),
-                "Connection: close\r\n",
-                format_("Content-Length: ~d\r\n", [L]),
-                "Content-Type: text/html; charset=UTF-8\r\n\r\n",
-                Ps), Chars).
+        phrase(("HTTP/1.1 303 See Other",rn,
+                format_("Location: ~s", [Link]),rn,
+                "Connection: close",rn,
+                format_("Content-Length: ~d", [L]),rn,
+                "Content-Type: text/html; charset=UTF-8",rn,
+                rn,
+                seq(Ps)), Chars).
 
 %?- see_other_chars("https://www.metalevel.at", Cs).
 
@@ -100,10 +103,11 @@ format_("~s", [Link]), "</a></p></body></html>".
 
 
 http_header(Bytes) -->
-        "HTTP/1.1 200 OK\r\nConnection: close\r\nContent-Length: ",
+        "HTTP/1.1 200 OK",rn,
+        "Connection: close",rn,
         { length(Bytes, L) },
-        format_("~d", [L]),
-        "\r\n\r\n".
+        format_("Content-Length: ~d", [L]),rn,
+        rn.
 
 path_file("prolog", "prolog/prolog.html").
 path_file(Path, HTML) :- append(Path, ".html", HTML).
