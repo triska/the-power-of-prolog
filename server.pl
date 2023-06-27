@@ -2,7 +2,7 @@
    The Power of Prolog
    ===================
 
-   Copyright (C) 2005-2021 Markus Triska triska@metalevel.at
+   Copyright (C) 2005-2023 Markus Triska triska@metalevel.at
 
    This Prolog program implements a simple web server that you can use
    to read the book.
@@ -60,7 +60,7 @@ accept_loop(Socket) :-
         accept_loop(Socket).
 
 request_response(Stream) :-
-        (   read_line_to_chars(Stream, Chars, []),
+        (   get_line_to_chars(Stream, Chars, []),
             phrase(("GET /",seq(Path)," ",...) , Chars) ->
             format("request is for ~q~n", [Path]),
             (   dif(Path, ""),
