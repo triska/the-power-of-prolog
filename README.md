@@ -80,12 +80,13 @@ In the example code, I assume that the Prolog flag `double_quotes` is
 set to the value&nbsp;`chars` so that strings in double-quotes are
 interpreted as lists of *characters*. This was the case in the
 original Prolog implementation, Marseille Prolog, and is already the
-default value in the three newest Prolog implementations,
+default value in the four newest Prolog implementations,
 [Scryer&nbsp;Prolog](https://github.com/mthom/scryer-prolog),
-[Tau&nbsp;Prolog](https://github.com/tau-prolog/tau-prolog) and
-[Trealla&nbsp;Prolog](https://github.com/trealla-prolog/trealla). It is to
-be hoped that other Prolog&nbsp;systems will also adopt this setting
-to make string&nbsp;processing with Prolog more convenient.
+[Tau&nbsp;Prolog](https://github.com/tau-prolog/tau-prolog),
+[Trealla&nbsp;Prolog](https://github.com/trealla-prolog/trealla) and
+[ichiban/prolog](https://github.com/ichiban/prolog). It is to be hoped
+that other Prolog&nbsp;systems will also adopt this setting to make
+string&nbsp;processing with Prolog more convenient.
 
 In some cases, slight modifications to code snippets may be necessary
 to adjust for different libraries or small variations. See your Prolog
