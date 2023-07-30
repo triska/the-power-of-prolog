@@ -22,7 +22,7 @@ run(AST) :-
 
 interpret(print(P), Env, Env) :-
         eval(P, Env, Value),
-        format("~w\n", [Value]).
+        format("~w~n", [Value]).
 interpret(sequence(A,B), Env0, Env) :-
         interpret(A, Env0, Env1),
         (   A = return(_) ->
@@ -407,19 +407,19 @@ string_ast(String, AST) :-
 
 run_file(File) :-
         (   phrase_from_file(tokens(Tokens), File) ->
-            format("\n\ntokens:\n\n~w\n", [Tokens]),
+            format("~2ntokens:~2n~w~n", [Tokens]),
             (   tokens_ast(Tokens, AST) ->
                 % is_program(AST), % type check
-                format("\nAST:\n\n~w\n", [AST]),
+                format("~nAST:~2n~w~n", [AST]),
                 ast_vminstrs(AST, VMs),
-                format("\n\nVM code:\n\n", []),
+                format("~2nVM code:~2n", []),
                 foldl(display_vminstr, VMs, 0, _),
                 phrase(vminstrs_ints(VMs), Ints),
-                format("\nintcode:\n\n~w\n\n", [Ints]),
-                format("program output:\n\n", []),
+                format("~nintcode:~2n~w~2n", [Ints]),
+                format("program output:~2n", []),
                 run(AST),
                 halt
-            ;   format("syntax error\n", [])
+            ;   format("syntax error~n", [])
             )
         ;   format("lexical error", [])
         ).
@@ -430,7 +430,7 @@ display_vminstr(Cmd, N0, N1) :-
         Cmd =.. Ls,
         length(Ls, L),
         (   L = 1 ->
-            format("~w\n", Ls)
-        ;   format("~w ~w\n", Ls)
+            format("~w~n", Ls)
+        ;   format("~w ~w~n", Ls)
         ),
         N1 #= N0 + L.

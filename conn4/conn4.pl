@@ -252,7 +252,7 @@ display_board(Board0) :-
         nl.
 
 print_line(Line) :-
-        format("\n\t", []),
+        format("~n\t", []),
         maplist(print_col, Line).
 
 print_col(Col) :- format("~w ", [Col]).
@@ -266,14 +266,14 @@ play :-
 alternate(Player, Board0) :-
         (   play(Player, Board0, Column) ->
             play_column(Board0, Column, Player, Board1),
-            format("\n\n~w plays:\n", [Player]),
+            format("~2n~w plays:~n", [Player]),
             display_board(Board1),
             (   win(Player, Board1) ->
-                format("~w wins\n", [Player])
+                format("~w wins~n", [Player])
             ;   opponent(Player, Opp),
                 alternate(Opp, Board1)
             )
-        ;   format("draw\n", [])
+        ;   format("draw~n", [])
         ).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -316,7 +316,7 @@ postscript -->
 show :-
         empty_board(6, 7, Board0),
         phrase(postscript, Ps),
-        format("~s\n", [Ps]),
+        format("~s~n", [Ps]),
         interact(x, Board0).
 
 user_input(Board, Char) :-
@@ -331,16 +331,16 @@ user_input(Board, Char) :-
         ).
 
 interact(Player, Board0) :-
-        (   \+ play(Player, Board0, _) -> format("draw\n", [])
+        (   \+ play(Player, Board0, _) -> format("draw~n", [])
         ;   user_input(Board0, Char),
             (   Char == c ->
                 play(Player, Board0, Column)
             ;   Column = Char
             ),
             play_column(Board0, Column, Player, Board1),
-            format("/~w ~w drop\n", [Player,Column]),
+            format("/~w ~w drop~n", [Player,Column]),
             (   win(Player, Board1) ->
-                format("/~w wins\n", [Player])
+                format("/~w wins~n", [Player])
             ;   opponent(Player, Opp),
                 interact(Opp, Board1)
             )

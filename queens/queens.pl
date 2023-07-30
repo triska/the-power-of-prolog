@@ -63,9 +63,9 @@ animate_([Q|Qs], C, N) :-
         C1 #= C + 1,
         animate_(Qs, C1, N).
 
-queen_value_truth(Q, N, 1) :- format("~w ~w q\n", [Q,N]).
-queen_value_truth(Q, N, 0) :- format("~w ~w i\n", [Q,N]).
-queen_value_truth(Q, N, _) :- format("~w ~w c\n", [Q,N]), false.
+queen_value_truth(Q, N, 1) :- format("~w ~w q~n", [Q,N]).
+queen_value_truth(Q, N, 0) :- format("~w ~w i~n", [Q,N]).
+queen_value_truth(Q, N, _) :- format("~w ~w c~n", [Q,N]), false.
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,7 +95,7 @@ show(N, Options) :-
         N #> 0,
         n_queens(N, Qs),
         phrase(postscript, Ps),
-        format("~s ~w init\n", [Ps,N]),
+        format("~s ~w init~n", [Ps,N]),
         animate(Qs),
         labeling(Options, Qs),
         get_single_char(_),

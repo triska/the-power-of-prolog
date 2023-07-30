@@ -51,8 +51,8 @@ animate([C|Cs], Col, Row) :-
         Col1 #= Col + 1,
         animate(Cs, Col1, Row).
 
-label(Col, Row, N) :- format("(~w) ~w ~w num\n", [N,Col,Row]).
-label(Col, Row, _) :- format("~w ~w clear\n", [Col,Row]), false.
+label(Col, Row, N) :- format("(~w) ~w ~w num~n", [N,Col,Row]).
+label(Col, Row, _) :- format("~w ~w clear~n", [Col,Row]), false.
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    PostScript definitions. Place a number N and clear a cell with:
