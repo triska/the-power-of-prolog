@@ -5,6 +5,7 @@
 :- use_module(library(between)).
 :- use_module(library(pairs)).
 :- use_module(library(time)).
+:- use_module(library(assoc)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Independent sets, maximal independent sets (kernels) and maximal
@@ -15,24 +16,20 @@
    (1) Independent sets:
 
        ?- time((independent_set(I,_),sat_count(I,N))).
-       %@    % CPU time: 0.999s
-       %@    I = *(....), N = 792070839848372253127
-       %@ ;  % CPU time: 0.000s
-       %@    false.
+       %@    % CPU time: 0.661s
+       %@    I = *(...), N = 792070839848372253127.
 
    (2) Maximal independent sets:
 
        ?- time((kernel(K,_),sat_count(K,N))).
-       %@    % CPU time: 3.893s
-       %@    K = *(...)* *(...), N = 1630580875002
-       %@ ;  % CPU time: 0.000s
-       %@    false.
+       %@    % CPU time: 3.178s
+       %@    K = *(...)* *(...), N = 1630580875002.
 
    (3) Maximal independent sets with maximum weight:
 
        %?- time(maximum_thue_morse_kernel(Is, Negatives, Max)).
-       %@    % CPU time: 122.740s
-       %@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51,...], Negatives = [1,25,41,73,97], Max = 28
+       %@    % CPU time: 10.928s
+       %@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51|...], Negatives = [1,25,41,73,97], Max = 28
        %@ ;  ... .
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -116,12 +113,12 @@ include(Goal_1, [E|Es], Ls) :-
         include(Goal_1, Es, Rs).
 
 %?- time(maximum_thue_morse_kernel(Is, Negatives, Max)).
-%@    % CPU time: 124.214s
-%@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51,...], Negatives = [1,25,41,73,97], Max = 28
-%@ ;  % CPU time: 0.039s
-%@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51,...], Negatives = [1,25,41,73,94], Max = 28
-%@ ;  % CPU time: 1.020s
-%@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51,...], Negatives = [1,25,41,73,97], Max = 28
+%@    % CPU time: 11.111s
+%@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51|...], Negatives = [1,25,41,73,97], Max = 28
+%@ ;  % CPU time: 0.004s
+%@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51|...], Negatives = [1,25,41,73,94], Max = 28
+%@ ;  % CPU time: 0.089s
+%@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51|...], Negatives = [1,25,41,73,97], Max = 28
 %@ ;  ... .
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -131,9 +128,8 @@ include(Goal_1, [E|Es], Ls) :-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 %?- time((independent_set(I,_),sat_count(I,N))).
-%@ % 2,101,745 inferences, 0.245 CPU in 0.256 seconds (96% CPU, 8594864 Lips)
-%@ I = *([~_G69+ ~_G70, ~_G70+ ~_G71, ~_G71+ ~_G72, ~_G72+ ~_G73, ~_G73+ ~_G74, ~_G74+ ~_G75, ~ ... + ~ ..., ... + ...|...]),
-%@ N = 792070839848372253127.
+%@    % CPU time: 0.656s
+%@    I = *(...), N = 792070839848372253127.
 
 
 independent_set(*(NBs), Assoc) :-
@@ -165,5 +161,4 @@ node_or(Assoc, Node, Var + +(Vars)) :-
 u_to_var(Assoc, Node, Var) :- get_assoc(Node, Assoc, Var).
 
 %?- kernel(Sat, _), sat_count(Sat, C).
-%@    Sat = *(...)* *(...), C = 1630580875002
-%@ ;  ... .
+%@    Sat = *(...)* *(...), C = 1630580875002.

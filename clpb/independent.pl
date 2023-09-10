@@ -14,8 +14,8 @@
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 %?- independent_set(Sat), time(sat_count(Sat, Count)).
-%@    % CPU time: 6.306s
-%@    Sat = *(...), Count = 211954906
+%@    % CPU time: 3.809s
+%@    Sat = *(...), Count = 211954906.
 
 independent_set(*(NBs)) :-
         findall(U-V, edge(U, V), Edges),
