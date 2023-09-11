@@ -114,8 +114,8 @@
     <pre>
 ?- http_open("https://www.metalevel.at/prolog", Stream, []),
    <b>load_html</b>(stream(Stream), DOM, []).
-Stream = ...,
-<b>DOM = [element(html, [], [element(head, [], [element(title, ...)])])]</b>.
+   Stream = ...,
+   <b>DOM = [element(html, [], [element(head, [], [element(title, ...)])])]</b>.
     </pre>
 
     See
@@ -146,25 +146,19 @@ Stream = ...,
     appear on a page, in continuation of the previous example:
 
     <pre>
-?- use_module(library(xpath)).
+?- use_module(library(sgml)),
+   use_module(library(xpath)).
    true.
       
 ?- http_open("https://www.metalevel.at/prolog", Stream, []),
    load_html(stream(Stream), DOM, []),
    <b>xpath(DOM, //li(text), Item)</b>.
-Stream = ...,
-DOM = ...,
-<b>Item = "<a href="introduction">Introduction</a>"</b> ;
-Stream = ...,
-DOM = ...,
-<b>Item = "<a href="facets">Facets of Prolog</a>"</b> ;
-Stream = ...,
-DOM = ...,
-<b>Item = "<a href="concepts">Basic Concepts</a>"</b> ;
-Stream = ...,
-DOM = ...,
-<b>Item = "<a href="data">Data Structures</a>"</b> ;
-etc.
+   Stream = ..., DOM = ..., <b>Item = "<a href="introduction">Introduction</a>"</b>
+;  Stream = ..., DOM = ..., <b>Item = "<a href="facets">Facets of Prolog</a>"</b>
+;  Stream = ..., DOM = ..., <b>Item = "<a href="logic">Logical Foundations</a>"</b>
+;  Stream = ..., DOM = ..., <b>Item = "<a href="concepts">Basic Concepts</a>"</b>
+;  Stream = ..., DOM = ..., <b>Item = "<a href="data">Data Structures</a>"</b>
+;  ... .
     </pre>
 
     On backtracking, all solutions are reported.
