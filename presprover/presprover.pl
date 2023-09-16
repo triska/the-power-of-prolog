@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   Presprover -- Prove formulas of Presburger arithmetic
-  Copyright (C) 2005, 2014, 2020, 2021 Markus Triska triska@metalevel.at
+  Copyright (C) 2005-2023 Markus Triska (triska@metalevel.at)
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -209,7 +209,7 @@ eq_automaton(Coeffs, Sum, Aut) :-
 
 saturate_eq([], _, AQ, AQ, D, D).
 saturate_eq([q(C)|QIterRest], Coeffs, AQ0, AQ, Delta0, Delta) :-
-        eq_mod2(Coeffs, C, Tuples),
+        findall(Vs, eq_mod2(Coeffs, C, Vs), Tuples),
         maplist(eq_tuple_newstate(Coeffs,C), Tuples, NewStates),
         maplist(state_tuple_delta(q(C)), NewStates, Tuples, NewDeltas),
         append(Delta0, NewDeltas, Delta1),
@@ -223,13 +223,14 @@ register_state(State, AQ0, AQ) :- put_assoc(State, AQ0, true, AQ).
 
 factor_mod2(C0, C) :- C #= abs(C0 mod 2).
 
-eq_mod2(Coeffs0, C0, Tuples) :-
+eq_mod2(Coeffs0, C0, Vs) :-
         C #= abs(C0 mod 2),
         maplist(factor_mod2, Coeffs0, Coeffs),
         same_length(Coeffs, Vs),
         Vs ins 0..1,
         scalar_product(Coeffs, Vs, #=, S),
-        findall(Vs, (S mod 2 #= C, label(Vs)), Tuples).
+        S mod 2 #= C,
+        label(Vs).
 
 
 eq_tuple_newstate(Coeffs, C, Tuple, q(D)) :-
@@ -249,8 +250,7 @@ in_assoc(Assoc, X) :- get_assoc(X, Assoc, _).
 ineq_automaton(Coeffs, Sum, A) :-
         Q0 = q(Sum),
         same_length(Coeffs, Thetas),
-        Thetas ins 0..1,
-        findall(Thetas, label(Thetas), Tuples),
+        findall(Thetas, (Thetas ins 0..1,label(Thetas)), Tuples),
         list_to_assoc([Q0-true], AQ0),
         saturate_ineq([Q0], Coeffs, Tuples, AQ0, AQ, [], Delta0),
         assoc_to_list(AQ, PQs),
@@ -523,8 +523,7 @@ aut_complement(Aut, Complement) :-
             )
         ;   Delta = [delta(_,Seq,_)|_],
             same_length(Seq, Bits),
-            Bits ins 0..1,
-            findall(Bits, label(Bits), Binaries),
+            findall(Bits, (Bits ins 0..1,label(Bits)), Binaries),
             aut_complete(Binaries, DFA, aut(Qs,QFs,Q0,CompleteDelta)),
             list_delete(QFs, Qs, CFinals0),
             exclude(pseudo_final_state(QFs,CompleteDelta), CFinals0, CFinals1),
