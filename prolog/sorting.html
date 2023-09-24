@@ -55,14 +55,14 @@
 
     <pre>
 ?- a @&lt; b.
-<b>true.</b>
+   <b>true.</b>
     </pre>
 
     Yet the <i>more&nbsp;general</i> query <i>fails</i>:
 
     <pre>
 ?- a @&lt; X.
-<b>false.</b>
+   <b>false.</b>
     </pre>
 
     This violates properties we expect
@@ -107,11 +107,11 @@
     by their&nbsp;<i>lengths</i>:
 
     <pre>
-lists([[a,b,c,d],
-       [a,b,c],
-       [a,b,c,d,e],
-       [a],
-       [a,b]]).
+lists(["abcd",
+       "abc",
+       "abcde",
+       "a",
+       "ab"]).
     </pre>
 
     To solve this task, let us first define a relation between a
@@ -133,8 +133,8 @@ list_pair(Ls, L-Ls) :-
     <pre>
 ?- lists(Lists),
    maplist(list_pair, Lists, Pairs0).
-Lists = [[a, b, c, d], [a, b, c], [a, b, c, d, e], [a], [a, b]],
-<b>Pairs0 = [4-[a, b, c, d], 3-[a, b, c], 5-[a, b, c, d, e], 1-[a], 2-[a, b]]</b>.
+   Lists = ["abcd","abc","abcde","a","ab"],
+<b>   Pairs0 = [4-"abcd",3-"abc",5-"abcde",1-"a",2-"ab"]</b>.
     </pre>
 
     This representation makes <tt>keysort/2</tt> applicable to sort
@@ -144,9 +144,9 @@ Lists = [[a, b, c, d], [a, b, c], [a, b, c, d, e], [a], [a, b]],
 ?- lists(Lists),
    maplist(list_pair, Lists, Pairs0),
    keysort(Pairs0, Pairs).
-Lists = [[a, b, c, d], [a, b, c], [a, b, c, d, e], [a], [a, b]],
-Pairs0 = [4-[a, b, c, d], 3-[a, b, c], 5-[a, b, c, d, e], 1-[a], 2-[a, b]],
-<b>Pairs = [1-[a], 2-[a, b], 3-[a, b, c], 4-[a, b, c, d], 5-[a, b, c, d, e]]</b>.
+   Lists = ["abcd","abc","abcde","a","ab"],
+   Pairs0 = [4-"abcd",3-"abc",5-"abcde",1-"a",2-"ab"],
+<b>   Pairs = [1-"a",2-"ab",3-"abc",4-"abcd",5-"abcde"].</b>
     </pre>
 
     Thus, to obtain a list <tt>Ls</tt> with <i>minimum</i> length, we
@@ -253,12 +253,12 @@ minimum_(A, B, Min) :- Min #= min(A, B).
 
     <pre>
 ?- list_minimum([3,1,2], M).
-<b>M = 1.</b>
+   <b>M = 1.</b>
 
 ?- list_minimum([A,B], 0).
-<b>A in 0..sup,
-0#=min(B, A),
-B in 0..sup.</b>
+<b>   clpz:(B in 0..sup),
+   clpz:(0#=min(B,A)),
+   clpz:(A in 0..sup).</b>
     </pre>
 
     Thus, when working on search tasks, do not get carried away with
@@ -291,7 +291,8 @@ adjs(Nodes, Node, Node-As) :-
 
     <pre>
 ?- k_n(3, Adjs).
-<b>Adjs = [1-[2, 3], 2-[1, 3], 3-[1, 2]] .</b>
+<b>   Adjs = [1-[2,3],2-[1,3],3-[1,2]]
+;  ... .</b>
     </pre>
 
     As another example, K<sub>6</sub> looks like this:
@@ -323,8 +324,8 @@ reachable(Adjs, Visited, From, To) :-
     <pre>
 ?- k_n(3, Adjs),
    setof(To, reachable(Adjs, [], 1, To), Tos).
-Adjs = [1-[2, 3], 2-[1, 3], 3-[1, 2]],
-<b>Tos = [1, 2, 3] .</b>
+   Adjs = [1-[2,3],2-[1,3],3-[1,2]], <b>Tos = [1,2,3]</b>
+;  false.
     </pre>
 
     The major drawback of this approach is that it <i>doesn't scale
@@ -337,13 +338,12 @@ Adjs = [1-[2, 3], 2-[1, 3], 3-[1, 2]],
    false.
 ...
 6.
-% 110,079 inferences, 0.012 CPU in <b>0.012 seconds</b> (98% CPU, 9334266 Lips)
+   % CPU time: <b>0.171s</b>
 7.
-% 914,953 inferences, 0.093 CPU in <b>0.098 seconds</b> (95% CPU, 9816460 Lips)
+   % CPU time: <b>1.454s</b>
 8.
-% 8,446,107 inferences, 0.823 CPU in <b>0.837 seconds</b> (98% CPU, 10265329 Lips)
+   % CPU time: <b>13.628s</b>
 9.
-% 85,982,043 inferences, 8.086 CPU in <b>8.135 seconds</b> (99% CPU, 10633230 Lips)
     </pre>
 
     This is because the number of <i>paths</i> in this graph
@@ -383,9 +383,10 @@ reachables([Node|Nodes], Adjs) --&gt;
     <pre>
 ?- k_n(9, Adjs),
    time(warshall(Adjs, [1], Tos)).
-% 322 inferences, 0.000 CPU in <b>0.000 seconds</b> (93% CPU, 4735294 Lips)
-...
-Tos = [1, 2, 3, 4, 5, 6, 7, 8, 9] .
+   <b>% CPU time: 0.000s</b>
+   ...,
+   Tos = [1,2,3,4,5,6,7,8,9]
+;  ... .
     </pre>
 
     This is clearly much more efficient. By implementing intelligent
@@ -444,8 +445,8 @@ integers_ascending(Is0, Is) :-
 
     <pre>
 ?- integers_ascending([3,1,2], Is).
-<b>Is = [1, 2, 3] ;</b>
-false.
+<b>   Is = [1,2,3]</b>
+;  false.
     </pre>    
 
     However, this method is <i>extremely</i> inefficient for longer
@@ -455,8 +456,9 @@ false.
 
     <pre>
 ?- time(integers_ascending([10,9,8,7,6,5,4,3,2,1], Ls)).
-% 64,398,640 inferences, 9.928 CPU in <b>9.994 seconds</b> (99% CPU, 6486524 Lips)
-Ls = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] .
+   % CPU time: <b>10.109s</b>
+   Ls = [1,2,3,4,5,6,7,8,9,10]
+;  ... .
     </pre>
 
     We can <i>massively</i> improve the running time by reordering the
@@ -473,8 +475,9 @@ integers_ascending(Is0, Is) :-
 
     <pre>
 ?- time(integers_ascending([10,9,8,7,6,5,4,3,2,1], Ls)).
-% 168,432 inferences, 0.025 CPU in <b>0.026 seconds</b> (98% CPU, 6699761 Lips)
-Ls = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] .
+   % CPU time: <b>0.184s</b>
+   Ls = [1,2,3,4,5,6,7,8,9,10]
+;  ... .
     </pre>
 
     By first stating the requirement that the list elements be
@@ -500,19 +503,16 @@ Ls = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] .
 
     <pre>
 ?- sort([X,Y], [1,2]).
-X = 1,
-Y = 2.
+   X = 1, Y = 2.
     </pre>
 
     In contrast, <tt>integers_ascending/2</tt> yields <i>all</i> solutions:
 
     <pre>
 ?- integers_ascending([X,Y], [1,2]).
-X = 1,
-Y = 2 ;
-<b>X = 2,
-Y = 1 ;</b>
-false.
+   X = 1, Y = 2
+;  <b>X = 2, Y = 1</b>
+;  false.
     </pre>
 
     <i>Ceteris paribus</i>, it is good practice to keep your
