@@ -1,6 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    A Couple of Meta-interpreters in Prolog
-   Written 2005-2020 by Markus Triska (triska@metalevel.at)
+   Written 2005-2023 by Markus Triska (triska@metalevel.at)
 
    Project page:
 
@@ -399,11 +399,6 @@ ack_fixpoint(Ds) :-
 
 body_permutation(Head-Body0, Head-Body) :-
         permutation(Body0, Body).
-
-permutation([], []).
-permutation([X|Xs], Ys) :-
-        permutation(Xs, Yss),
-        select(X, Ys, Yss).
 
 ack_fixpoint(Clauses, Ds0, Ds) :-
         ack_derive(Clauses, Ds0, Ds1),
