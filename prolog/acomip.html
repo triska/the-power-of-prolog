@@ -249,12 +249,16 @@ mi2(g(G)) :-
     indexing, and fewer inferences due to fewer tests):
 
     <pre>
-?- integer_natnum(10^5, T), time(mi1(natnum(T))).
-% 400,005 inferences, 0.80 CPU in 0.83 seconds (96% CPU, 500006 Lips)
+?- integer_natnum(10^6, T), time(mi1(natnum(T))).
+   % CPU time: 1.950s, 16_000_015 inferences
+   T = s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(...)))))))))))))))))))))
+;  ... .
 
 
-?- integer_natnum(10^5, T), time(mi2(g(natnum_clean(T)))).
-% 200,003 inferences, 0.71 CPU in 0.79 seconds (90% CPU, 281694 Lips)
+?- integer_natnum(10^6, T), time(mi2(g(natnum_clean(T)))).
+   % CPU time: 1.442s, 11_000_010 inferences
+   T = s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(s(...)))))))))))))))))))))
+;  ... .
     </pre>
     <br><br>
 
@@ -914,13 +918,15 @@ pe_expr(A+B, [_|Rest0], Rest, Ts0, Ts) :-
         Ts1 = [+|Ts2],
         pe_expr(B, Rest1, Rest, Ts2, Ts).
     </pre>
-    Comparison:
+    Speed comparison:
     <pre>
-?- sum_of_ones(10^3, Ss), time(mi_dcg(expr(Sum), Ss)).
-% 525,516 inferences, 0.68 CPU in 0.68 seconds (100% CPU, 772818 Lips)
+?- sum_of_ones(10^4, Ss), time(mi_dcg(expr(Sum), Ss)).
+   % CPU time: 7.010s, 50_245_019 inferences
+   ... .
 
-?- sum_of_ones(10^3, Ss), time(pe_expr(Sum, Ss)).
-% 6,008 inferences, 0.01 CPU in 0.01 seconds (186% CPU, 600800 Lips)
+?- sum_of_ones(10^4, Ss), time(pe_expr(Sum, Ss)).
+   % CPU time: 0.016s, 70_012 inferences
+   ... .
     </pre>
 
 
