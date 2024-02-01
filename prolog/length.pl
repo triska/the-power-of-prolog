@@ -8,9 +8,8 @@ list_length([_|Ls], N) :-
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-?- list_length([a,b,c], L).
-   L = 3
-;  false.
+?- list_length("abc", L).
+   L = 3.
 
 ?- list_length(Ls, 3).
    Ls = [_A,_B,_C]
