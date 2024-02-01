@@ -81,7 +81,7 @@
 
     <pre>
 ?- sat(A =:= ~A+B).
-<b>A = B, B = 1.</b>
+<b>   A = 1, B = 1.</b>
     </pre>
 
     This shows that <i>both</i> A and&nbsp;B are knights.
@@ -96,7 +96,7 @@
 
     <pre>
 ?- sat(A =:= ~A*B).
-<b>A = B, B = 0.</b>
+<b>   A = 0, B = 0.</b>
     </pre>
 
     Thus, in this example, both A and&nbsp;B are <i>knaves</i>.
@@ -117,16 +117,14 @@
 
     <pre>
 ?- sat(A =:= card([1,2],[~A,~B])).
-<b>A = 1,
-B = 0.</b>
+<b>   A = 1, B = 0.</b>
     </pre>
 
     Or, equivalently:
 
     <pre>
 ?- sat(A =:= ~A + ~B).
-<b>A = 1,
-B = 0.</b>
+<b>   A = 1, B = 0.</b>
     </pre>
 
     <div class="example">
@@ -140,8 +138,7 @@ B = 0.</b>
 
     <pre>
 ?- sat(A =:= (~A * ~B * ~C)), sat(B =:= card([1],[A,B,C])).
-<b>A = C, C = 0,
-B = 1.</b>
+<b>   A = 0, B = 1, C = 0.</b>
     </pre>
 
     <div class="example">
@@ -154,8 +151,7 @@ B = 1.</b>
 
     <pre>
 ?- sat(A =:= ~B), sat(B =:= (A=:=C)).
-<b>C = 0,
-sat(A=\=B).</b>
+<b>   C = 0, clpb:sat(A=\=B).</b>
     </pre>
 
     This shows that C is definitely a <i>knave</i>. A and&nbsp;B can
@@ -216,7 +212,7 @@ solution([A1,A2,A3,A4,A5,A6]) :-
 
     <pre>
 ?- solution(Vs).
-<b>Vs = [0, 0, 0, 0, 1, 0].</b>
+<b>   Vs = [0,0,0,0,1,0].</b>
     </pre>
 
     The Prolog system has <i>automatically</i> deduced the single
@@ -487,11 +483,11 @@ next_to(H, N) :- abs(H-N) #= 1.
 
     <pre>
 ?- solution(Pairs, Water, Zebra, Vs), label(Vs).
-<b>Pairs = [3-england, 4-spain, 2-ukraine, 1-norway, 5-japan],
-Water = 1,
-Zebra = 5,</b>
-Vs = [3, 5, 1, 2, 4, 3, 4, 2, 1|...] ;
-false.
+<b>   Pairs = [3-england,4-spain,2-ukraine,1-norway,5-japan],
+   Water = 1,
+   Zebra = 5,</b>
+   Vs = [3,5,1,2,4,3,4,2,1,5,5,3,4,2,1,3,1,2,4,5|...]
+;  false.
     </pre>
 
     Dozens of questions on Stackoverflow are about solving this famous
