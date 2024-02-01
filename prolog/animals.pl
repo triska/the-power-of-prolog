@@ -6,14 +6,14 @@
 /*
   Initial version
 
-animal(dog)  :- is_true('has fur'), is_true('goes woof').
-animal(cat)  :- is_true('has fur'), is_true('goes meow').
-animal(duck) :- is_true('has feathers'), is_true('goes quack').
+animal(dog)  :- is_true("has fur"), is_true("goes woof").
+animal(cat)  :- is_true("has fur"), is_true("goes meow").
+animal(duck) :- is_true("has feathers"), is_true("goes quack").
 
 */
 
 is_true(Q) :-
-	format("~w?\n", [Q]),
+	format("~s?\n", [Q]),
 	read(yes).
 
 /* interaction
@@ -39,9 +39,9 @@ has fur?
 
  */
 
-animals([animal(dog, [is_true('has fur'), is_true('says woof')]),
-         animal(cat, [is_true('has fur'), is_true('says meow')]),
-         animal(duck, [is_true('has feathers'), is_true('says quack')])]).
+animals([animal(dog, [is_true("has fur"), is_true("says woof")]),
+         animal(cat, [is_true("has fur"), is_true("says meow")]),
+         animal(duck, [is_true("has feathers"), is_true("says quack")])]).
 
 /*
 
@@ -54,7 +54,7 @@ animals([animal(dog, [is_true('has fur'), is_true('says woof')]),
 
 
     is_true(Q) :-
-            format("~w?\n", [Q]),
+            format("~s?\n", [Q]),
             read(yes).
 
   Drawback: questions may appear redundantly:
@@ -137,7 +137,7 @@ state0_state(S0, S), [S] --> [S0].
 condition_truth(is_true(Q), Truth, Known0, Known) :-
         if_(known_(Q,Truth,Known0),
             Known0 = Known,
-            ( format("~w?\n", [Q]),
+            ( format("~s?\n", [Q]),
               read(Truth),
               Known = [known(Q,Truth)|Known0])).
 
@@ -218,14 +218,14 @@ known_(What, Answer, Known, Truth) :-
 
 */
 
-tree(if_then_else('has fur',
-                  if_then_else('says woof',
+tree(if_then_else("has fur",
+                  if_then_else("says woof",
                                identified(dog),
-                               if_then_else('says meow',
+                               if_then_else("says meow",
                                             identified(cat),
                                             false)),
-                  if_then_else('has feathers',
-                               if_then_else('says quack',
+                  if_then_else("has feathers",
+                               if_then_else("says quack",
                                             identified(duck),
                                             false),
                                false))).
@@ -243,7 +243,7 @@ tree_animal(if_then_else(Cond,Then,Else), A) :-
         ).
 
 is_true(Q) :-
-	format("~w?\n", [Q]),
+	format("~s?\n", [Q]),
 	read(yes).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
