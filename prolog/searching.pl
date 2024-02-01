@@ -7,6 +7,16 @@
 :- use_module(library(time)).
 :- use_module(library(pairs)).
 
+lists(["abcd",
+       "abc",
+       "abcde",
+       "a",
+       "ab"]).
+
+list_pair(Ls, L-Ls) :-
+        list_length(Ls, L).
+
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ?- tpartition(=(3), [1,2,3], Is, Os).
 
