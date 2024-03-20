@@ -1,0 +1,34 @@
+h1 {
+	font-size: 3em;
+	page-break-before: always;
+}
+
+a {
+	color: black !important;
+	text-decoration: underline !important;
+}
+
+.box {
+	background: lightgray;
+	padding: 1em;
+	margin-left: 3em;
+}
+
+.example {
+	border: 1px solid gray;
+	padding: 1em;	
+}
+
+.query {
+	background: lightgray;
+}
+
+.secret {
+	background: gray;
+	color: white;
+	padding: 0.2em;
+}
+
+b>tt, pre {
+	margin-left: 1em;
+}
