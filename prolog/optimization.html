@@ -222,14 +222,14 @@ integer_color(3, yellow).
     <pre>
 ?- regions(Rs), label(Rs),
    <b><a href="metapredicates#maplist">maplist</a>(integer_color, Rs, Cs),
-   pairs_keys_values(Pairs, [a,b,c,d,e,f], Cs)</b>.
-Rs = [0, 1, 2, 3, 0, 1],
-Cs = [red, green, blue, yellow, red, green],
-<b>Pairs = [a-red, b-green, c-blue, d-yellow, e-red, f-green]</b> ;
-Rs = [0, 1, 2, 3, 0, 2],
-Cs = [red, green, blue, yellow, red, blue],
-<b>Pairs = [a-red, b-green, c-blue, d-yellow, e-red, f-blue]</b> ;
-etc.
+   pairs_keys_values(Pairs, "abcdef", Cs)</b>.
+   Rs = [0,1,2,3,0,1],
+   Cs = [red,green,blue,yellow,red,green],
+   <b>Pairs = [a-red,b-green,c-blue,d-yellow,e-red,f-green]</b>
+;  Rs = [0,1,2,3,0,2],
+   Cs = [red,green,blue,yellow,red,blue],
+   <b>Pairs = [a-red,b-green,c-blue,d-yellow,e-red,f-blue]</b>
+;  ... .
     </pre>
 
     These solutions look like this:
@@ -390,7 +390,7 @@ path_from_to(A, B, Visited) --&gt; [A],
     need to represent the&nbsp;vertices separately:
 
     <pre>
-vertices([a,b,c,d]).
+vertices("abcd").
     </pre>
 
     In the adjacency list representation, the isolated

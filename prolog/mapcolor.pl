@@ -30,11 +30,11 @@ false.
 
 ?- regions(Rs), label(Rs),
    maplist(integer_color, Rs, Cs),
-   pairs_keys_values(Pairs, [a,b,c,d,e,f], Cs).
+   pairs_keys_values(Pairs, "abcdef", Cs).
    Rs = [0,1,2,3,0,1], Cs = [red,green,blue,yellow,red,green], Pairs = [a-red,b-green,c-blue,d-yellow,e-red,f-green]
 ;  Rs = [0,1,2,3,0,2], Cs = [red,green,blue,yellow,red,blue], Pairs = [a-red,b-green,c-blue,d-yellow,e-red,f-blue]
 ;  Rs = [0,1,2,3,1,2], Cs = [red,green,blue,yellow,green,blue], Pairs = [a-red,b-green,c-blue,d-yellow,e-green,f-blue]
-;  ...
+;  ... .
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -81,7 +81,7 @@ so_regions(Rs):-
         D #\= E, D #\= F.
 
 print_colors(Rs) :-
-        pairs_keys_values(Pairs, Rs, [a,b,c,d,e,f]),
+        pairs_keys_values(Pairs, Rs, "abcdef"),
         maplist(print_color, Pairs).
 
 print_color(Var-Name) :-
