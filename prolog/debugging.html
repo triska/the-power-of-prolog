@@ -152,7 +152,7 @@ list_length([_|Ls], N) :-
 
     <pre>
 ?- list_length([_], 1).
-false.
+   false.
     </pre>
 
     In fact, the program is also <i>too general</i>, because the
@@ -160,7 +160,7 @@ false.
 
     <pre>
 ?- list_length([_], 2).
-true.
+   true.
     </pre>
 
     Note that we declaratively reason about the <i>meaning</i> of the
@@ -185,6 +185,10 @@ true.
 
 *_. </pre>
     </div>
+
+    In Scryer Prolog, <tt>(*)/1</tt> is available in <a href="https://github.com/mthom/scryer-prolog/blob/master/src/lib/debug.pl"><tt>library(debug)</tt></a>.
+
+    <br><br>
 
     Putting <tt>(*)/1</tt> in front of a goal lets us <b>generalize
         away</b> the goal. This means that the goal is treated as if
@@ -215,7 +219,7 @@ list_length([_|Ls], N) :-
 
     <pre>
 ?- list_length([_], 1).
-true.
+   true.
     </pre>
 
     By systematically removing some of the <tt>(*)/1</tt> we
