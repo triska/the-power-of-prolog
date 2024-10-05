@@ -1,6 +1,6 @@
 ;;; ediprolog.el --- Emacs Does Interactive Prolog
 
-;; Copyright (C) 2006-2022  Markus Triska
+;; Copyright (C) 2006-2024  Markus Triska
 
 ;; Author: Markus Triska <triska@metalevel.at>
 ;; Keywords: languages, processes
@@ -87,12 +87,12 @@
 ;;   C-u F10       first consult buffer, then evaluate query (if any)
 ;;   C-u C-u F10   like C-u F10, with a new process
 
-;; Tested with Scryer Prolog 0.8.119 and SWI-Prolog 8.1.24,
-;; using Emacs versions 26.1 and 27.0.50.
+;; Tested with Scryer Prolog 0.9.3 and SWI-Prolog 8.1.24,
+;; using Emacs versions 26.1, 27.0.50 and 30.0.50.
 
 ;;; Code:
 
-(defconst ediprolog-version "2.2")
+(defconst ediprolog-version "2.3")
 
 (defgroup ediprolog nil
   "Transparent interaction with Prolog."
@@ -264,9 +264,10 @@ set_prolog_flag(toplevel_prompt, '%s').\n" (ediprolog-prompt)))))
       (erase-buffer)
       (insert str)
       (goto-char (point-min))
-      ;; remove normal consult status lines, which start with "%"
-      (while (re-search-forward "^[\t ]*%.*\n" nil t)
-        (delete-region (match-beginning 0) (match-end 0))))
+      (when (eq ediprolog-system 'swi)
+        ;; remove normal consult status lines, which start with "%"
+        (while (re-search-forward "^[\t ]*%.*\n" nil t)
+          (delete-region (match-beginning 0) (match-end 0)))))
     (setq str (buffer-string)))
   ;; show consult output in a separate window unless it is a prefix of
   ;; success (i.e., consulted without errors), or still an incomplete
@@ -396,8 +397,8 @@ asks for input, use \\[ediprolog-toplevel] to resume interaction
 with the Prolog process."
   (unless (ediprolog-running)
     (ediprolog-run-prolog))
-  (set-marker (process-mark ediprolog-process) (point))
   (set-process-buffer ediprolog-process (current-buffer))
+  (set-marker (process-mark ediprolog-process) (point))
   (set-process-filter ediprolog-process 'ediprolog-interact-filter)
   (ediprolog-ensure-buffer "temp")
   (with-current-buffer ediprolog-temp-buffer
