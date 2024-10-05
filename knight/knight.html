@@ -1,0 +1,121 @@
+<html>
+  <head>
+    <title>Closed Knight's Tour in Prolog</title>
+    <style>
+td { padding: 0.3cm }
+li { padding: 4pt; }
+a:link { text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 300%; }
+pre { padding-left: 5%; }
+    </style>
+  </head>
+  <body style="padding-left: 5%; padding-right: 5%; padding-bottom: 3cm">
+    <br><br>
+    <center>
+      <h1>Closed Knight's Tour in Prolog</h1>
+    </center>
+
+    <br><br>
+
+    Prolog code: <a href="knight.pl"><b><tt>knight.pl</tt></b></a>
+
+    <br><br>
+    <table>
+      <tr>
+        <td><i>Video</i>:</td>
+        <td><a href="/prolog/videos/knights_tour"><img src="/prolog/videos/t_knights_tour.png" alt="Knight's Tour"></a>
+        </td>
+      </tr>
+    </table>
+
+    <br><br>
+
+    This solution
+    uses <a href="/prolog/clpz">CLP(&#x2124;)&nbsp;constraints</a>
+    to model the problem. In particular,
+    the <tt>circuit/1</tt>&nbsp;constraint is used to describe a
+    <b>Hamiltonian&nbsp;circuit</b> of the following graph:
+
+    <ol>
+      <li>one <i>node</i> per board position</li>
+      <li>one <i>edge</i> between those nodes that can be reached via
+        knight's&nbsp;moves.</li>
+    </ol>
+
+    For example, in the case of a 6&times;6 board, the underlying
+    graph looks as follows:
+
+    <center>
+      <object data="knight.svg" type="image/svg+xml" style="padding:20pt; width: 350; height: 350">
+      </object>
+    </center>
+
+
+
+    <br><br>
+
+    <br>
+
+    You need <a href="https://github.com/mthom/scryer-prolog">Scryer Prolog</a>. Start it with
+
+    <pre>
+$ scryer-prolog knight.pl
+    </pre>
+
+    <br>
+
+    Example queries that you can try:
+    <br><br>
+
+    <pre>
+?- n_tour(N, Ts), maplist(label, Ts).
+
+?- n_tour(N, Ts), maplist(label, Ts), print_tour(Ts).
+
+    </pre>
+
+    To visualize solutions with Ghostscript, use:
+
+    <pre>
+       $ scryer-prolog -g "show(6,[ff])" knight.pl | \
+            gs -dNOPROMPT -g510x510 -r72 -q
+    </pre>
+    <br><br>
+
+    Sample solutions for N = 6, 8, 12, 16:
+
+    <br><br>
+    <center>
+      <table>
+        <tr>
+          <td><img src="knight6.png" alt="6x6 board"></td>
+          <td><img src="knight8.png" alt="8x8 board"></td>
+        </tr>
+        <tr>
+          <td><img src="knight12.png" alt="12x12 board"></td>
+          <td><img src="knight16.png" alt="16x16 board"></td>
+        </tr>
+      </table>
+    </center>
+    <br><br>
+
+    <br><br>
+
+    Challenges: Find solutions for large boards. Find good labeling and
+    allocation strategies. ...
+
+    <br><br>
+
+    <b>Exercise</b>: Modify the code so that it describes knight's
+    tours that are not necessarily closed. Hint: Introduce a dummy
+    node from which a tour may start.
+
+    <br><br><br>
+    More about Prolog: <a href="/prolog"><b>The Power of Prolog</b></a>
+
+    <br><br><br>
+
+    <a href="/"><b>Main page</b></a>
+  </body>
+</html>
