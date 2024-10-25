@@ -2,7 +2,7 @@
    Menu show case.
    ===============
 
-   Written August 2016 by Markus Triska (triska@metalevel.at).
+   Written 2016-2024 by Markus Triska (triska@metalevel.at).
    Public domain code. Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -64,14 +64,14 @@ menu(menu('Main', _,
 
    Sample use:
 
-   ?- menu(M), menu_to_chars(M, Cs).
-   %@    Cs = "optA (a)   Submenu  ...", ...
+   ?- use_module(library(lambda)).
+   %@    true.
+   ?- Cs+\(menu(M), phrase(menu_chars(M), Cs)).
+   %@    Cs = "optA (a)   Submenu  ...".
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-menu_to_chars(menu(_,_,Subs), Chars) :-
-        phrase(format_menu(Subs), Chars).
-menu_to_chars(option(Title,_), Chars) :-
-        phrase(format_("~w", [Title]), Chars).
+menu_chars(menu(_,_,Subs))  --> format_menu(Subs).
+menu_chars(option(Title,_)) --> format_("~w", [Title]).
 
 format_menu([]) --> [].
 format_menu([M|Ms]) --> format_menu_(Ms, M).
@@ -144,10 +144,10 @@ menu0_key_menu(menu(_,_,Subs), Key, Menu) :-
    %@ optA (a)   Submenu B   optK (k)   Submenu J
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-display_menu(Menu) :-
-        menu_to_chars(Menu, Chars),
-        format("~s\n", [Chars]).
+:- use_module(library(pio)).
 
+display_menu(Menu) :-
+        phrase_to_stream((menu_chars(Menu),"\n"), user_output).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Interaction loop.
