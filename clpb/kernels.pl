@@ -6,6 +6,8 @@
 :- use_module(library(pairs)).
 :- use_module(library(time)).
 :- use_module(library(assoc)).
+:- use_module(library(reif)).
+:- use_module(library(lambda)).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Independent sets, maximal independent sets (kernels) and maximal
@@ -15,20 +17,20 @@
 
    (1) Independent sets:
 
-       ?- time((independent_set(I,_),sat_count(I,N))).
-       %@    % CPU time: 0.661s
-       %@    I = *(...), N = 792070839848372253127.
+       ?- N+\time((independent_set(I,_),sat_count(I,N))).
+       %@    % CPU time: 0.616s, 2_654_474 inferences
+       %@    N = 792070839848372253127.
 
    (2) Maximal independent sets:
 
-       ?- time((kernel(K,_),sat_count(K,N))).
-       %@    % CPU time: 3.178s
-       %@    K = *(...)* *(...), N = 1630580875002.
+       ?- N+\time((kernel(K,_),sat_count(K,N))).
+       %@    % CPU time: 2.793s, 12_660_789 inferences
+       %@    N = 1630580875002.
 
    (3) Maximal independent sets with maximum weight:
 
        %?- time(maximum_thue_morse_kernel(Is, Negatives, Max)).
-       %@    % CPU time: 10.928s
+       %@    % CPU time: 10.228s, 45_547_552 inferences
        %@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51|...], Negatives = [1,25,41,73,97], Max = 28
        %@ ;  ... .
 
@@ -91,33 +93,25 @@ maximum_thue_morse_kernel(Is, Negatives, Max) :-
         weighted_maximum(Weights, Vs, Max),
         numlist(1, L, Ns),
         pairs_keys_values(Pairs0, Vs, Ns),
-        include(key_one, Pairs0, Pairs),
+        tfilter(key_one_t, Pairs0, Pairs),
         pairs_values(Pairs, Is),
         pairs_keys_values(WNs, Weights, Ns),
         pairs_keys_values(WPairs0, Vs, WNs),
-        include(key_one, WPairs0, WPairs1),
+        tfilter(key_one_t, WPairs0, WPairs1),
         pairs_values(WPairs1, WPairs2),
-        include(key_negative, WPairs2, WPairs),
+        tfilter(key_negative_t, WPairs2, WPairs),
         pairs_values(WPairs, Negatives).
 
-key_negative(K-_) :- K #< 0.
+key_negative_t(K-_, T) :- clpz_t(K #< 0, T).
 
-key_one(1-_).
-
-include(_, [], []).
-include(Goal_1, [E|Es], Ls) :-
-        (   call(Goal_1, E) ->
-            Ls = [E|Rs]
-        ;   Ls = Rs
-        ),
-        include(Goal_1, Es, Rs).
+key_one_t(K-_, T) :- =(K, 1, T).
 
 %?- time(maximum_thue_morse_kernel(Is, Negatives, Max)).
-%@    % CPU time: 11.111s
+%@    % CPU time: 10.104s, 45_547_575 inferences
 %@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51|...], Negatives = [1,25,41,73,97], Max = 28
-%@ ;  % CPU time: 0.004s
+%@ ;  % CPU time: 0.016s, 63_185 inferences
 %@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51|...], Negatives = [1,25,41,73,94], Max = 28
-%@ ;  % CPU time: 0.089s
+%@ ;  % CPU time: 0.099s, 319_668 inferences
 %@    Is = [1,3,6,9,12,15,18,20,23,25,27,30,33,36,39,41,43,46,48,51|...], Negatives = [1,25,41,73,97], Max = 28
 %@ ;  ... .
 
@@ -127,9 +121,9 @@ include(Goal_1, [E|Es], Ls) :-
    IND(X) = not OR_(u->v){ x_u /\ x_v } = AND_(u->v){not x_u \/ not x_v}
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-%?- time((independent_set(I,_),sat_count(I,N))).
-%@    % CPU time: 0.656s
-%@    I = *(...), N = 792070839848372253127.
+%?- N+\time((independent_set(I,_),sat_count(I,N))).
+%@    % CPU time: 0.615s, 2_654_474 inferences
+%@    N = 792070839848372253127.
 
 
 independent_set(*(NBs), Assoc) :-
@@ -160,5 +154,5 @@ node_or(Assoc, Node, Var + +(Vars)) :-
 
 u_to_var(Assoc, Node, Var) :- get_assoc(Node, Assoc, Var).
 
-%?- kernel(Sat, _), sat_count(Sat, C).
-%@    Sat = *(...)* *(...), C = 1630580875002.
+%?- C+\(kernel(Sat, _), sat_count(Sat, C)).
+%@    C = 1630580875002.
