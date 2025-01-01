@@ -222,7 +222,7 @@ year_month_days(2017, mar, 31).
     <pre>
 ?- <b>format("year month visitors~n", []),</b>
    year_month_total(Year, Month, Total),
-   <b>format("~w ~w ~t~U~20|~n", [Year,Month,Total]),</b>
+   <b>format("~d ~q ~t~U~20|~n", [Year,Month,Total]),</b>
    false.
 <b>year month visitors
 2017 jan     930_558
