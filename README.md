@@ -57,7 +57,6 @@ To run the code examples, you can use every Prolog implementation that
 conforms to the Prolog ISO&nbsp;standard and provides the following
 conforming extensions:
 
-- Definite Clause Grammars (DCGs)
 - constraints like `dif/2` and declarative integer arithmetic
 - alternative execution strategies such as SLG&nbsp;resolution.
 
