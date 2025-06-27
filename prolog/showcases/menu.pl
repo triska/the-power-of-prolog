@@ -2,14 +2,14 @@
    Menu show case.
    ===============
 
-   Written 2016-2024 by Markus Triska (triska@metalevel.at).
+   Written 2016-2025 by Markus Triska (triska@metalevel.at).
    Public domain code. Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- use_module(library(format)).
 :- use_module(library(dcgs)).
 :- use_module(library(lists)).
-:- use_module(library(charsio)).  % for get_single_char/1
+:- use_module(library(charsio), [get_single_char/1]).
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    There are two kinds of elements in a menu:
