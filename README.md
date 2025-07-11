@@ -147,6 +147,9 @@ this&nbsp;book in their&nbsp;courses! For example:
   Intelligence&nbsp;I](https://github.com/ikokkari/AI) at the G.
   Raymond&nbsp;Chang School of Continuing&nbsp;Education,
   Ryerson&nbsp;University, in Canada.
+- As of 2025, Wang-Zhou Dai's research group is using
+  *The Power of Prolog* in the [2025&nbsp;Summer&nbsp;Seminar](https://xinshuangz.github.io/2025_logic_program/)
+  at Nanjing&nbsp;University in&nbsp;China.
 - I hope you are next!
 
 <pre>
