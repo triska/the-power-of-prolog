@@ -117,18 +117,18 @@ f(X, Y) :- g(X), h(Y).
     <center><h2>Rewriting Prolog code</h2></center>
 
     All widely used Prolog systems provide mechanisms that let
-    you <i>rewrite Prolog code</i> <b>at compilation time</b>.
+    us <i>rewrite Prolog code</i> <b>at compilation time</b>.
 
     <br><br>
 
-    The advantage is clear: You can perform complex transformations of
+    The advantage is clear: We can perform complex transformations of
     Prolog code <i>once</i> at compilation time, resulting in often
     faster code at <i>run&nbsp;time</i>.
 
     <br><br>
 
     In Prolog systems, this facility is typically provided
-    by <i>extensible</i> predicates called <tt>term_expansion/2</tt>
+    by <i>extensible</i> predicates such as <tt>term_expansion/2</tt>
     and <tt>goal_expansion/2</tt>. These predicates take
     2&nbsp;arguments:
 
@@ -147,6 +147,22 @@ f(X, Y) :- g(X), h(Y).
     If your Prolog system does not provide this facility, you can
     easily implement it yourself, using the built-in
     predicate <tt>read/1</tt> to read Prolog terms from a file.
+
+    <br><br>
+
+    The exact semantics of these predicates differ between
+    Prolog&nbsp;systems, for example regarding questions such as:
+
+    <ul>
+      <li>Are the <i>virtual</i> read-term <tt>beginning_of_file</tt>
+        and <tt>end_of_file</tt> made available for expansion?</li>
+      <li>Are expansions themselves subject to expansion?</li>
+      <li>Are <i>meta-calls</i> automatically expanded at run-time?</li>
+      <li>Are <i>queries</i> subject to goal expansion?</li>
+      <li>...</li>
+    </ul>
+
+    A common standard would be nice.
 
     <br><br>
     <center><h2>Examples</h2></center>
@@ -193,7 +209,7 @@ integer_successor(A,B) :-
     </pre>
 
     This example illustrates that low-level integer arithmetic is
-    <i>automatically</i> used whenever possible, even if you use
+    <i>automatically</i> used whenever possible, even if we use
     higher-level constructs which <i>also</i> work in other directions.
     
     <br><br><br>
