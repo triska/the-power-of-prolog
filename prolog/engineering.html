@@ -202,10 +202,10 @@ goal_time(Goal, T) :-
 
     <pre>
 ?- X #= a.
-ERROR: <b>Domain error</b>: `clpfd_expression' expected, found `a'
+   error(domain_error(clpz_expression,a),unknown(a)-1).
 
 ?- X in Y.
-ERROR: Arguments are not sufficiently instantiated
+   error(instantiation_error,instantiation_error(unknown(_143),1)).
     </pre>
 
     It is easy to see that adding further constraints can make
@@ -213,8 +213,7 @@ ERROR: Arguments are not sufficiently instantiated
 
     <pre>
 ?- <b>Y = 0..5</b>, X in Y.
-Y = 0..5,
-X in 0..5.
+   Y = 0..5, clpz:(X in 0..5).
     </pre>
 
     However, no additional goal can ever
