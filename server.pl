@@ -47,6 +47,7 @@ server(Port) :-
         server('127.0.0.1', Port).
 
 server(IP, Port) :-
+        format("Listening on http://~w:~d/~n", [IP, Port]),
         socket_server_open(IP:Port, Socket),
         accept_loop(Socket).
 
