@@ -578,7 +578,7 @@ verify_attributes(Var, Value, []) :-
         get_atts(Var, a(n(A))),
         (   <b>integer(Value)</b> ->
             Value =:= A
-        ;   get_atts(Value, a(n(B)))
+        ;   get_atts(Value, a(n(B))),
             C #= A + B,
             put_atts(Var, -a(n(_))),
             put_atts(Value, a(n(C)))
