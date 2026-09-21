@@ -88,8 +88,7 @@
 (defun prolog-insert-comment-block ()
   "Insert a PceEmacs-style comment block like /* - - ... - - */ "
   (interactive)
-  (let ((dashes "-"))
-    (dotimes (_ 36) (setq dashes (concat "- " dashes)))
+  (let ((dashes (string-join (make-list 37 "-") " ")))
     (insert (format "/* %s\n\n%s */" dashes dashes))
     (forward-line -1)
     (indent-for-tab-command)))
