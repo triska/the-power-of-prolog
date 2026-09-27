@@ -36,21 +36,21 @@ is_element(E) :- is_menu(E).
    Sample menu.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-menu(menu('Main', _,
-          [option(optA, a),
-           menu('Submenu B', b,
-                [option(optC, c),
-                 menu('Submenu D', d,
-                      [option(optE, e),
-                       option(optF, f)]),
-                 menu('Submenu G', g,
-                      [option(optH, h),
-                       option(optI, i)]),
-                 option(optJ, j)]),
-           option(optK, k),
-           menu('Submenu J', j,
-                [option(optK, k),
-                 option(optL, l)])])).
+menu(menu("Main", _,
+          [option("optA", a),
+           menu("Submenu B", b,
+                [option("optC", c),
+                 menu("Submenu D", d,
+                      [option("optE", e),
+                       option("optF", f)]),
+                 menu("Submenu G", g,
+                      [option("optH", h),
+                       option("optI", i)]),
+                 option("optJ", j)]),
+           option("optK", k),
+           menu("Submenu J", j,
+                [option("optK", k),
+                 option("optL", l)])])).
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,7 +71,7 @@ menu(menu('Main', _,
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 menu_chars(menu(_,_,Subs))  --> format_menu(Subs).
-menu_chars(option(Title,_)) --> format_("~w", [Title]).
+menu_chars(option(Title,_)) --> format_("~s", [Title]).
 
 format_menu([]) --> [].
 format_menu([M|Ms]) --> format_menu_(Ms, M).
@@ -82,8 +82,8 @@ format_menu_([N|Ms], M) -->
         "   ",
         format_menu_(Ms, N).
 
-format_element(option(Title,Key)) --> format_("~w (~w)", [Title,Key]).
-format_element(menu(Title,_,_)) --> format_("~w", [Title]).
+format_element(option(Title,Key)) --> format_("~s (~w)", [Title,Key]).
+format_element(menu(Title,_,_)) --> format_("~s", [Title]).
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -107,7 +107,7 @@ format_element(menu(Title,_,_)) --> format_("~w", [Title]).
    The nice thing is that such relations can be for example *tested*
    by simple Prolog queries:
 
-   ?- menu(M0), menu0_key_menu(M0, b, M), M = menu('Submenu B', _, _).
+   ?- menu(M0), menu0_key_menu(M0, b, M), M = menu("Submenu B", _, _).
 
    This is not possible, or at least *much harder*, if menus are only
    implicitly displayed on the system terminal, or such transitions
