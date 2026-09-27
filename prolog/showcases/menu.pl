@@ -2,7 +2,7 @@
    Menu show case.
    ===============
 
-   Written 2016-2025 by Markus Triska (triska@metalevel.at).
+   Written 2016-2026 by Markus Triska (triska@metalevel.at).
    Public domain code. Tested with Scryer Prolog.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -65,9 +65,9 @@ menu(menu('Main', _,
    Sample use:
 
    ?- use_module(library(lambda)).
-   %@    true.
+      true.
    ?- Cs+\(menu(M), phrase(menu_chars(M), Cs)).
-   %@    Cs = "optA (a)   Submenu  ...".
+      Cs = "optA (a)   Submenu B ...".
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 menu_chars(menu(_,_,Subs))  --> format_menu(Subs).
@@ -141,7 +141,7 @@ menu0_key_menu(menu(_,_,Subs), Key, Menu) :-
    Sample use:
 
    ?- menu(M), display_menu(M).
-   %@ optA (a)   Submenu B   optK (k)   Submenu J
+   optA (a)   Submenu B   optK (k)   Submenu J
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 :- use_module(library(pio)).
@@ -185,15 +185,15 @@ interaction(M0, Hs0) :-
    Sample run:
 
    ?- run.
-   %@ optA (a)   Submenu B   optK (k)   Submenu J
-   %@ optA
-   %@ optA (a)   Submenu B   optK (k)   Submenu J
-   %@ optC (c)   Submenu D   Submenu G   optJ (j)
-   %@ no entry found for "b" -- please try again
-   %@ optC (c)   Submenu D   Submenu G   optJ (j)
-   %@ optE (e)   optF (f)
-   %@ optE
-   %@ optE (e)   optF (f)
-   %@ optC (c)   Submenu D   Submenu G   optJ (j)
-   %@ no entry found for "a" -- please try again
+   optA (a)   Submenu B   optK (k)   Submenu J
+   optA
+   optA (a)   Submenu B   optK (k)   Submenu J
+   optC (c)   Submenu D   Submenu G   optJ (j)
+   no entry found for "b" -- please try again
+   optC (c)   Submenu D   Submenu G   optJ (j)
+   optE (e)   optF (f)
+   optE
+   optE (e)   optF (f)
+   optC (c)   Submenu D   Submenu G   optJ (j)
+   no entry found for "a" -- please try again
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
