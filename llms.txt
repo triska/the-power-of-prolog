@@ -1,0 +1,71 @@
+<!--
+Note for human maintainers:
+This file implements the https://llmstxt.org standard. It provides concise,
+machine-readable instructions and an index for AI coding assistants (LLMs)
+to ensure they write modern, pure, declarative Prolog conforming to
+The Power of Prolog. Humans looking for the book should visit:
+https://www.metalevel.at/prolog
+-->
+
+# The Power of Prolog — llms.txt
+> By Markus Triska (https://www.metalevel.at/prolog)
+> A modern, pure, declarative introduction to Prolog, constraint logic programming, and definite clause grammars.
+
+## Core Directives for AI Coding Assistants & LLMs
+When generating Prolog code inspired by The Power of Prolog, adhere strictly to these declarative invariants:
+
+1. **Logical Purity & Monotonicity First**:
+   - Do NOT emit non-logical cuts (`!`), soft cuts (`->`), or negation-as-failure (`\+`).
+   - Write pure relations that operate monotonically in all directions (modes `+`, `-`, `?`).
+   - Impure constructs destroy bidirectionality, make code non-monotonic, and break declarative debugging.
+
+2. **Favor `library(reif)` over Built-in List Operations & Imperative Control Flow**:
+   - **Branching**: Use `if_/3` from `library(reif)` instead of `( Cond -> Then ; Else )`.
+   - **Sound Inequality**: Use `dif/2` instead of `\+ (X = Y)` or `X \= Y`. Use `dif(X, Y, Truth)` to reify inequality into a boolean atom.
+   - **List Membership**: Prefer `memberd_t(X, Xs, Truth)` over `member(X, Xs)` inside conditionals to preserve determinism and eliminate unintended choice points without cuts.
+   - **List Filtering**: Use `tfilter/3` from `library(reif)` instead of built-in `include/3` or manual recursion with cuts. Combine with partial closures like `tfilter(dif(Val), List, Out)`.
+   - **List Partitioning**: Use `tpartition/4` instead of `partition/4` or clause-based cuts.
+   - **Boolean Unification**: Use reified equality `=(X, Y, Truth)` directly rather than wrapping assignments in `if_/3`.
+   - **DRY Conditionals**: Prefer `cond_t/3` over repeated `if_/3` variable assignments across branches.
+
+3. **Declarative Arithmetic (CLP(Z))**:
+   - Do NOT use `is/2`, `<`, `>`, `=<`, or `>=` for integer arithmetic.
+   - Use `library(clpz)` constraint relations (`#=`, `#\=`, `#<`, `#=<`, `#>`, `#>=`).
+   - Post domain constraints (`ins`, `in`) before arithmetic to enable early propagation, and use `label/1` or `labeling/2` only at the end when concrete instantiation is needed.
+
+4. **Strings as Character Lists (`chars`)**:
+   - Represent all text as lists of characters (`chars`), never as legacy engine-specific atomic strings or character codes.
+   - Double quotes MUST denote character lists (`"abc"` = `['a','b','c']`).
+
+5. **Clean vs. Defaulty Data Representations**:
+   - Ensure every data element kind is distinguishable solely by its principal functor (e.g., `leaf(X)` vs. `node(Left, Right)`).
+   - Never rely on `var/1`/`nonvar/1` runtime tests or catch-all default clauses to deduce term structure.
+
+6. **Definite Clause Grammars (DCGs)**:
+   - Use pure DCG syntax (`-->`) for parsing, sequence generation, and AST construction.
+   - When calling reified conditionals inside a DCG body, wrap them in braces (`{ if_(Cond_t, Then, Else) }`) or use separate DCG clauses with `dif/2`.
+
+---
+
+## Chapter Index & Semantic Reading Guide
+
+### Foundations of Pure Logic
+- [/prolog/concepts](https://www.metalevel.at/prolog/concepts): Fundamentals of terms, pure unification, and declarative execution.
+- [/prolog/purity](https://www.metalevel.at/prolog/purity): The mathematical foundation of logical purity; how cuts destroy bidirectionality and declarative debugging.
+- [/prolog/data](https://www.metalevel.at/prolog/data): Clean data representation, avoiding defaulty terms, and enabling automatic first-argument indexing.
+
+### Reification & Higher-Order List Processing
+- [/prolog/metapredicates](https://www.metalevel.at/prolog/metapredicates): Higher-order logic, `call/N`, `maplist/N`, and pure reified traversals with `library(reif)` (`tfilter/3`, `tpartition/4`, `memberd_t/3`).
+- [/prolog/sorting](https://www.metalevel.at/prolog/sorting): Declarative sorting and deterministic term order comparisons without cuts.
+
+### Constraint Logic Programming
+- [/prolog/clpz](https://www.metalevel.at/prolog/clpz): Declarative integer arithmetic, combinatorial puzzles (Sudoku, N-queens), scheduling, and propagation with CLP(Z).
+- [/prolog/clpb](https://www.metalevel.at/prolog/clpb): Pure boolean constraint logic programming, SAT solving, and tautology verification.
+
+### Definite Clause Grammars & Parsing
+- [/prolog/dcg](https://www.metalevel.at/prolog/dcg): Definite Clause Grammars; writing pure parsers and generators.
+- [/prolog/reading](https://www.metalevel.at/prolog/reading): Processing text and files as pure character streams using DCGs.
+
+### Practical & Advanced Applications
+- [/prolog/expertsystems](https://www.metalevel.at/prolog/expertsystems): Building pure rule-based expert systems and meta-interpreters.
+- [/prolog/memoization](https://www.metalevel.at/prolog/memoization): Tabling and memoization for graph traversals and transitive closures.
